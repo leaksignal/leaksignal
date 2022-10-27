@@ -1,6 +1,6 @@
 [package]
 name = "leaksignal"
-version = "0.1.1"
+version = "0.1.2"
 edition = "2021"
 authors = ["Protryon <max.bruce12@gmail.com>"]
 license = "Apache-2.0"
@@ -40,7 +40,7 @@ bytes = "1.1"
 futures = "0.3"
 flate2 = "1.0"
 dlmalloc = { version = "0.2.3", features = ["global"] }
-leakpolicy = { version = "0.1.1", path = "../leakpolicy" }
+leakpolicy = { version = "0.1.2", path = "../leakpolicy" }
 smallvec = { version = "1.9", features = ["serde", "const_generics"] }
 sha2 = "0.10"
 hex = { version = "0.4", features = ["serde"] }
