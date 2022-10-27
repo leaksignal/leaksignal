@@ -134,7 +134,7 @@ Docker commands to run an Envoy proxy with LeakSignal installed.
 ```
 FROM envoyproxy/envoy-dev:0b1c5aca39b8c2320501ce4b94fe34f2ad5808aa
 RUN curl -O https://raw.githubusercontent.com/leaksignal/leaksignal/master/examples/envoy/envoy_local.yaml > /etc/envoy.yaml
-RUN curl -O https://ingestion.app.leaksignal.com/s3/leakproxy/2022_10_16_16_18_40_fda6eb2/leakproxy.wasm > /lib/leaksignal.wasm
+RUN curl -O https://ingestion.app.leaksignal.com/s3/leakproxy/2022_10_27_17_08_50_5e5d31f/leaksignal.wasm > /lib/leaksignal.wasm
 RUN chmod go+r /etc/envoy.yaml
 CMD ["/usr/local/bin/envoy", "-c", "/etc/envoy.yaml"]
 ```
