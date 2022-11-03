@@ -4,7 +4,8 @@
 
 <h4 align="center">
   <a href="https://www.leaksignal.com">Website</a> |
-  <a href="https://blog.leaksignal.com">Blog</a> | 
+  <a href="https://www.leaksignal.com/docs/">Docs</a> |
+  <a href="https://www.leaksignal.com/blog/">Blog</a> | 
   <a href="https://tinyurl.com/leaksignalslack">Slack</a>
 </h4>
 
