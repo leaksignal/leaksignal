@@ -5,7 +5,6 @@ use indexmap::IndexMap;
 use leakpolicy::PathConfiguration;
 
 use crate::{
-    evaluator::{self, MatcherMetadata, MatcherState},
     pipe::PipeReader,
     policy::{ContentType, Policy, PolicyAction},
     proto::Match,
@@ -33,52 +32,6 @@ impl<'a> Ord for PolicyMatch<'a> {
     }
 }
 
-fn prepare_match_state<'a>(
-    policy: &'a Policy,
-    configuration: &'a IndexMap<Arc<String>, PathConfiguration>,
-) -> MatcherState<'a> {
-    let mut match_state = MatcherState::default();
-
-    for (category_name, action) in configuration {
-        if !action.category_config.content_types.is_empty() {
-            if !action
-                .category_config
-                .content_types
-                .contains(&ContentType::Html)
-            {
-                continue;
-            }
-        }
-
-        if matches!(
-            action.category_config.action.unwrap_or_default(),
-            PolicyAction::Ignore
-        ) {
-            continue;
-        }
-
-        // let is_block = matches!(action.action, PolicyAction::Block);
-
-        let metadata = MatcherMetadata {
-            policy_path: action.matcher_path.clone(),
-            category_name: category_name.to_string(),
-            action: action.category_config.action.unwrap_or_default(),
-            local_report_style: action.report_style,
-            correlation: None,
-        };
-
-        evaluator::prepare_matches(
-            &policy,
-            &**category_name,
-            &mut match_state,
-            &metadata,
-            &action.category_config.ignore,
-        );
-    }
-
-    match_state
-}
-
 const CHUNK_SIZE: usize = 1024 * 64;
 const CHUNK_OVERLAP: usize = 512;
 
@@ -97,7 +50,7 @@ pub async fn parse_html(
     //TODO: safety, use ManuallyUninit?
     unsafe { chunk.set_len(CHUNK_SIZE) };
 
-    let match_state = prepare_match_state(policy, configuration);
+    let match_state = super::prepare_match_state(policy, configuration, ContentType::Html);
 
     loop {
         let minimum_end_index = body.total_read();

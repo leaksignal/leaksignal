@@ -77,6 +77,15 @@ pub extern "C" fn free(from: *mut c_void) {
     unsafe { Box::from_raw(from as *mut u8) };
 }
 
+#[cfg(not(target_arch = "wasm32"))]
+#[no_mangle]
+fn proxy_get_current_time_nanoseconds(return_time: *mut u64) -> proxy_wasm::types::Status {
+    unsafe {
+        *return_time = 0;
+    }
+    proxy_wasm::types::Status::Ok
+}
+
 struct TimeContext;
 impl Context for TimeContext {}
 

@@ -76,6 +76,7 @@ pub enum ContentType {
     Json,
     #[serde(alias = "Html")]
     Html,
+    Grpc,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
@@ -314,6 +315,8 @@ fn collected_response_headers_default() -> IndexSet<String> {
         "grpc-accept-encoding",
         "x-envoy-peer-metadata",
         "x-envoy-peer-metadata-id",
+        "grpc-status",
+        "grpc-message",
     ]
     .into_iter()
     .map(str::to_string)

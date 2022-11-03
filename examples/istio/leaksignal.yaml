@@ -25,10 +25,10 @@ spec:
               code:
                 remote:
                   http_uri:
-                    uri: https://ingestion.app.leaksignal.com/s3/leakproxy/2022_11_03_16_22_02_c18d19c/leaksignal.wasm
+                    uri: https://ingestion.app.leaksignal.com/s3/leakproxy/2022_10_27_17_08_50_5e5d31f/leaksignal.wasm
                     timeout: 10s
                     cluster: leaksignal_infra
-                  sha256: 17d997f3af808df7f54dea4c03a200e1e021aec5ae4fe605fc0571cda2b1d0bc
+                  sha256: 8cbb8fb8912da2f89005561d4c093f79a71099daeb22447f3232ec4e68e6e53a
                   retry_policy:
                     num_retries: 10
   - applyTo: HTTP_FILTER
@@ -70,18 +70,18 @@ spec:
                 "@type": type.googleapis.com/google.protobuf.StringValue
                 value: |
                   upstream_cluster: leaksignal_infra
-                  api_key: test1234
-                  deployment_name: test deployment
+                  api_key: $API_KEY
+                  deployment_name: $DEPLOYMENT_NAME
               vm_config:
                 runtime: "envoy.wasm.runtime.v8"
                 vm_id: "leaksignal_service"
                 code:
                   remote:
                     http_uri:
-                      uri: https://ingestion.app.leaksignal.com/s3/leakproxy/2022_11_03_16_22_02_c18d19c/leaksignal.wasm
+                      uri: https://ingestion.app.leaksignal.com/s3/leakproxy/2022_10_27_17_08_50_5e5d31f/leaksignal.wasm
                       timeout: 10s
                       cluster: leaksignal_infra
-                    sha256: 17d997f3af808df7f54dea4c03a200e1e021aec5ae4fe605fc0571cda2b1d0bc
+                    sha256: 8cbb8fb8912da2f89005561d4c093f79a71099daeb22447f3232ec4e68e6e53a
                     retry_policy:
                       num_retries: 10
 ---

@@ -162,6 +162,21 @@ pub fn prepare_matches<'a>(
 }
 
 impl<'a> MatcherState<'a> {
+    #[cfg(test)]
+    pub fn push_raw(&mut self, name: &str, value: &'a str) {
+        self.raws.push(MatchRaw {
+            metadata: MatcherMetadata {
+                policy_path: "".to_string(),
+                category_name: name.to_string(),
+                action: PolicyAction::Alert,
+                local_report_style: DataReportStyle::Raw,
+                correlation: None,
+            },
+            raw: value,
+            case_insensitive: true,
+        });
+    }
+
     pub fn evaluate(
         &self,
         source: &str,

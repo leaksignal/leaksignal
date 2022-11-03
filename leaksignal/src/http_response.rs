@@ -27,7 +27,7 @@ use sha2::{Digest, Sha256};
 use crate::{
     config::{upstream, UpstreamConfigHandle, LEAKSIGNAL_SERVICE_NAME},
     metric::Metric,
-    parsers::{html::parse_html, json::parse_json, ParseResponse},
+    parsers::{grpc::parse_grpc, html::parse_html, json::parse_json, ParseResponse},
     pipe::{pipe, DummyWaker, PipeReader, PipeWriter},
     policy::{policy, PathPolicy, TokenExtractionConfig, TokenExtractionSite},
     proto::{Header, MatchDataRequest},
@@ -40,6 +40,7 @@ const MATCH_PUSH_TIMEOUT: Duration = Duration::from_secs(5);
 enum ContentType {
     Html,
     Json,
+    Grpc,
     Jpeg,
     Unknown,
 }
@@ -56,6 +57,7 @@ impl FromStr for ContentType {
     fn from_str(s: &str) -> Result<Self> {
         Ok(match s {
             "text/html" => ContentType::Html,
+            "application/grpc+proto" => ContentType::Grpc,
             "image/jpg" | "image/jpeg" => ContentType::Jpeg,
             "application/json" => ContentType::Json,
             _ => ContentType::Unknown,
@@ -96,6 +98,8 @@ pub struct HttpResponseContext {
     response_writer: Option<PipeWriter>,
     response_read_task: Option<Pin<Box<dyn Future<Output = Option<ResponseOutputData>>>>>,
     connection_info: HashMap<String, String>,
+    request_headers: Vec<Header>,
+    response_headers: Vec<Header>,
 }
 
 impl Default for HttpResponseContext {
@@ -108,6 +112,8 @@ impl Default for HttpResponseContext {
             response_read_task: None,
             decompressor: GzDecoder::new(vec![]),
             connection_info: Default::default(),
+            request_headers: vec![],
+            response_headers: vec![],
         }
     }
 }
@@ -117,8 +123,6 @@ struct ResponseData {
     request_start: u64,
     response_start: u64,
     response_body_start: u64,
-    request_headers: Vec<Header>,
-    response_headers: Vec<Header>,
     content_type: ContentType,
     content_encoding: ContentEncoding,
     path: String,
@@ -142,7 +146,7 @@ fn timestamp() -> u64 {
 }
 
 async fn response_body_task(
-    mut data: ResponseData,
+    data: ResponseData,
     mut reader: PipeReader,
 ) -> Option<ResponseOutputData> {
     let policy = match policy() {
@@ -206,6 +210,23 @@ async fn response_body_task(
                 }
             }
         }
+        ContentType::Grpc => {
+            match parse_grpc(
+                &*policy,
+                &mut reader,
+                &path_policy.configuration,
+                &mut matches,
+                performance_measure,
+            )
+            .await
+            {
+                Ok(x) => x,
+                Err(e) => {
+                    error!("failed to read grpc: {:?}", e);
+                    return None;
+                }
+            }
+        }
         // do no parsing here
         ContentType::Jpeg => ParseResponse::Continue, // parse_jpeg(&*body, &configuration),
         ContentType::Unknown => ParseResponse::Continue,
@@ -260,8 +281,8 @@ async fn response_body_task(
         time_response_body_start: data.response_body_start,
         time_response_body_end: response_body_end,
         time_response_parse_end: response_body_end,
-        request_headers: std::mem::take(&mut data.request_headers),
-        response_headers: std::mem::take(&mut data.response_headers),
+        request_headers: Default::default(),
+        response_headers: Default::default(),
         matches,
         body_size,
         body,
@@ -470,7 +491,7 @@ impl HttpContext for HttpResponseContext {
                 None
             };
 
-            data.request_headers.push(Header { name, value });
+            self.request_headers.push(Header { name, value });
         }
         Action::Continue
     }
@@ -480,45 +501,43 @@ impl HttpContext for HttpResponseContext {
             //TODO: this doesn't work for some reason
             // return Action::Pause;
         }
-
-        if self.data().policy.is_none() {
-            return Action::Continue;
-        }
+        let policy = match policy() {
+            Some(policy) => policy,
+            None => {
+                return Action::Continue;
+            }
+        };
 
         if !self.has_response_started {
             self.has_response_started = true;
             self.data.as_mut().unwrap().response_start = timestamp();
         }
         self.set_http_response_header("content-length", None);
-        if let Some(policy) = policy() {
-            for (name, value) in self.get_http_response_headers_bytes() {
-                let value = String::from_utf8_lossy(&value).into_owned();
+        for (name, value) in self.get_http_response_headers_bytes() {
+            let value = String::from_utf8_lossy(&value).into_owned();
 
-                let data = self.data();
-                if let Some(policy) = &data.policy {
-                    match policy.token_extractor.as_deref() {
-                        Some(TokenExtractionConfig {
-                            location: TokenExtractionSite::Response,
-                            header,
-                            regex,
-                            hash,
-                        }) if &name == header => {
-                            data.token = extract_token_regex(&*value, regex.as_ref(), *hash);
-                        }
-                        _ => (),
+            let data = self.data();
+            if let Some(policy) = &data.policy {
+                match policy.token_extractor.as_deref() {
+                    Some(TokenExtractionConfig {
+                        location: TokenExtractionSite::Response,
+                        header,
+                        regex,
+                        hash,
+                    }) if &name == header => {
+                        data.token = extract_token_regex(&*value, regex.as_ref(), *hash);
                     }
+                    _ => (),
                 }
-
-                let value = if policy.collected_response_headers.contains(&name) {
-                    Some(value)
-                } else {
-                    None
-                };
-
-                data.response_headers.push(Header { name, value });
             }
-        } else {
-            warn!("processing response headers, but no policy loaded");
+
+            let value = if policy.collected_response_headers.contains(&name) {
+                Some(value)
+            } else {
+                None
+            };
+
+            self.response_headers.push(Header { name, value });
         }
 
         //todo: we might need to cover multiple content-type headers here
@@ -549,6 +568,29 @@ impl HttpContext for HttpResponseContext {
                 None => ContentEncoding::None,
             };
         self.content_encoding = self.data.as_ref().unwrap().content_encoding;
+        Action::Continue
+    }
+
+    fn on_http_response_trailers(&mut self, _: usize) -> Action {
+        let policy = match policy() {
+            Some(policy) => policy,
+            None => {
+                return Action::Continue;
+            }
+        };
+
+        for (name, value) in self.get_http_response_trailers_bytes() {
+            let value = String::from_utf8_lossy(&value).into_owned();
+
+            let value = if policy.collected_response_headers.contains(&name) {
+                Some(value)
+            } else {
+                None
+            };
+
+            self.response_headers.push(Header { name, value });
+        }
+
         Action::Continue
     }
 
@@ -622,11 +664,14 @@ impl HttpContext for HttpResponseContext {
                 self.response_read_task.take();
                 Action::Continue
             }
-            Poll::Ready(Some(mut data)) => {
+            Poll::Ready(Some(data)) => {
                 self.response_read_task.take();
-                data.packet.connection_info = std::mem::take(&mut self.connection_info);
+                let mut packet = data.packet;
+                packet.connection_info = std::mem::take(&mut self.connection_info);
+                packet.request_headers = std::mem::take(&mut self.request_headers);
+                packet.response_headers = std::mem::take(&mut self.response_headers);
                 if let Some(upstream) = data.upstream {
-                    let emitted_packet = data.packet.encode_to_vec();
+                    let emitted_packet = packet.encode_to_vec();
 
                     if let Err(e) = self.dispatch_grpc_call(
                         unsafe { std::str::from_utf8_unchecked(&upstream.service_definition[..]) },
@@ -641,7 +686,7 @@ impl HttpContext for HttpResponseContext {
                 }
                 match data.response {
                     ParseResponse::Block => {
-                        warn!("blocking request for '{}'", data.packet.policy_path);
+                        warn!("blocking request for '{}'", packet.policy_path);
                         self.set_http_response_body(0, body_size, &[]);
                         Action::Continue
                     }
