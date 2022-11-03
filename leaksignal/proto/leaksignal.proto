@@ -44,6 +44,7 @@ message MatchDataRequest {
     string token = 17;
     string ip = 18;
     map<string, uint64> category_performance_us = 19;
+    map<string, string> connection_info = 20;
 }
 
 message MatchDataResponse {

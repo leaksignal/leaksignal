@@ -290,6 +290,11 @@ fn collected_request_headers_default() -> IndexSet<String> {
         "user-agent",
         "x-request-id",
         "x-forwarded-for",
+        "content-type",
+        "grpc-encoding",
+        "grpc-accept-encoding",
+        "x-envoy-peer-metadata",
+        "x-envoy-peer-metadata-id",
     ]
     .into_iter()
     .map(str::to_string)
@@ -305,6 +310,10 @@ fn collected_response_headers_default() -> IndexSet<String> {
         "server",
         "vary",
         "via",
+        "grpc-encoding",
+        "grpc-accept-encoding",
+        "x-envoy-peer-metadata",
+        "x-envoy-peer-metadata-id",
     ]
     .into_iter()
     .map(str::to_string)

@@ -95,6 +95,7 @@ pub struct HttpResponseContext {
     decompressor: GzDecoder<Vec<u8>>,
     response_writer: Option<PipeWriter>,
     response_read_task: Option<Pin<Box<dyn Future<Output = Option<ResponseOutputData>>>>>,
+    connection_info: HashMap<String, String>,
 }
 
 impl Default for HttpResponseContext {
@@ -106,6 +107,7 @@ impl Default for HttpResponseContext {
             response_writer: None,
             response_read_task: None,
             decompressor: GzDecoder::new(vec![]),
+            connection_info: Default::default(),
         }
     }
 }
@@ -204,8 +206,9 @@ async fn response_body_task(
                 }
             }
         }
-        ContentType::Jpeg => unimplemented!(), // parse_jpeg(&*body, &configuration),
-        ContentType::Unknown => unreachable!(),
+        // do no parsing here
+        ContentType::Jpeg => ParseResponse::Continue, // parse_jpeg(&*body, &configuration),
+        ContentType::Unknown => ParseResponse::Continue,
     };
 
     let body_size = reader.total_read() as u64;
@@ -267,6 +270,7 @@ async fn response_body_task(
         token: data.token.unwrap_or_default(),
         ip: data.ip,
         category_performance_us: category_performance_us.into_inner(),
+        connection_info: Default::default(),
     };
 
     Some(ResponseOutputData {
@@ -304,6 +308,24 @@ impl HttpResponseContext {
     fn data(&mut self) -> &mut ResponseData {
         self.data.as_mut().unwrap()
     }
+
+    fn get_property_parse(&self, name: &str) -> Option<Vec<u8>> {
+        self.get_property(name.split('.').collect())
+            .map(|x| x.to_vec())
+    }
+
+    fn get_property_bool(&self, name: &str) -> Option<bool> {
+        let raw = self.get_property_parse(name)?;
+        if raw.is_empty() || raw.len() != 1 {
+            return None;
+        }
+        Some(raw[0] != 0)
+    }
+
+    fn get_property_string(&self, name: &str) -> Option<String> {
+        let raw = self.get_property_parse(name)?;
+        Some(String::from_utf8_lossy(&raw[..]).into_owned())
+    }
 }
 
 fn extract_token_regex(value: &str, regex: Option<&RegexWrapper>, hash: bool) -> Option<String> {
@@ -329,6 +351,26 @@ fn extract_token_regex(value: &str, regex: Option<&RegexWrapper>, hash: bool) ->
     }
 }
 
+const STRING_CONNECTION_PROPERTIES: &[&str] = &[
+    "connection.requested_server_name",
+    "connection.tls_version",
+    "connection.subject_local_certificate",
+    "connection.subject_peer_certificate",
+    "connection.dns_san_local_certificate",
+    "connection.dns_san_peer_certificate",
+    "connection.uri_san_local_certificate",
+    "connection.uri_san_peer_certificate",
+    "upstream.address",
+    "upstream.port",
+    "upstream.tls_version",
+    "upstream.subject_local_certificate",
+    "upstream.subject_peer_certificate",
+    "upstream.dns_san_local_certificate",
+    "upstream.dns_san_peer_certificate",
+    "upstream.uri_san_local_certificate",
+    "upstream.uri_san_peer_certificate",
+];
+
 impl HttpContext for HttpResponseContext {
     fn on_http_request_headers(&mut self, _num_headers: usize, end_of_stream: bool) -> Action {
         if !end_of_stream {
@@ -344,6 +386,16 @@ impl HttpContext for HttpResponseContext {
         };
 
         if self.data().request_start == 0 {
+            if let Some(mtls) = self.get_property_bool("connection.mtls") {
+                self.connection_info
+                    .insert("mtls".to_string(), mtls.to_string());
+            }
+            for property in STRING_CONNECTION_PROPERTIES {
+                if let Some(value) = self.get_property_string(property) {
+                    self.connection_info.insert(property.to_string(), value);
+                }
+            }
+
             let mut ip = String::from_utf8_lossy(
                 &self
                     .get_property(vec!["source", "address"])
@@ -506,9 +558,6 @@ impl HttpContext for HttpResponseContext {
                 return Action::Continue;
             }
 
-            if data.content_type == ContentType::Unknown || data.content_type == ContentType::Jpeg {
-                return Action::Continue;
-            }
             data.response_body_start = timestamp();
             let (reader, writer) = pipe(0);
             self.response_writer = Some(writer);
@@ -573,8 +622,9 @@ impl HttpContext for HttpResponseContext {
                 self.response_read_task.take();
                 Action::Continue
             }
-            Poll::Ready(Some(data)) => {
+            Poll::Ready(Some(mut data)) => {
                 self.response_read_task.take();
+                data.packet.connection_info = std::mem::take(&mut self.connection_info);
                 if let Some(upstream) = data.upstream {
                     let emitted_packet = data.packet.encode_to_vec();
 
