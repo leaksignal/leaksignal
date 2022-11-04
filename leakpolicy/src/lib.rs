@@ -1,5 +1,6 @@
 use std::{
     collections::{BTreeMap, HashSet},
+    str::FromStr,
     sync::Arc,
 };
 
@@ -72,11 +73,38 @@ impl Default for PolicyAction {
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
 #[serde(rename_all = "snake_case")]
 pub enum ContentType {
-    #[serde(alias = "Json")]
-    Json,
     #[serde(alias = "Html")]
     Html,
+    #[serde(alias = "Json")]
+    Json,
     Grpc,
+    Jpeg,
+    Unknown,
+}
+
+impl Default for ContentType {
+    fn default() -> Self {
+        ContentType::Unknown
+    }
+}
+
+impl FromStr for ContentType {
+    type Err = anyhow::Error;
+
+    fn from_str(value: &str) -> Result<Self> {
+        let value = if let Some((init, _)) = value.split_once(';') {
+            init.trim()
+        } else {
+            value.trim()
+        };
+        Ok(match value {
+            "text/html" => ContentType::Html,
+            "application/grpc+proto" | "application/grpc" => ContentType::Grpc,
+            "image/jpg" | "image/jpeg" => ContentType::Jpeg,
+            "application/json" => ContentType::Json,
+            _ => ContentType::Unknown,
+        })
+    }
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]

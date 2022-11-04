@@ -13,7 +13,7 @@ use std::{
 use anyhow::{bail, Result};
 use flate2::write::GzDecoder;
 use futures::{task::waker, Future, FutureExt};
-use leakpolicy::RegexWrapper;
+use leakpolicy::{ContentType, RegexWrapper};
 use log::{error, warn};
 use prost::Message;
 use proxy_wasm::{
@@ -35,35 +35,6 @@ use crate::{
 };
 
 const MATCH_PUSH_TIMEOUT: Duration = Duration::from_secs(5);
-
-#[derive(Clone, Copy, PartialEq, Debug)]
-enum ContentType {
-    Html,
-    Json,
-    Grpc,
-    Jpeg,
-    Unknown,
-}
-
-impl Default for ContentType {
-    fn default() -> Self {
-        ContentType::Unknown
-    }
-}
-
-impl FromStr for ContentType {
-    type Err = anyhow::Error;
-
-    fn from_str(s: &str) -> Result<Self> {
-        Ok(match s {
-            "text/html" => ContentType::Html,
-            "application/grpc+proto" | "application/grpc" => ContentType::Grpc,
-            "image/jpg" | "image/jpeg" => ContentType::Jpeg,
-            "application/json" => ContentType::Json,
-            _ => ContentType::Unknown,
-        })
-    }
-}
 
 impl Default for ContentEncoding {
     fn default() -> Self {
@@ -544,18 +515,9 @@ impl HttpContext for HttpResponseContext {
         let content_type = self.get_http_response_header_bytes("content-type");
         self.data.as_mut().unwrap().content_type =
             match content_type.map(|x| String::from_utf8_lossy(&x).into_owned()) {
-                Some(value) => {
-                    if let Some((init, _)) = value.split_once(';') {
-                        init.trim()
-                            .parse()
-                            .expect("content-type parse failed (impossible)")
-                    } else {
-                        value
-                            .trim()
-                            .parse()
-                            .expect("content-type parse failed (impossible)")
-                    }
-                }
+                Some(value) => value
+                    .parse()
+                    .expect("content-type parse failed (impossible)"),
                 None => ContentType::Unknown,
             };
         let content_encoding = self.get_http_response_header_bytes("content-encoding");
@@ -564,7 +526,7 @@ impl HttpContext for HttpResponseContext {
                 Some(value) => value
                     .trim()
                     .parse()
-                    .expect("content-type parse failed (impossible)"),
+                    .expect("content-encoding parse failed (impossible)"),
                 None => ContentEncoding::None,
             };
         self.content_encoding = self.data.as_ref().unwrap().content_encoding;
