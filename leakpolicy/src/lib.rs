@@ -331,6 +331,10 @@ fn report_style_is_default(style: &DataReportStyle) -> bool {
     *style == DataReportStyle::Raw
 }
 
+fn default_max_body_collection_mb() -> f64 {
+    16.0
+}
+
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
 pub struct Policy {
     pub categories: IndexMap<String, Category>,
@@ -347,6 +351,8 @@ pub struct Policy {
     /// [0, 1]
     #[serde(default)]
     pub body_collection_rate: f64,
+    #[serde(default = "default_max_body_collection_mb")]
+    pub max_body_collection_mb: f64,
     #[serde(default)]
     #[deprecated = "use report_style"]
     pub collect_matched_values: bool,

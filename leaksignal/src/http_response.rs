@@ -233,7 +233,7 @@ async fn response_body_task(
     };
 
     let body_size = reader.total_read() as u64;
-    let body = if policy.body_collection_rate <= 0.0 {
+    let body = if policy.body_collection_rate <= 0.0 || policy.max_body_collection_mb <= 0.0 {
         None
     } else {
         let chance: f64 = thread_rng().gen();
@@ -601,7 +601,10 @@ impl HttpContext for HttpResponseContext {
             }
 
             data.response_body_start = timestamp();
-            let (reader, writer) = pipe(0);
+            let max_persistence = policy()
+                .map(|x| (x.max_body_collection_mb * 1024.0 * 1024.0) as usize)
+                .unwrap_or_default();
+            let (reader, writer) = pipe(max_persistence);
             self.response_writer = Some(writer);
             self.response_read_task = Some(Box::pin(response_body_task(
                 self.data.take().unwrap(),
