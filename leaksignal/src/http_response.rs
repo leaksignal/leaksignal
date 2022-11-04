@@ -57,7 +57,7 @@ impl FromStr for ContentType {
     fn from_str(s: &str) -> Result<Self> {
         Ok(match s {
             "text/html" => ContentType::Html,
-            "application/grpc+proto" => ContentType::Grpc,
+            "application/grpc+proto" | "application/grpc" => ContentType::Grpc,
             "image/jpg" | "image/jpeg" => ContentType::Jpeg,
             "application/json" => ContentType::Json,
             _ => ContentType::Unknown,

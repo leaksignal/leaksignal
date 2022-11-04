@@ -294,7 +294,6 @@ fn collected_request_headers_default() -> IndexSet<String> {
         "content-type",
         "grpc-encoding",
         "grpc-accept-encoding",
-        "x-envoy-peer-metadata",
         "x-envoy-peer-metadata-id",
     ]
     .into_iter()
@@ -313,7 +312,6 @@ fn collected_response_headers_default() -> IndexSet<String> {
         "via",
         "grpc-encoding",
         "grpc-accept-encoding",
-        "x-envoy-peer-metadata",
         "x-envoy-peer-metadata-id",
         "grpc-status",
         "grpc-message",

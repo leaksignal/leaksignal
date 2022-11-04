@@ -11,18 +11,19 @@ use futures::{task::ArcWake, AsyncRead, AsyncWrite};
 
 struct PipeInner {
     max_persistance: usize,
-    data: UnsafeCell<Vec<Vec<u8>>>,
+    total_written: usize,
+    reader_segment_index: usize,
+    data: Vec<Vec<u8>>,
 }
 
 pub struct PipeReader {
-    segment_index: usize,
     segment_subindex: usize,
     total_read: usize,
-    inner: Rc<PipeInner>,
+    inner: Rc<UnsafeCell<PipeInner>>,
 }
 
 pub struct PipeWriter {
-    inner: Rc<PipeInner>,
+    inner: Rc<UnsafeCell<PipeInner>>,
 }
 
 pub struct DummyWaker;
@@ -34,13 +35,14 @@ impl ArcWake for DummyWaker {
 /// Creates a new reactor-less pipe which will persist read data up to `max_persistance` bytes, after which it is cleared
 /// Dropping either reader or writer closes the pipe
 pub fn pipe(max_persistance: usize) -> (PipeReader, PipeWriter) {
-    let inner = Rc::new(PipeInner {
+    let inner = Rc::new(UnsafeCell::new(PipeInner {
         max_persistance,
-        data: UnsafeCell::new(vec![]),
-    });
+        total_written: 0,
+        reader_segment_index: 0,
+        data: vec![],
+    }));
     (
         PipeReader {
-            segment_index: 0,
             segment_subindex: 0,
             total_read: 0,
             inner: inner.clone(),
@@ -55,7 +57,20 @@ impl PipeWriter {
         if Rc::strong_count(&self.inner) != 2 {
             return false;
         }
-        unsafe { self.inner.data.get().as_mut().unwrap() }.push(data.into());
+        let data = data.into();
+        let inner = unsafe { self.inner.get().as_mut().unwrap() };
+
+        // clear already read data if over max_persistence
+        if inner.total_written < inner.max_persistance
+            && inner.total_written + data.len() >= inner.max_persistance
+        {
+            for i in 0..inner.reader_segment_index {
+                inner.data[i] = vec![];
+            }
+        }
+        inner.total_written += data.len();
+        inner.data.push(data);
+
         true
     }
 }
@@ -95,15 +110,15 @@ impl AsyncWrite for PipeWriter {
 impl PipeReader {
     /// Fetches the entire content of the pipe if `total_read` < `max_persistence`
     pub fn fetch_full_content(&self) -> Option<Vec<u8>> {
-        if self.total_read >= self.inner.max_persistance {
+        let inner = unsafe { self.inner.get().as_mut().unwrap() };
+        if inner.total_written >= inner.max_persistance {
             return None;
         }
-        let mut out = Vec::with_capacity(self.total_read);
-        let data = unsafe { self.inner.data.get().as_ref().unwrap() };
-        for item in data {
+        let mut out = Vec::with_capacity(inner.total_written);
+        for item in &inner.data {
             out.extend_from_slice(&item[..]);
         }
-        assert_eq!(self.total_read, out.len());
+        assert_eq!(inner.total_written, out.len());
         Some(out)
     }
 
@@ -122,18 +137,18 @@ impl AsyncRead for PipeReader {
             return Poll::Ready(Ok(0));
         }
         let mut self_ = self.as_mut();
-        let data = unsafe { self_.inner.data.get().as_mut().unwrap() };
+        let inner = unsafe { self_.inner.get().as_mut().unwrap() };
         let mut written = 0usize;
         loop {
-            match data.get_mut(self_.segment_index) {
+            match inner.data.get_mut(inner.reader_segment_index) {
                 Some(full_segment) => {
                     let segment = &full_segment[self_.segment_subindex..];
                     if segment.is_empty() {
                         self_.segment_subindex = 0;
-                        if self_.total_read >= self_.inner.max_persistance {
-                            full_segment.clear();
+                        if inner.total_written >= inner.max_persistance {
+                            *full_segment = vec![];
                         }
-                        self_.segment_index += 1;
+                        inner.reader_segment_index += 1;
                         continue;
                     }
                     let size_written = segment.len().min(buf.len());
@@ -143,20 +158,12 @@ impl AsyncRead for PipeReader {
                     written += size_written;
                     if size_written == segment_len {
                         self_.segment_subindex = 0;
-                        if self_.total_read + size_written >= self_.inner.max_persistance {
-                            full_segment.clear();
+                        if inner.total_written >= inner.max_persistance {
+                            *full_segment = vec![];
                         }
-                        self_.segment_index += 1;
+                        inner.reader_segment_index += 1;
                     } else {
                         self_.segment_subindex += size_written;
-                    }
-                    // remove old persistance data
-                    if self_.total_read < self_.inner.max_persistance
-                        && self_.total_read + size_written >= self_.inner.max_persistance
-                    {
-                        for i in 0..self_.segment_subindex {
-                            data[i].clear();
-                        }
                     }
                     self_.total_read += size_written;
 
@@ -242,7 +249,7 @@ mod tests {
         assert_eq!(&scratch[..TEST_MESSAGE.len()], TEST_MESSAGE);
         assert!(matches!(
             reader.read(&mut scratch[..]).poll_unpin(&mut context),
-            Poll::Ready(Err(_))
+            Poll::Ready(Ok(0))
         ));
         drop(reader);
 
@@ -317,5 +324,26 @@ mod tests {
             Poll::Pending
         ));
         assert!(reader.fetch_full_content().is_none())
+    }
+
+    #[test]
+    fn test_unread_pipe_persistence() {
+        let (mut reader, mut writer) = pipe(20);
+        let mut scratch = [0u8; 64];
+        let waker = waker(Arc::new(DummyWaker));
+        let mut context = Context::from_waker(&waker);
+        assert!(matches!(
+            reader.read(&mut scratch[..]).poll_unpin(&mut context),
+            Poll::Pending
+        ));
+
+        const TEST_MESSAGE: &[u8] = b"HELLO WORLD";
+        writer.write_all(TEST_MESSAGE).unwrap();
+
+        let raw = reader.fetch_full_content().expect("missing content");
+        assert_eq!(&raw[..], TEST_MESSAGE);
+
+        writer.write_all(TEST_MESSAGE).unwrap();
+        assert!(reader.fetch_full_content().is_none());
     }
 }
