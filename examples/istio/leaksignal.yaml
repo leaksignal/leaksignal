@@ -9,7 +9,7 @@ spec:
   configPatches:
   - applyTo: EXTENSION_CONFIG
     match:
-      context: ANY
+      context: SIDECAR_INBOUND
     patch:
       operation: ADD
       value:
