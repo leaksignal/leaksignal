@@ -31,6 +31,7 @@ use crate::{
     pipe::{pipe, DummyWaker, PipeReader, PipeWriter},
     policy::{policy, PathPolicy, TokenExtractionConfig, TokenExtractionSite},
     proto::{Header, MatchDataRequest},
+    root::DYN_ENVIRONMENT,
     GIT_COMMIT,
 };
 
@@ -263,6 +264,7 @@ async fn response_body_task(
         ip: data.ip,
         category_performance_us: category_performance_us.into_inner(),
         connection_info: Default::default(),
+        environment: Default::default(),
     };
 
     Some(ResponseOutputData {
@@ -635,6 +637,11 @@ impl HttpContext for HttpResponseContext {
                 packet.connection_info = std::mem::take(&mut self.connection_info);
                 packet.request_headers = std::mem::take(&mut self.request_headers);
                 packet.response_headers = std::mem::take(&mut self.response_headers);
+                packet.environment = DYN_ENVIRONMENT
+                    .load()
+                    .iter()
+                    .map(|(key, value)| (key.clone(), value.clone()))
+                    .collect();
                 if let Some(upstream) = data.upstream {
                     let emitted_packet = packet.encode_to_vec();
 

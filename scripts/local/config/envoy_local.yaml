@@ -70,6 +70,16 @@ $POLICY
       vm_config:
         runtime: "envoy.wasm.runtime.v8"
         vm_id: "leaksignal_service"
+        environment_variables:
+          host_env_keys:
+          - HOSTNAME
+          - POD_NAME
+          - INSTANCE_IP
+          - ISTIO_META_WORKLOAD_NAME
+          - ISTIO_META_MESH_ID
+          - TRUST_DOMAIN
+          - POD_NAMESPACE
+          - SERVICE_ACCOUNT
         code:
           local:
             filename: "/lib/leaksignal.wasm"

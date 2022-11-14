@@ -1,8 +1,13 @@
 use std::{
-    sync::atomic::{AtomicBool, Ordering},
+    sync::{
+        atomic::{AtomicBool, Ordering},
+        Arc,
+    },
     time::{Duration, SystemTime},
 };
 
+use arc_swap::ArcSwap;
+use indexmap::IndexMap;
 use leakpolicy::{parse_policy, Policy};
 use log::{debug, error, warn};
 use prost::Message;
@@ -19,6 +24,7 @@ use crate::{
         LEAKSIGNAL_SERVICE_NAME,
     },
     elapsed,
+    env::ENVIRONMENT,
     http_response::HttpResponseContext,
     policy::{policy, update_policy},
     proto::{PingMessage, UpdatePolicyRequest, UpdatePolicyResponse},
@@ -29,15 +35,27 @@ const POLICY_SHARED_QUEUE_PREFIX: &str = "leaksignal_queue_";
 const LOCAL_COLLECTOR_VM: &str = "leaksignal_service";
 const PROXY_VM: &str = "leaksignal_proxy";
 
+lazy_static::lazy_static! {
+    pub static ref DYN_ENVIRONMENT: ArcSwap<IndexMap<String, String>> = ArcSwap::new(Arc::new(ENVIRONMENT.clone()));
+}
+
 #[derive(Serialize)]
 pub enum FilterInboundMessageRef<'a> {
-    PolicyUpdate(&'a str, &'a Policy),
+    PolicyUpdate {
+        id: &'a str,
+        policy: &'a Policy,
+        environment_variables: &'a IndexMap<String, String>,
+    },
     UpstreamUpdate(Option<&'a UpstreamConfig>),
 }
 
 #[derive(Deserialize)]
 pub enum FilterInboundMessage {
-    PolicyUpdate(String, Policy),
+    PolicyUpdate {
+        id: String,
+        policy: Policy,
+        environment_variables: IndexMap<String, String>,
+    },
     UpstreamUpdate(Option<UpstreamConfig>),
 }
 
@@ -163,11 +181,19 @@ impl Context for EnvoyRootContext {
     }
 }
 
+fn policy_update<'a>(id: &'a str, policy: &'a Policy) -> FilterInboundMessageRef<'a> {
+    FilterInboundMessageRef::PolicyUpdate {
+        id,
+        policy,
+        environment_variables: &*ENVIRONMENT,
+    }
+}
+
 impl EnvoyRootContext {
     fn do_policy_update(&mut self, policy_id: impl Into<String>, policy: Policy) {
         let policy_id: String = policy_id.into();
         if Config::get().mode() == Mode::LocalCollector {
-            self.broadcast_to_workers(FilterInboundMessageRef::PolicyUpdate(&policy_id, &policy));
+            self.broadcast_to_workers(policy_update(&*policy_id, &policy));
         }
 
         update_policy(policy_id, policy);
@@ -473,8 +499,7 @@ impl RootContext for EnvoyRootContext {
                         }
                     };
                     if let Some(policy) = policy() {
-                        let message =
-                            FilterInboundMessageRef::PolicyUpdate(policy.policy_id(), &*policy);
+                        let message = policy_update(policy.policy_id(), &*policy);
                         let message = serde_json::to_string(&message)
                             .expect("failed to serialize PolicyUpdate message");
                         if let Err(e) = self.enqueue_shared_queue(queue, Some(message.as_bytes())) {
@@ -520,8 +545,13 @@ impl RootContext for EnvoyRootContext {
                         }
                     };
                     match value {
-                        FilterInboundMessage::PolicyUpdate(policy_id, policy) => {
-                            update_policy(policy_id, policy);
+                        FilterInboundMessage::PolicyUpdate {
+                            id,
+                            policy,
+                            environment_variables,
+                        } => {
+                            update_policy(id, policy);
+                            DYN_ENVIRONMENT.store(Arc::new(environment_variables));
                         }
                         FilterInboundMessage::UpstreamUpdate(upstream) => {
                             update_upstream(upstream);

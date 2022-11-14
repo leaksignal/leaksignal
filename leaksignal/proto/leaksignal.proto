@@ -45,6 +45,7 @@ message MatchDataRequest {
     string ip = 18;
     map<string, uint64> category_performance_us = 19;
     map<string, string> connection_info = 20;
+    map<string, string> environment = 21;
 }
 
 message MatchDataResponse {

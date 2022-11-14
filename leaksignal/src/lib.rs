@@ -12,6 +12,7 @@ use proxy_wasm::{
 use root::EnvoyRootContext;
 
 mod config;
+mod env;
 mod evaluator;
 mod http_response;
 mod low_entropy_hash;
@@ -66,6 +67,16 @@ fn init() {
         }
     }));
     proxy_wasm::set_log_level(LogLevel::Trace);
+    if !env::ENVIRONMENT.is_empty() {
+        log::warn!(
+            "leaksignal found environment variables {}",
+            env::ENVIRONMENT
+                .keys()
+                .map(|x| &**x)
+                .collect::<Vec<_>>()
+                .join(", ")
+        );
+    }
     proxy_wasm::set_root_context(|_| -> Box<dyn RootContext> {
         Box::new(EnvoyRootContext::default())
     });
