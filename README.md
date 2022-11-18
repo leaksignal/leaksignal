@@ -6,7 +6,7 @@
   <a href="https://www.leaksignal.com">Website</a> |
   <a href="https://www.leaksignal.com/docs/">Docs</a> |
   <a href="https://www.leaksignal.com/blog/">Blog</a> | 
-  <a href="https://tinyurl.com/leaksignalslack">Slack</a>
+  <a href="https://join.slack.com/t/leaksignal-workspace/shared_invite/zt-1k98fc72o-qslbDyGZJeS638zDRvB3xw">Slack</a>
 </h4>
 
 <p align="center">
