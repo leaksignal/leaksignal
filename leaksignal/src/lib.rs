@@ -1,26 +1,16 @@
-use std::{
-    ffi::c_void,
-    time::{Duration, SystemTime},
-};
-
 use dlmalloc::GlobalDlmalloc;
+use leakfinder::TimestampProvider;
 use log::error;
-use proxy_wasm::{
-    traits::{Context, RootContext},
-    types::LogLevel,
-};
+use proxy_wasm::{traits::RootContext, types::LogLevel};
 use root::EnvoyRootContext;
+use time::TIMESTAMP_PROVIDER;
 
 mod config;
 mod env;
-mod evaluator;
 mod http_response;
-mod low_entropy_hash;
 mod metric;
-mod parsers;
-mod pipe;
-mod policy;
 mod root;
+mod time;
 
 #[global_allocator]
 static ALLOC: GlobalDlmalloc = GlobalDlmalloc;
@@ -84,48 +74,18 @@ fn init() {
 
 #[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
 #[no_mangle]
-pub extern "C" fn free(from: *mut c_void) {
+pub extern "C" fn free(from: *mut std::ffi::c_void) {
     unsafe { Box::from_raw(from as *mut u8) };
 }
 
-#[cfg(not(target_arch = "wasm32"))]
-#[no_mangle]
-fn proxy_get_current_time_nanoseconds(return_time: *mut u64) -> proxy_wasm::types::Status {
-    unsafe {
-        *return_time = 0;
-    }
-    proxy_wasm::types::Status::Ok
-}
-
-struct TimeContext;
-impl Context for TimeContext {}
-
 pub fn proxywasm_getrandom(buf: &mut [u8]) -> Result<(), getrandom::Error> {
-    let get_time = || {
-        TimeContext
-            .get_current_time()
-            .duration_since(SystemTime::UNIX_EPOCH)
-            .unwrap()
-            .as_nanos() as u64
-    };
+    let get_time = || TIMESTAMP_PROVIDER.epoch_ns();
 
     for buf in buf.chunks_mut(8) {
         let entropy = get_time() | get_time();
         buf.copy_from_slice(&entropy.to_be_bytes()[..buf.len()]);
     }
     Ok(())
-}
-
-lazy_static::lazy_static! {
-    //todo: deal with system clock changes?
-    static ref START: SystemTime = TimeContext.get_current_time();
-}
-
-pub fn elapsed() -> Duration {
-    TimeContext
-        .get_current_time()
-        .duration_since(*START)
-        .unwrap_or_default()
 }
 
 getrandom::register_custom_getrandom!(proxywasm_getrandom);

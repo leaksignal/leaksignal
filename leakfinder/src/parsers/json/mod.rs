@@ -8,9 +8,10 @@ mod parse;
 
 use crate::{
     evaluator::{self, MatcherMetadata, MatcherState},
+    perf::PerformanceMonitor,
     pipe::PipeReader,
     policy::{ContentType, Policy, PolicyAction},
-    proto::Match,
+    Match,
 };
 
 use super::ParseResponse;
@@ -99,7 +100,7 @@ pub async fn parse_json(
     body: &mut PipeReader,
     configuration: &IndexMap<Arc<String>, PathConfiguration>,
     matches: &mut Vec<Match>,
-    performance: impl Fn(&str, u64),
+    performance: &PerformanceMonitor,
 ) -> Result<ParseResponse> {
     let (key_matcher, value_matcher) = prepare_match_state(policy, configuration);
 

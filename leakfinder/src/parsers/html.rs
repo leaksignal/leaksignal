@@ -5,9 +5,10 @@ use indexmap::IndexMap;
 use leakpolicy::PathConfiguration;
 
 use crate::{
+    perf::PerformanceMonitor,
     pipe::PipeReader,
     policy::{ContentType, Policy, PolicyAction},
-    proto::Match,
+    Match,
 };
 
 use super::ParseResponse;
@@ -42,7 +43,7 @@ pub async fn parse_html(
     body: &mut PipeReader,
     configuration: &IndexMap<Arc<String>, PathConfiguration>,
     matches: &mut Vec<Match>,
-    performance: impl Fn(&str, u64),
+    performance: &PerformanceMonitor,
 ) -> io::Result<ParseResponse> {
     let mut chunk = Vec::<u8>::with_capacity(CHUNK_SIZE);
     let mut overlap_index = 0usize;
@@ -70,7 +71,7 @@ pub async fn parse_html(
             minimum_end_index,
             &*String::from_utf8_lossy(&data[..]),
             matches,
-            &performance,
+            performance,
         ) {
             ParseResponse::Continue => (),
             ParseResponse::Block => return Ok(ParseResponse::Block),

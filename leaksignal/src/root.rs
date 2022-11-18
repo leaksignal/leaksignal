@@ -8,6 +8,7 @@ use std::{
 
 use arc_swap::ArcSwap;
 use indexmap::IndexMap;
+use leakfinder::{PolicyHolder, TimestampProvider};
 use leakpolicy::{parse_policy, Policy};
 use log::{debug, error, warn};
 use prost::Message;
@@ -23,11 +24,10 @@ use crate::{
         create_service_definition, update_upstream, upstream, Config, Mode, UpstreamConfig,
         LEAKSIGNAL_SERVICE_NAME,
     },
-    elapsed,
     env::ENVIRONMENT,
     http_response::HttpResponseContext,
-    policy::{policy, update_policy},
     proto::{PingMessage, UpdatePolicyRequest, UpdatePolicyResponse},
+    time::TIMESTAMP_PROVIDER,
     GIT_COMMIT,
 };
 
@@ -37,6 +37,11 @@ const PROXY_VM: &str = "leaksignal_proxy";
 
 lazy_static::lazy_static! {
     pub static ref DYN_ENVIRONMENT: ArcSwap<IndexMap<String, String>> = ArcSwap::new(Arc::new(ENVIRONMENT.clone()));
+    pub static ref POLICY: Arc<PolicyHolder> = Default::default();
+    pub static ref LEAKFINDER_CONFIG: leakfinder::Config = leakfinder::Config {
+        policy: POLICY.clone(),
+        timestamp_source: TIMESTAMP_PROVIDER.clone(),
+    };
 }
 
 #[derive(Serialize)]
@@ -196,7 +201,7 @@ impl EnvoyRootContext {
             self.broadcast_to_workers(policy_update(&*policy_id, &policy));
         }
 
-        update_policy(policy_id, policy);
+        POLICY.update_policy(policy_id, policy);
     }
 
     fn broadcast_to_workers(&mut self, message: FilterInboundMessageRef) {
@@ -409,7 +414,7 @@ impl RootContext for EnvoyRootContext {
             None => return,
         };
 
-        let now = elapsed();
+        let now = TIMESTAMP_PROVIDER.elapsed();
 
         if let (Some((timestamp, token)), Some(last_ping_sent)) =
             (self.last_ping_data, self.last_ping_sent)
@@ -498,7 +503,7 @@ impl RootContext for EnvoyRootContext {
                             return;
                         }
                     };
-                    if let Some(policy) = policy() {
+                    if let Some(policy) = POLICY.policy() {
                         let message = policy_update(policy.policy_id(), &*policy);
                         let message = serde_json::to_string(&message)
                             .expect("failed to serialize PolicyUpdate message");
@@ -550,7 +555,7 @@ impl RootContext for EnvoyRootContext {
                             policy,
                             environment_variables,
                         } => {
-                            update_policy(id, policy);
+                            POLICY.update_policy(id, policy);
                             DYN_ENVIRONMENT.store(Arc::new(environment_variables));
                         }
                         FilterInboundMessage::UpstreamUpdate(upstream) => {

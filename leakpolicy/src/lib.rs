@@ -70,7 +70,7 @@ impl Default for PolicyAction {
     }
 }
 
-#[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
+#[derive(Clone, Copy, Debug, Serialize, Deserialize, PartialEq)]
 #[serde(rename_all = "snake_case")]
 pub enum ContentType {
     #[serde(alias = "Html")]
@@ -92,6 +92,7 @@ impl FromStr for ContentType {
     type Err = anyhow::Error;
 
     fn from_str(value: &str) -> Result<Self> {
+        // must be infallible
         let value = if let Some((init, _)) = value.split_once(';') {
             init.trim()
         } else {

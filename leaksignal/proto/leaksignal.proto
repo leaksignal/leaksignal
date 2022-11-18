@@ -20,7 +20,7 @@ message Match {
     optional uint64 global_length = 3;
     string matcher_path = 4;
     optional string matched_value = 5;
-    Action action_taken = 6;
+    reserved 6;
     reserved 7;
 }
 
@@ -33,7 +33,7 @@ message MatchDataRequest {
     uint64 time_response_start = 6;
     uint64 time_response_body_start = 7;
     uint64 time_response_body_end = 8;
-    uint64 time_response_parse_end = 9;
+    reserved 9;
     repeated Header request_headers = 10;
     repeated Header response_headers = 11;
     repeated Match matches = 12;

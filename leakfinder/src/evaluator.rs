@@ -5,10 +5,11 @@ use leakpolicy::{CorrelateInterest, DataReportStyle, MatchGroup};
 use log::{debug, error, info, warn};
 use smallvec::SmallVec;
 
-use crate::proto::{Action, Match};
 use crate::{
     parsers::ParseResponse,
+    perf::{PerformanceHandle, PerformanceMonitor},
     policy::{evaluate_report_style, Category, Policy, PolicyAction},
+    Match,
 };
 
 #[derive(Clone, PartialEq, Eq)]
@@ -180,17 +181,21 @@ impl<'a> MatcherState<'a> {
     pub fn evaluate(
         &self,
         source: &str,
-        performance: &impl Fn(&str, u64),
+        performance: &PerformanceMonitor,
     ) -> Vec<CategoryPreparedMatch> {
         let mut matches = vec![];
-        let mut last_time = crate::elapsed().as_micros() as u64;
+        let mut handle: Option<PerformanceHandle> = None;
         for raw in &self.raws {
             let metadata = &raw.metadata;
             let case_insensitive = raw.case_insensitive;
             let raw = raw.raw;
             if source.len() < raw.len() {
-                last_time = crate::elapsed().as_micros() as u64;
                 continue;
+            }
+            if let Some(handle) = handle.as_mut() {
+                handle.chain(&*metadata.category_name);
+            } else {
+                handle = Some(performance.measure(&*metadata.category_name));
             }
             let mut source_iter = source.char_indices().peekable();
             while let Some((i, _)) = source_iter.next() {
@@ -239,12 +244,14 @@ impl<'a> MatcherState<'a> {
                     }
                 }
             }
-            let now = crate::elapsed().as_micros() as u64;
-            performance(&*metadata.category_name, now.saturating_sub(last_time));
-            last_time = now;
         }
 
         for regex in &self.regexes {
+            if let Some(handle) = handle.as_mut() {
+                handle.chain(&*regex.metadata.category_name);
+            } else {
+                handle = Some(performance.measure(&*regex.metadata.category_name));
+            }
             for matching in regex.regex.find_iter(source) {
                 let matching = matching.unwrap();
                 if regex.ignore.iter().any(|x| x.contains(matching.as_str())) {
@@ -258,12 +265,6 @@ impl<'a> MatcherState<'a> {
                     length,
                 });
             }
-            let now = crate::elapsed().as_micros() as u64;
-            performance(
-                &*regex.metadata.category_name,
-                now.saturating_sub(last_time),
-            );
-            last_time = now;
         }
 
         matches
@@ -277,7 +278,7 @@ impl<'a> MatcherState<'a> {
         minimum_end_index: usize,
         body: &str,
         matches: &mut Vec<Match>,
-        performance: &impl Fn(&str, u64),
+        performance: &PerformanceMonitor,
     ) -> ParseResponse {
         let local_matches = self.evaluate(body, performance);
 
@@ -320,11 +321,6 @@ impl<'a> MatcherState<'a> {
                 global_length: Some(matching.length as u64),
                 matcher_path: matching.metadata.policy_path.clone(),
                 matched_value,
-                action_taken: match matching.metadata.action {
-                    PolicyAction::Ignore => Action::None,
-                    PolicyAction::Alert => Action::Alert,
-                    PolicyAction::Block => Action::Block,
-                } as i32,
             });
         }
         for (index, mut group1) in correlated_matches_first.into_iter() {
@@ -406,11 +402,6 @@ impl<'a> MatcherState<'a> {
                             global_length: Some((emit_end - emit_start) as u64),
                             matcher_path: group1_item.metadata.policy_path.clone(),
                             matched_value,
-                            action_taken: match group1_item.metadata.action {
-                                PolicyAction::Ignore => Action::None,
-                                PolicyAction::Alert => Action::Alert,
-                                PolicyAction::Block => Action::Block,
-                            } as i32,
                         });
                         break;
                     }

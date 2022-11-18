@@ -674,6 +674,30 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e2abad23fbc42b3700f2f279844dc832adb2b2eb069b2df918f455c4e18cc646"
 
 [[package]]
+name = "leakfinder"
+version = "0.1.2"
+dependencies = [
+ "anyhow",
+ "arc-swap",
+ "async-recursion",
+ "criterion",
+ "fancy-regex",
+ "flate2",
+ "futures",
+ "hex",
+ "indexmap",
+ "leakpolicy",
+ "log",
+ "protobuf",
+ "rand",
+ "regex",
+ "serde",
+ "serde_yaml",
+ "sha2",
+ "smallvec",
+]
+
+[[package]]
 name = "leakpolicy"
 version = "0.1.2"
 dependencies = [
@@ -704,9 +728,9 @@ dependencies = [
  "hex",
  "indexmap",
  "lazy_static",
+ "leakfinder",
  "leakpolicy",
  "log",
- "once_cell",
  "prost",
  "prost-build",
  "prost-types",

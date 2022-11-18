@@ -6,7 +6,7 @@ use leakpolicy::{ContentType, PathConfiguration, Policy};
 use log::warn;
 use protobuf::{rt::WireType, CodedInputStream};
 
-use crate::{evaluator::MatcherState, pipe::PipeReader, proto::Match};
+use crate::{evaluator::MatcherState, perf::PerformanceMonitor, pipe::PipeReader, Match};
 
 use super::ParseResponse;
 use anyhow::{Context, Result};
@@ -21,7 +21,7 @@ fn parse_message(
     input: &[u8],
     offset: usize,
     matcher: &MatcherState,
-    performance: &impl Fn(&str, u64),
+    performance: &PerformanceMonitor,
 ) -> Result<(Vec<Match>, ParseResponse)> {
     let mut reader = CodedInputStream::from_bytes(&input[..]);
     let mut out_response = ParseResponse::Continue;
@@ -69,7 +69,7 @@ pub async fn parse_grpc(
     body: &mut PipeReader,
     configuration: &IndexMap<Arc<String>, PathConfiguration>,
     matches: &mut Vec<Match>,
-    performance: impl Fn(&str, u64),
+    performance: &PerformanceMonitor,
 ) -> Result<ParseResponse> {
     let matcher = super::prepare_match_state(policy, configuration, ContentType::Grpc);
 
@@ -89,14 +89,17 @@ pub async fn parse_grpc(
     .await?;
     unsafe { raw_body.set_len(length as usize) };
 
-    let (new_matches, response) = parse_message(&raw_body[..], 0, &matcher, &performance)?;
+    let (new_matches, response) = parse_message(&raw_body[..], 0, &matcher, performance)?;
     matches.extend(new_matches);
 
     Ok(response)
 }
 
 #[cfg(test)]
+#[cfg(not(target_arch = "wasm32"))]
 mod tests {
+    use crate::config::StdTimestampProvider;
+
     use super::*;
     const RAW_BODY: &str =
         "0A2434386430313236662D393836632D343234372D383634342D323231653062303566663762";
@@ -106,7 +109,13 @@ mod tests {
         let raw_body = hex::decode(RAW_BODY).unwrap();
         let mut matcher = MatcherState::default();
         matcher.push_raw("test_raw", "6c-42");
-        let (matches, _) = parse_message(&raw_body[..], 0, &matcher, &|_, _| ()).unwrap();
+        let (matches, _) = parse_message(
+            &raw_body[..],
+            0,
+            &matcher,
+            &PerformanceMonitor::new(Arc::new(StdTimestampProvider::default())),
+        )
+        .unwrap();
         println!("{matches:?}");
         assert_eq!(matches.len(), 1);
     }

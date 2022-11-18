@@ -1,44 +1,44 @@
 use std::{fmt::Write, ops::Deref, sync::Arc};
 
-use arc_swap::{ArcSwap, Guard};
+use arc_swap::ArcSwap;
 use sha2::{Digest, Sha256};
 
 use crate::low_entropy_hash::LowEntropyHash;
 pub use leakpolicy::*;
 
-lazy_static::lazy_static! {
-    static ref POLICY: ArcSwap<Option<(String, Policy)>> = {
-        ArcSwap::new(Arc::new(None))
-    };
-}
+#[derive(Default)]
+pub struct PolicyHolder(ArcSwap<Option<(String, Policy)>>);
 
-pub struct PolicyRef(Guard<Arc<Option<(String, Policy)>>>);
+#[derive(Clone)]
+pub struct PolicyRef(Arc<Option<(String, Policy)>>);
 
 impl Deref for PolicyRef {
     type Target = Policy;
 
     fn deref(&self) -> &Self::Target {
-        &(&**self.0).as_ref().unwrap().1
+        &(&*self.0).as_ref().unwrap().1
     }
 }
 
 impl PolicyRef {
     #[allow(dead_code)]
     pub fn policy_id(&self) -> &str {
-        &*(&**self.0).as_ref().unwrap().0
+        &*(&*self.0).as_ref().unwrap().0
     }
 }
 
-pub fn policy() -> Option<PolicyRef> {
-    let policy = POLICY.load();
-    if policy.is_none() {
-        return None;
+impl PolicyHolder {
+    pub fn policy(&self) -> Option<PolicyRef> {
+        let policy = self.0.load_full();
+        if policy.is_none() {
+            return None;
+        }
+        Some(PolicyRef(policy))
     }
-    Some(PolicyRef(policy))
-}
 
-pub fn update_policy(policy_id: String, policy: Policy) {
-    POLICY.store(Arc::new(Some((policy_id, policy))));
+    pub fn update_policy(&self, policy_id: String, policy: Policy) {
+        self.0.store(Arc::new(Some((policy_id, policy))));
+    }
 }
 
 pub fn evaluate_report_style(style: DataReportStyle, input: &str) -> Option<String> {

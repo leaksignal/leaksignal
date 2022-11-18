@@ -23,7 +23,7 @@ pub struct PipeReader {
 }
 
 pub struct PipeWriter {
-    inner: Rc<UnsafeCell<PipeInner>>,
+    inner: Option<Rc<UnsafeCell<PipeInner>>>,
 }
 
 pub struct DummyWaker;
@@ -47,18 +47,25 @@ pub fn pipe(max_persistance: usize) -> (PipeReader, PipeWriter) {
             total_read: 0,
             inner: inner.clone(),
         },
-        PipeWriter { inner },
+        PipeWriter { inner: Some(inner) },
     )
 }
 
 impl PipeWriter {
     /// Returns true if successfully appended
     pub fn append(&mut self, data: impl Into<Vec<u8>>) -> bool {
-        if Rc::strong_count(&self.inner) != 2 {
+        let inner = match &self.inner {
+            Some(inner) => inner,
+            None => return false,
+        };
+        if Rc::strong_count(inner) != 2 {
             return false;
         }
         let data = data.into();
-        let inner = unsafe { self.inner.get().as_mut().unwrap() };
+        if data.is_empty() {
+            return true;
+        }
+        let inner = unsafe { inner.get().as_mut().unwrap() };
 
         // clear already read data if over max_persistence
         if inner.total_written < inner.max_persistance
@@ -72,6 +79,11 @@ impl PipeWriter {
         inner.data.push(data);
 
         true
+    }
+
+    /// Closes this pipe, same as dropping it
+    pub fn close(&mut self) {
+        self.inner.take();
     }
 }
 
