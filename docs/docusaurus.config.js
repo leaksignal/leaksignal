@@ -38,6 +38,11 @@ const config = {
     ],
   ],
   scripts: [
+    {
+      src: 'https://www.googletagmanager.com/gtag/js?id=G-R4HG2EVRBN',
+      async: true,
+    },
+    'https://www.leaksignal.com/docs/js/gtag.js',
     'https://www.leaksignal.com/docs/js/bigpicture.js',
   ],
   
