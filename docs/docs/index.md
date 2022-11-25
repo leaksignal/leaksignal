@@ -154,8 +154,8 @@ Install LeakSignal across all Istio sidecar proxies with the following:
 istioctl install --set profile=preview
 
 # Apply the following leaksignal.yaml to deploy the filter
-API_KEY="YOUR-API-KEY" \
-DEPLOYMENT_NAME="YOUR-DEPLOYMENT-NAME" \
+export API_KEY="YOUR-API-KEY" && \
+export DEPLOYMENT_NAME="YOUR-DEPLOYMENT-NAME" && \
 curl https://raw.githubusercontent.com/leaksignal/leaksignal/master/examples/istio/leaksignal.yaml | \
 envsubst | \
 kubectl apply -f -
