@@ -37,7 +37,9 @@ categories:
         - "\\broot root\\b"
 ```
 Additionally, response signatures can be customized to match the output of specific systems like Microsoft Exchange. The following example shows how exploitation of ProxyLogin and ProxyNotShell could be detected in the outgoing HTTP response.
- ![exchange proxylogin](../../../../assets/proxylogin-output.png)
+
+![exchange proxylogin](../../../../assets/proxylogin-output.png)
+
 ```
 categories:
   rce_ls_root:
