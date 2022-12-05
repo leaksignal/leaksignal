@@ -1,8 +1,5 @@
 use anyhow::Result;
-use std::sync::Arc;
-
-use indexmap::IndexMap;
-use leakpolicy::{MatchContext, PathConfiguration};
+use leakpolicy::MatchContext;
 
 mod parse;
 
@@ -14,17 +11,26 @@ use crate::{
     Match,
 };
 
-use super::ParseResponse;
+use super::{ParseResponse, Parser, ParserConfiguration};
 
 /// returns (key, value) matcher states
 fn prepare_match_state<'a>(
     policy: &'a Policy,
-    configuration: &'a IndexMap<Arc<String>, PathConfiguration>,
+    configuration: ParserConfiguration<'a>,
 ) -> (MatcherState<'a>, MatcherState<'a>) {
     let mut key_match_state = MatcherState::default();
     let mut value_match_state = MatcherState::default();
 
-    for (category_name, action) in configuration {
+    for (category_name, action) in configuration.categories {
+        if !action.search.match_specific(configuration.active_context)
+            || !action
+                .category_config
+                .search
+                .match_specific(configuration.active_context)
+        {
+            continue;
+        }
+
         if !action.category_config.content_types.is_empty() {
             if !action
                 .category_config
@@ -95,43 +101,49 @@ fn prepare_match_state<'a>(
     (key_match_state, value_match_state)
 }
 
-pub async fn parse_json(
-    policy: &Policy,
-    body: &mut PipeReader,
-    configuration: &IndexMap<Arc<String>, PathConfiguration>,
-    matches: &mut Vec<Match>,
-    performance: &PerformanceMonitor,
-) -> Result<ParseResponse> {
-    let (key_matcher, value_matcher) = prepare_match_state(policy, configuration);
+pub struct JsonParser;
 
-    let mut key_matches = vec![];
+#[async_trait::async_trait(?Send)]
+impl Parser for JsonParser {
+    async fn parse(
+        &self,
+        policy: &Policy,
+        body: &mut PipeReader,
+        configuration: ParserConfiguration<'_>,
+        matches: &mut Vec<Match>,
+        performance: &PerformanceMonitor,
+    ) -> Result<ParseResponse> {
+        let (key_matcher, value_matcher) = prepare_match_state(policy, configuration);
 
-    parse::parse_json(
-        body,
-        |key, start, _end| match key_matcher.do_matching(
-            start,
-            0,
-            &*key,
-            &mut key_matches,
-            &performance,
-        ) {
-            ParseResponse::Continue => None,
-            ParseResponse::Block => Some(ParseResponse::Block),
-        },
-        |value, start, _end| match value_matcher.do_matching(
-            start,
-            0,
-            &*value,
-            matches,
-            &performance,
-        ) {
-            ParseResponse::Continue => None,
-            ParseResponse::Block => Some(ParseResponse::Block),
-        },
-    )
-    .await?;
+        let mut key_matches = vec![];
 
-    matches.extend(key_matches);
+        parse::parse_json(
+            body,
+            |key, start, _end| match key_matcher.do_matching(
+                start,
+                0,
+                &*key,
+                &mut key_matches,
+                &performance,
+            ) {
+                ParseResponse::Continue => None,
+                ParseResponse::Block => Some(ParseResponse::Block),
+            },
+            |value, start, _end| match value_matcher.do_matching(
+                start,
+                0,
+                &*value,
+                matches,
+                &performance,
+            ) {
+                ParseResponse::Continue => None,
+                ParseResponse::Block => Some(ParseResponse::Block),
+            },
+        )
+        .await?;
 
-    Ok(ParseResponse::Continue)
+        matches.extend(key_matches);
+
+        Ok(ParseResponse::Continue)
+    }
 }

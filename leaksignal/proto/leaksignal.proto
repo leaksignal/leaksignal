@@ -7,13 +7,6 @@ message Header {
     optional string value = 2;
 }
 
-enum Action {
-    NONE = 0;
-    ALERT = 1;
-    MASK = 2;
-    BLOCK = 3;
-}
-
 message Match {
     string category_name = 1;
     optional uint64 global_start_position = 2;
@@ -28,7 +21,7 @@ message MatchDataRequest {
     optional string api_key = 1;
     string deployment_name = 2;
     string policy_id = 3;
-    Action highest_action_taken = 4;
+    reserved 4;
     uint64 time_request_start = 5;
     uint64 time_response_start = 6;
     uint64 time_response_body_start = 7;
@@ -46,6 +39,19 @@ message MatchDataRequest {
     map<string, uint64> category_performance_us = 19;
     map<string, string> connection_info = 20;
     map<string, string> environment = 21;
+    Component request = 22;
+    Component response = 23;
+}
+
+message Component {
+    uint64 time_header_start = 1;
+    uint64 time_body_start = 2;
+    uint64 time_body_end = 3;
+    repeated Header headers = 4;
+    repeated Match matches = 5;
+    uint64 body_size = 6;
+    optional bytes body = 7;
+    map<string, uint64> category_performance_us = 8;
 }
 
 message MatchDataResponse {

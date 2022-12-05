@@ -3,6 +3,16 @@ set -e
 here=$(realpath $(dirname "$0"))
 cd "$here/../.."
 
+if [ -z ${API_KEY+x} ] ; then
+    echo "API_KEY env var required"
+    exit 1
+fi
+
+if [ -z ${DEPLOYMENT_NAME+x} ] ; then
+    echo "DEPLOYMENT_NAME env var required"
+    exit 1
+fi
+
 cargo build --release
 
 cd "$here"

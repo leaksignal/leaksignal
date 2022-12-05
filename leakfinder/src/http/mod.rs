@@ -1,7 +1,7 @@
 use std::{fmt::Write as FmtWrite, str::FromStr, sync::Arc};
 
 use anyhow::Result;
-use leakpolicy::{ContentType, RegexWrapper};
+use leakpolicy::{ContentType, EndpointContext, RegexWrapper};
 use sha2::{Digest, Sha256};
 
 use crate::{
@@ -39,9 +39,15 @@ impl FromStr for ContentEncoding {
     }
 }
 
-pub struct HttpParser<'a> {
+#[derive(Default)]
+struct ContentDescription {
     content_encoding: ContentEncoding,
     content_type: ContentType,
+}
+
+pub struct HttpParser<'a> {
+    response_description: ContentDescription,
+    request_description: ContentDescription,
     request_headers: Vec<Header>,
     response_headers: Vec<Header>,
     path: Option<String>,
@@ -52,16 +58,17 @@ pub struct HttpParser<'a> {
     ip: Option<String>,
     token: Option<String>,
     time_request_start: u64,
+    time_request_body_start: Option<u64>,
     time_response_start: u64,
-    time_response_body_start: u64,
     response_output: Option<ParsedMatches>,
+    request_output: Option<ParsedMatches>,
 }
 
 impl Config {
     pub fn http_parser(&self) -> Option<HttpParser<'_>> {
         Some(HttpParser {
-            content_encoding: Default::default(),
-            content_type: Default::default(),
+            response_description: Default::default(),
+            request_description: Default::default(),
             request_headers: vec![],
             response_headers: vec![],
             config: self,
@@ -72,9 +79,10 @@ impl Config {
             hostname: Default::default(),
             time_request_start: 0,
             time_response_start: 0,
-            time_response_body_start: 0,
+            time_request_body_start: None,
             path_policy: None,
             response_output: None,
+            request_output: None,
         })
     }
 }
@@ -126,7 +134,18 @@ impl<'a> HttpParser<'a> {
                 self.path = Some(value.clone());
             } else if name == ":authority" {
                 self.hostname = Some(value.clone());
+            } else if name == "content-type" {
+                let value: ContentType = value
+                    .parse()
+                    .expect("content-type parse failed (impossible)");
+                self.request_description.content_type = value;
+            } else if name == "content-encoding" {
+                let value: ContentEncoding = value
+                    .parse()
+                    .expect("content-encoding parse failed (impossible)");
+                self.request_description.content_encoding = value;
             }
+
             if self.path_policy.is_none() {
                 if let (Some(path), Some(hostname)) = (&self.path, &self.hostname) {
                     let full_path = format!("{}{}", hostname, path);
@@ -207,12 +226,12 @@ impl<'a> HttpParser<'a> {
                 let value: ContentType = value
                     .parse()
                     .expect("content-type parse failed (impossible)");
-                self.content_type = value;
+                self.response_description.content_type = value;
             } else if name == "content-encoding" {
                 let value: ContentEncoding = value
                     .parse()
                     .expect("content-encoding parse failed (impossible)");
-                self.content_encoding = value;
+                self.response_description.content_encoding = value;
             }
 
             // record response headers
@@ -239,16 +258,32 @@ impl<'a> HttpParser<'a> {
         }
     }
 
-    pub fn with_response_stream(&mut self) -> Option<ResponseBodyContext> {
-        self.time_response_body_start = self.config.timestamp_source.epoch_ns();
+    pub fn with_request_stream(&mut self) -> Option<BodyContext> {
+        self.time_request_body_start = Some(self.config.timestamp_source.epoch_ns());
 
-        Some(ResponseBodyContext::spawn(
+        Some(BodyContext::spawn(
             self.policy.clone(),
             self.config.timestamp_source.clone(),
             self.path_policy.clone()?,
-            self.content_type,
-            self.content_encoding,
+            EndpointContext::RequestBody,
+            self.request_description.content_type,
+            self.request_description.content_encoding,
         ))
+    }
+
+    pub fn with_response_stream(&mut self) -> Option<BodyContext> {
+        Some(BodyContext::spawn(
+            self.policy.clone(),
+            self.config.timestamp_source.clone(),
+            self.path_policy.clone()?,
+            EndpointContext::ResponseBody,
+            self.response_description.content_type,
+            self.response_description.content_encoding,
+        ))
+    }
+
+    pub fn finish_request_stream(&mut self, data: ParsedMatches) {
+        self.request_output = Some(data);
     }
 
     pub fn finish_response_stream(&mut self, data: ParsedMatches) {
@@ -257,17 +292,25 @@ impl<'a> HttpParser<'a> {
 
     pub fn finish(mut self) -> EvaluationOutput {
         let response = self.response_output.take().expect("missing response data");
+        let request = self.request_output.unwrap_or_else(|| ParsedMatches {
+            matches: vec![],
+            body_size: 0,
+            body: None,
+            category_performance_us: Default::default(),
+            time_parse_start: 0,
+            time_parse_end: 0,
+        });
         EvaluationOutput {
             policy_id: self.policy.policy_id().to_string(),
             time_request_start: self.time_request_start,
             time_response_start: self.time_response_start,
-            time_response_body_start: self.time_response_body_start,
             request_headers: self.request_headers,
             response_headers: self.response_headers,
             policy_path: self.path_policy.as_ref().unwrap().policy_path.clone(),
             token: self.token.unwrap_or_default(),
             ip: self.ip.unwrap_or_default(),
             response,
+            request,
         }
     }
 }

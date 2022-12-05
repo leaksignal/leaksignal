@@ -73,11 +73,10 @@ impl Default for PolicyAction {
 #[derive(Clone, Copy, Debug, Serialize, Deserialize, PartialEq)]
 #[serde(rename_all = "snake_case")]
 pub enum ContentType {
-    #[serde(alias = "Html")]
     Html,
-    #[serde(alias = "Json")]
     Json,
     Grpc,
+    UrlEncoded,
     Jpeg,
     Unknown,
 }
@@ -101,6 +100,7 @@ impl FromStr for ContentType {
         Ok(match value {
             "text/html" => ContentType::Html,
             "application/grpc+proto" | "application/grpc" => ContentType::Grpc,
+            "application/x-www-form-urlencoded" => ContentType::UrlEncoded,
             "image/jpg" | "image/jpeg" => ContentType::Jpeg,
             "application/json" => ContentType::Json,
             _ => ContentType::Unknown,
@@ -182,6 +182,8 @@ pub struct ConfiguredPolicyAction {
     /// interpretation is define by the content_type
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub contexts: SingleOrVec<'static, MatchContext>,
+    #[serde(default)]
+    pub search: EndpointContext,
     #[serde(default, skip_serializing_if = "AlertConfig::is_empty")]
     pub alert: AlertConfig,
     #[serde(default, skip_serializing_if = "HashSet::is_empty")]
@@ -272,13 +274,43 @@ pub enum Category {
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
+#[serde(rename_all = "snake_case")]
 pub enum TokenExtractionSite {
-    #[serde(rename = "request")]
     Request,
-    #[serde(rename = "request_cookie")]
     RequestCookie,
-    #[serde(rename = "response")]
     Response,
+}
+
+#[derive(Default, Clone, Copy, Debug, Serialize, Deserialize, PartialEq)]
+#[serde(rename_all = "snake_case")]
+pub enum EndpointContext {
+    RequestBody,
+    RequestHeader,
+    ResponseBody,
+    ResponseHeader,
+    #[default]
+    AllBody,
+    AllHeader,
+    All,
+}
+
+impl EndpointContext {
+    /// Matches if the `self` EndpointContext contains the `other` EndpointContext
+    pub fn match_specific(self, other: EndpointContext) -> bool {
+        match (self, other) {
+            (x, y) if x == y => true,
+            (
+                EndpointContext::AllHeader,
+                EndpointContext::ResponseHeader | EndpointContext::RequestHeader,
+            ) => true,
+            (
+                EndpointContext::AllBody,
+                EndpointContext::ResponseBody | EndpointContext::RequestBody,
+            ) => true,
+            (EndpointContext::All, _) => true,
+            _ => false,
+        }
+    }
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
@@ -298,6 +330,10 @@ pub struct TokenExtractionConfig {
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
 pub struct EndpointConfig {
     pub matches: SingleOrVec<'static, PathGlob>,
+    #[serde(default)]
+    pub spiffe_id: SingleOrVec<'static, String>,
+    #[serde(default)]
+    pub search: EndpointContext,
     #[serde(default, skip_serializing_if = "IndexMap::is_empty")]
     pub config: IndexMap<Arc<String>, Arc<ConfiguredPolicyAction>>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -400,6 +436,7 @@ pub struct PathConfiguration {
     pub matcher_path: String,
     pub category_config: Arc<ConfiguredPolicyAction>,
     pub report_style: DataReportStyle,
+    pub search: EndpointContext,
 }
 
 impl Policy {
@@ -441,6 +478,7 @@ impl Policy {
                                 .report_style
                                 .or(config.report_style)
                                 .unwrap_or(self.report_style),
+                            search: config.search.clone(),
                         },
                     );
                 }

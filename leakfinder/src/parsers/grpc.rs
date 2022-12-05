@@ -1,14 +1,11 @@
-use std::sync::Arc;
-
 use futures::{AsyncRead, AsyncReadExt};
-use indexmap::IndexMap;
-use leakpolicy::{ContentType, PathConfiguration, Policy};
+use leakpolicy::{ContentType, Policy};
 use log::warn;
 use protobuf::{rt::WireType, CodedInputStream};
 
 use crate::{evaluator::MatcherState, perf::PerformanceMonitor, pipe::PipeReader, Match};
 
-use super::ParseResponse;
+use super::{ParseResponse, Parser, ParserConfiguration};
 use anyhow::{Context, Result};
 
 async fn read<const N: usize>(reader: &mut (impl AsyncRead + Unpin)) -> Result<[u8; N]> {
@@ -64,35 +61,41 @@ fn parse_message(
     Ok((out, out_response))
 }
 
-pub async fn parse_grpc(
-    policy: &Policy,
-    body: &mut PipeReader,
-    configuration: &IndexMap<Arc<String>, PathConfiguration>,
-    matches: &mut Vec<Match>,
-    performance: &PerformanceMonitor,
-) -> Result<ParseResponse> {
-    let matcher = super::prepare_match_state(policy, configuration, ContentType::Grpc);
+pub struct GrpcParser;
 
-    let compressed_flag = read::<1>(body).await?[0] != 0;
-    if compressed_flag {
-        warn!("gRPC compressed not supported");
-        return Ok(ParseResponse::Continue);
+#[async_trait::async_trait(?Send)]
+impl Parser for GrpcParser {
+    async fn parse(
+        &self,
+        policy: &Policy,
+        body: &mut PipeReader,
+        configuration: ParserConfiguration<'_>,
+        matches: &mut Vec<Match>,
+        performance: &PerformanceMonitor,
+    ) -> Result<ParseResponse> {
+        let matcher = super::prepare_match_state(policy, configuration, ContentType::Grpc);
+
+        let compressed_flag = read::<1>(body).await?[0] != 0;
+        if compressed_flag {
+            warn!("gRPC compressed not supported");
+            return Ok(ParseResponse::Continue);
+        }
+        let length = u32::from_be_bytes(read::<4>(body).await?);
+
+        // we are not expecting more than one message per response
+
+        let mut raw_body = Vec::with_capacity(length as usize);
+        body.read_exact(unsafe {
+            std::slice::from_raw_parts_mut(raw_body.as_mut_ptr(), length as usize)
+        })
+        .await?;
+        unsafe { raw_body.set_len(length as usize) };
+
+        let (new_matches, response) = parse_message(&raw_body[..], 0, &matcher, performance)?;
+        matches.extend(new_matches);
+
+        Ok(response)
     }
-    let length = u32::from_be_bytes(read::<4>(body).await?);
-
-    // we are not expecting more than one message per response
-
-    let mut raw_body = Vec::with_capacity(length as usize);
-    body.read_exact(unsafe {
-        std::slice::from_raw_parts_mut(raw_body.as_mut_ptr(), length as usize)
-    })
-    .await?;
-    unsafe { raw_body.set_len(length as usize) };
-
-    let (new_matches, response) = parse_message(&raw_body[..], 0, &matcher, performance)?;
-    matches.extend(new_matches);
-
-    Ok(response)
 }
 
 #[cfg(test)]

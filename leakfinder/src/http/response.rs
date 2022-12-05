@@ -2,13 +2,16 @@ use std::{io::Write, pin::Pin, sync::Arc, task::Poll};
 
 use flate2::write::GzDecoder;
 use futures::{task::waker, Future, FutureExt};
-use leakpolicy::{ContentType, PathPolicy};
+use leakpolicy::{ContentType, EndpointContext, PathPolicy};
 use rand::{thread_rng, Rng};
 
 use crate::{
     config::TimestampSource,
     match_data::ParsedMatches,
-    parsers::{grpc::parse_grpc, html::parse_html, json::parse_json, ParseResponse},
+    parsers::{
+        grpc::GrpcParser, json::JsonParser, plaintext::PlaintextParser, ParseResponse, Parser,
+        ParserConfiguration,
+    },
     perf::PerformanceMonitor,
     pipe::{pipe, DummyWaker, PipeReader, PipeWriter},
     policy::PolicyRef,
@@ -22,17 +25,19 @@ enum Decoder {
     Gzip(GzDecoder<Vec<u8>>),
 }
 
-pub struct ResponseBodyContext {
-    task: Option<Pin<Box<dyn Future<Output = Result<ResponseOutputData>>>>>,
+pub struct BodyContext {
+    task: Option<Pin<Box<dyn Future<Output = Result<OutputData>>>>>,
     writer: PipeWriter,
     decoder: Decoder,
+    early_return: Option<OutputData>,
 }
 
-impl ResponseBodyContext {
+impl BodyContext {
     pub(super) fn spawn(
         policy: PolicyRef,
         timestamp_source: TimestampSource,
         path_policy: Arc<PathPolicy>,
+        active_context: EndpointContext,
         content_type: ContentType,
         content_encoding: ContentEncoding,
     ) -> Self {
@@ -40,10 +45,11 @@ impl ResponseBodyContext {
         let (reader, writer) = pipe(max_persistence);
 
         Self {
-            task: Some(Box::pin(response_body_task(
+            task: Some(Box::pin(body_task(
                 policy,
                 timestamp_source,
                 path_policy,
+                active_context,
                 content_type,
                 reader,
             ))),
@@ -52,6 +58,7 @@ impl ResponseBodyContext {
                 ContentEncoding::Gzip => Decoder::Gzip(GzDecoder::new(vec![])),
                 ContentEncoding::None | ContentEncoding::Unknown => Decoder::None,
             },
+            early_return: None,
         }
     }
 
@@ -72,7 +79,7 @@ impl ResponseBodyContext {
         }
     }
 
-    fn poll(&mut self) -> Poll<Result<ResponseOutputData>> {
+    fn poll(&mut self) -> Poll<Result<OutputData>> {
         let waker = waker(Arc::new(DummyWaker));
         let mut context = std::task::Context::from_waker(&waker);
         match self.task.as_mut().unwrap().poll_unpin(&mut context) {
@@ -92,18 +99,25 @@ impl ResponseBodyContext {
         if body.is_empty() {
             return Ok(ParseResponse::Continue);
         }
+        if let Some(early_return) = &self.early_return {
+            return Ok(early_return.response);
+        }
         let body = self.decode_data(body)?;
         self.writer.append(body);
         match self.poll() {
             Poll::Ready(Err(e)) => Err(e),
-            Poll::Ready(Ok(_)) => {
-                unreachable!("unexpected early EOF");
+            Poll::Ready(Ok(value)) => {
+                self.early_return = Some(value);
+                Ok(self.early_return.as_ref().unwrap().response)
             }
             Poll::Pending => Ok(ParseResponse::Continue),
         }
     }
 
-    pub fn end_stream(mut self) -> Result<ResponseOutputData> {
+    pub fn end_stream(mut self) -> Result<OutputData> {
+        if let Some(early_return) = self.early_return.take() {
+            return Ok(early_return);
+        }
         let body = self.decode_finish()?;
         self.writer.append(body);
         self.writer.close();
@@ -118,73 +132,54 @@ impl ResponseBodyContext {
     }
 }
 
-pub struct ResponseOutputData {
+pub struct OutputData {
     pub response: ParseResponse,
     pub matches: ParsedMatches,
 }
 
-async fn response_body_task(
+async fn body_task(
     policy: PolicyRef,
     timestamp_source: TimestampSource,
     path_policy: Arc<PathPolicy>,
+    active_context: EndpointContext,
     content_type: ContentType,
     mut reader: PipeReader,
-) -> Result<ResponseOutputData> {
+) -> Result<OutputData> {
+    let response_body_start = timestamp_source.epoch_ns();
+
     let mut matches = vec![];
     let performance = PerformanceMonitor::new(timestamp_source.clone());
+    let configuration = ParserConfiguration {
+        categories: &path_policy.configuration,
+        active_context,
+    };
 
-    let response = match content_type {
-        ContentType::Html => {
-            match parse_html(
+    let response = 'response: {
+        let parser: Box<dyn Parser> = match content_type {
+            ContentType::Html => Box::new(PlaintextParser),
+            //TODO: url decoding/parsing
+            ContentType::UrlEncoded => Box::new(PlaintextParser),
+            ContentType::Json => Box::new(JsonParser),
+            ContentType::Grpc => Box::new(GrpcParser),
+            ContentType::Jpeg => break 'response ParseResponse::Continue,
+            ContentType::Unknown => break 'response ParseResponse::Continue,
+        };
+
+        match parser
+            .parse(
                 &*policy,
                 &mut reader,
-                &path_policy.configuration,
+                configuration,
                 &mut matches,
                 &performance,
             )
             .await
-            {
-                Ok(x) => x,
-                Err(e) => {
-                    bail!("failed to read html: {:?}", e);
-                }
+        {
+            Ok(x) => x,
+            Err(e) => {
+                bail!("failed to parse body: {:?}", e);
             }
         }
-        ContentType::Json => {
-            match parse_json(
-                &*policy,
-                &mut reader,
-                &path_policy.configuration,
-                &mut matches,
-                &performance,
-            )
-            .await
-            {
-                Ok(x) => x,
-                Err(e) => {
-                    bail!("failed to read json: {:?}", e);
-                }
-            }
-        }
-        ContentType::Grpc => {
-            match parse_grpc(
-                &*policy,
-                &mut reader,
-                &path_policy.configuration,
-                &mut matches,
-                &performance,
-            )
-            .await
-            {
-                Ok(x) => x,
-                Err(e) => {
-                    bail!("failed to read grpc: {:?}", e);
-                }
-            }
-        }
-        // do no parsing here
-        ContentType::Jpeg => ParseResponse::Continue, // parse_jpeg(&*body, &configuration),
-        ContentType::Unknown => ParseResponse::Continue,
     };
 
     let body_size = reader.total_read() as u64;
@@ -203,11 +198,12 @@ async fn response_body_task(
 
     let matches = ParsedMatches {
         time_parse_end: response_body_end,
+        time_parse_start: response_body_start,
         matches,
         body_size,
         body,
         category_performance_us: performance.into_inner(),
     };
 
-    Ok(ResponseOutputData { response, matches })
+    Ok(OutputData { response, matches })
 }

@@ -20,13 +20,13 @@ pub struct EvaluationOutput {
     pub policy_id: String,
     pub time_request_start: u64,
     pub time_response_start: u64,
-    pub time_response_body_start: u64,
     pub request_headers: Vec<Header>,
     pub response_headers: Vec<Header>,
     pub policy_path: String,
     pub token: String,
     pub ip: String,
     pub response: ParsedMatches,
+    pub request: ParsedMatches,
 }
 
 #[derive(Debug)]
@@ -35,5 +35,6 @@ pub struct ParsedMatches {
     pub body_size: u64,
     pub body: Option<Vec<u8>>,
     pub category_performance_us: HashMap<String, u64>,
+    pub time_parse_start: u64,
     pub time_parse_end: u64,
 }
