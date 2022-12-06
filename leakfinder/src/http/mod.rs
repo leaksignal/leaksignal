@@ -120,6 +120,10 @@ impl<'a> HttpParser<'a> {
         &self.policy
     }
 
+    pub fn token(&self) -> Option<&str> {
+        self.token.as_deref()
+    }
+
     pub fn with_ip(&mut self, ip: String) {
         self.ip = Some(ip);
     }

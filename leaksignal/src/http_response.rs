@@ -99,6 +99,10 @@ impl HttpResponseContext {
         self.parser.as_mut().unwrap()
     }
 
+    fn parser_ref(&self) -> &HttpParser<'static> {
+        self.parser.as_ref().unwrap()
+    }
+
     fn get_property_parse(&self, name: &str) -> Option<Vec<u8>> {
         self.get_property(name.split('.').collect())
             .map(|x| x.to_vec())
@@ -300,6 +304,12 @@ impl HttpContext for HttpResponseContext {
             if let Some(last_colon) = ip.rfind(':') {
                 ip.truncate(last_colon);
             }
+            if self.parser().policy().blocked_ips.contains(&ip) {
+                warn!("blocking request by ip {ip}");
+                self.parser().with_ip(ip);
+                self.early_response(403, vec![], None);
+                return Action::Continue;
+            }
             self.parser().with_ip(ip);
         }
 
@@ -310,6 +320,12 @@ impl HttpContext for HttpResponseContext {
             };
             self.parser()
                 .with_request_headers([FullHeader { name, value }]);
+        }
+        if let Some(token) = self.parser_ref().token() {
+            if self.parser_ref().policy().blocked_tokens.contains(token) {
+                warn!("blocking request by token {token}");
+                self.early_response(403, vec![], None);
+            }
         }
 
         Action::Continue
@@ -398,6 +414,12 @@ impl HttpContext for HttpResponseContext {
             };
             self.parser()
                 .with_response_headers([FullHeader { name, value }]);
+        }
+        if let Some(token) = self.parser_ref().token() {
+            if self.parser_ref().policy().blocked_tokens.contains(token) {
+                warn!("blocking response by token {token}");
+                self.early_response(403, vec![], None);
+            }
         }
 
         Action::Continue

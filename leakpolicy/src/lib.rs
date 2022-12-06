@@ -424,6 +424,10 @@ pub struct Policy {
         skip_serializing_if = "report_style_is_default"
     )]
     pub report_style: DataReportStyle,
+    #[serde(default)]
+    pub blocked_ips: IndexSet<String>,
+    #[serde(default)]
+    pub blocked_tokens: IndexSet<String>,
 }
 
 pub struct PathPolicy {
