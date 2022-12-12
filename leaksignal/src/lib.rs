@@ -10,6 +10,7 @@ mod env;
 mod http_response;
 mod metric;
 mod root;
+mod service;
 mod time;
 
 #[global_allocator]

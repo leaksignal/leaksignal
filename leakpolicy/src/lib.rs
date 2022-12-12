@@ -9,7 +9,9 @@ use fancy_regex::Regex;
 use indexmap::{IndexMap, IndexSet};
 use serde::{Deserialize, Serialize};
 
+mod matcher;
 mod path_glob;
+pub use matcher::Matcher;
 pub use path_glob::PathGlob;
 use serde_single_or_vec2::SingleOrVec;
 
@@ -380,6 +382,9 @@ fn collected_response_headers_default() -> IndexSet<String> {
         "x-envoy-peer-metadata-id",
         "grpc-status",
         "grpc-message",
+        "x-ls-request-id",
+        "x-source",
+        "x-ls-source",
     ]
     .into_iter()
     .map(str::to_string)
@@ -399,12 +404,51 @@ fn default_max_body_collection_mb() -> f64 {
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
+pub struct ServicePolicy {
+    /// List of services this policy matches for
+    pub services: SingleOrVec<'static, Matcher>,
+    /// If specified, these services are disallowed from communicating. Ignored if `whitelist` is nonempty.
+    #[serde(default)]
+    pub blacklist: Vec<Matcher>,
+    /// If specified, only these services can communicate with this service
+    #[serde(default)]
+    pub whitelist: Vec<Matcher>,
+    /// If `whitelist` is nonempty, this defaults to `true`. Otherwise, `false`. When `true`, inbound communications from unknown services (no mTLS) is blocked.
+    pub block_unknown_services: Option<bool>,
+}
+
+impl ServicePolicy {
+    pub fn service_matched(&self, service_name: &str) -> Result<bool> {
+        Matcher::match_all(service_name, &self.services[..])
+    }
+
+    pub fn block_unknown_services(&self) -> bool {
+        self.block_unknown_services
+            .unwrap_or_else(|| !self.whitelist.is_empty())
+    }
+
+    pub fn inbound_allowed(&self, service_name: Option<&str>) -> Result<bool> {
+        let Some(service_name) = service_name else {
+            return Ok(!self.block_unknown_services());
+        };
+        if !self.whitelist.is_empty() {
+            Matcher::match_all(service_name, &self.whitelist[..])
+        } else {
+            Ok(!Matcher::match_all(service_name, &self.blacklist[..])?)
+        }
+    }
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
 pub struct Policy {
     pub categories: IndexMap<String, Category>,
     /// we apply all matching endpoint configurations,
     /// with the most specific endpoint configuration taking precedence.
     /// The super-root endpoint config has all categories on alert.
+    #[serde(default)]
     pub endpoints: Vec<EndpointConfig>,
+    #[serde(default)]
+    pub services: Vec<ServicePolicy>,
     /// values will be omitted for headers not in this list
     #[serde(default = "collected_request_headers_default")]
     pub collected_request_headers: IndexSet<String>,

@@ -53,6 +53,24 @@ pub struct HttpResponseContext {
     response_body: Option<BodyContext>,
 }
 
+#[repr(i64)]
+enum ListenerDirection {
+    Unspecified = 0,
+    Inbound = 1,
+    Outbound = 2,
+}
+
+impl ListenerDirection {
+    pub fn from_i64(v: i64) -> Option<Self> {
+        match v {
+            0 => Some(ListenerDirection::Unspecified),
+            1 => Some(ListenerDirection::Inbound),
+            2 => Some(ListenerDirection::Outbound),
+            _ => None,
+        }
+    }
+}
+
 impl Default for HttpResponseContext {
     fn default() -> Self {
         Self {
@@ -119,6 +137,14 @@ impl HttpResponseContext {
     fn get_property_string(&self, name: &str) -> Option<String> {
         let raw = self.get_property_parse(name)?;
         Some(String::from_utf8_lossy(&raw[..]).into_owned())
+    }
+
+    fn get_property_int(&self, name: &str) -> Option<i64> {
+        let raw = self.get_property_parse(name)?;
+        if raw.len() != 8 {
+            return None;
+        }
+        Some(i64::from_le_bytes(raw.try_into().unwrap()))
     }
 
     fn finish_internal(&mut self) {
@@ -223,6 +249,7 @@ impl HttpResponseContext {
         status_code: u32,
         headers: Vec<(&str, &str)>,
         body: Option<&[u8]>,
+        source: Option<&str>,
     ) {
         if let Some(request) = self.request_body.take() {
             let request = match request.end_stream() {
@@ -239,6 +266,9 @@ impl HttpResponseContext {
         let mut headers: Vec<_> = headers.into_iter().collect();
         headers.push(("x-ls-request-id", &*request_id));
         headers.push(("x-source", "leaksignal"));
+        if let Some(source) = source {
+            headers.push(("x-ls-source", source));
+        }
         for (name, value) in &headers {
             self.parser().with_response_headers([FullHeader {
                 name: name.to_string(),
@@ -252,6 +282,8 @@ impl HttpResponseContext {
 
         let now = TIMESTAMP_PROVIDER.epoch_ns();
 
+        self.collect_connection_info();
+
         self.send_http_response(status_code, headers, body);
         self.parser().finish_response_stream(ParsedMatches {
             matches: vec![],
@@ -262,6 +294,23 @@ impl HttpResponseContext {
             time_parse_end: now,
         });
         self.finish_internal();
+    }
+
+    fn collect_connection_info(&mut self) {
+        if let Some(mtls) = self.get_property_bool("connection.mtls") {
+            self.connection_info
+                .insert("mtls".to_string(), mtls.to_string());
+        }
+        for property in STRING_CONNECTION_PROPERTIES {
+            if let Some(value) = self.get_property_string(property) {
+                self.connection_info.insert(property.to_string(), value);
+            }
+        }
+        for property in INT_CONNECTION_PROPERTIES {
+            if let Some(value) = self.get_property_int(property) {
+                self.connection_info.insert(property.to_string(), value.to_string());
+            }
+        }
     }
 }
 
@@ -282,6 +331,10 @@ const STRING_CONNECTION_PROPERTIES: &[&str] = &[
     "upstream.dns_san_peer_certificate",
     "upstream.uri_san_local_certificate",
     "upstream.uri_san_peer_certificate",
+];
+
+const INT_CONNECTION_PROPERTIES: &[&str] = &[
+    "listener_direction",
 ];
 
 impl HttpContext for HttpResponseContext {
@@ -307,7 +360,7 @@ impl HttpContext for HttpResponseContext {
             if self.parser().policy().blocked_ips.contains(&ip) {
                 warn!("blocking request by ip {ip}");
                 self.parser().with_ip(ip);
-                self.early_response(403, vec![], None);
+                self.early_response(403, vec![], None, Some("blocked_ip"));
                 return Action::Continue;
             }
             self.parser().with_ip(ip);
@@ -321,10 +374,56 @@ impl HttpContext for HttpResponseContext {
             self.parser()
                 .with_request_headers([FullHeader { name, value }]);
         }
+
+        if let Some(local_service) =
+            crate::service::local_service_name(|x| self.get_property_string(x))
+        {
+            let policy = self.parser_ref().policy();
+            let mut service_policy = None;
+            for entry in &policy.services {
+                match entry.service_matched(&*local_service) {
+                    Err(e) => {
+                        error!(
+                            "failed to match service {local_service} for entry {entry:?}: {e:?}"
+                        );
+                        continue;
+                    }
+                    Ok(false) => continue,
+                    Ok(true) => {
+                        service_policy = Some(entry);
+                        break;
+                    }
+                }
+            }
+            if let Some(service_policy) = service_policy {
+                let direction = self.get_property_int("listener_direction").and_then(ListenerDirection::from_i64);
+                // envoy notion if inbound/outbound is reversed to ours
+                if !matches!(direction, Some(ListenerDirection::Outbound)) {
+                    let peer_service =
+                        crate::service::outbound_peer_service_name(|x| self.get_property_string(x));
+                    match service_policy.inbound_allowed(peer_service.as_deref()) {
+                        Err(e) => {
+                            error!("failed to evaluate service policy for {local_service} on peer {}: {e:?}", peer_service.as_deref().unwrap_or("external"));
+                        }
+                        Ok(false) => {
+                            warn!(
+                                "blocking request by service {} by policy",
+                                peer_service.as_deref().unwrap_or("external")
+                            );
+                            self.early_response(403, vec![], None, Some("blocked_service"));
+                            return Action::Continue;
+                        }
+                        Ok(true) => (),
+                    }
+                }
+            }
+        }
+
         if let Some(token) = self.parser_ref().token() {
             if self.parser_ref().policy().blocked_tokens.contains(token) {
                 warn!("blocking request by token {token}");
-                self.early_response(403, vec![], None);
+                self.early_response(403, vec![], None, Some("blocked_token"));
+                return Action::Continue;
             }
         }
 
@@ -359,7 +458,7 @@ impl HttpContext for HttpResponseContext {
             match parse_request {
                 ParseResponse::Block => {
                     warn!("blocking request");
-                    self.early_response(403, vec![], None);
+                    self.early_response(403, vec![], None, Some("blocked_match"));
                     return Action::Continue;
                 }
                 ParseResponse::Continue => (),
@@ -395,15 +494,7 @@ impl HttpContext for HttpResponseContext {
 
         if !self.response_started {
             self.response_started = true;
-            if let Some(mtls) = self.get_property_bool("connection.mtls") {
-                self.connection_info
-                    .insert("mtls".to_string(), mtls.to_string());
-            }
-            for property in STRING_CONNECTION_PROPERTIES {
-                if let Some(value) = self.get_property_string(property) {
-                    self.connection_info.insert(property.to_string(), value);
-                }
-            }
+            self.collect_connection_info();
         }
 
         self.set_http_response_header("content-length", None);
@@ -418,7 +509,7 @@ impl HttpContext for HttpResponseContext {
         if let Some(token) = self.parser_ref().token() {
             if self.parser_ref().policy().blocked_tokens.contains(token) {
                 warn!("blocking response by token {token}");
-                self.early_response(403, vec![], None);
+                self.early_response(403, vec![], None, Some("blocked_token"));
             }
         }
 

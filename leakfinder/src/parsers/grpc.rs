@@ -116,7 +116,7 @@ mod tests {
             &raw_body[..],
             0,
             &matcher,
-            &PerformanceMonitor::new(Arc::new(StdTimestampProvider::default())),
+            &PerformanceMonitor::new(std::sync::Arc::new(StdTimestampProvider::default())),
         )
         .unwrap();
         println!("{matches:?}");
