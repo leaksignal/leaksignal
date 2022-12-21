@@ -18,42 +18,40 @@ harness = false
 crate-type = ["cdylib"]
 
 [dependencies]
-proxy-wasm = { version = "0.2", git = "https://github.com/Protryon/proxy-wasm-rust-sdk.git" }
-serde = { version = "1.0", features = ["derive", "rc"] }
-serde_json = "1.0"
-log = "0.4"
-anyhow = "1.0"
-lazy_static = "1.4"
-arc-swap = "1.5"
-serde_yaml = "0.8"
-fancy-regex = "0.10"
-regex = "1.5"
+proxy-wasm = { workspace = true }
+serde = { workspace = true, features = ["derive", "rc"] }
+serde_json = { workspace = true }
+log = { workspace = true }
+anyhow = { workspace = true }
+lazy_static = { workspace = true }
+arc-swap = { workspace = true }
+serde_yaml = { workspace = true }
+fancy-regex = { workspace = true }
+regex = { workspace = true }
 # kamadak-exif = "0.5"
-indexmap = { version = "1.9", features = ["serde", "std"] }
-prost = "0.10"
-prost-types = "0.10"
-uuid = { version = "1.0", features = ["v4"] }
-getrandom = { version = "0.2", features = ["custom"] }
-rand = "0.8"
-bytes = "1.1"
-futures = "0.3"
-flate2 = "1.0"
-dlmalloc = { version = "0.2.3", features = ["global"] }
-leakpolicy = { version = "0.1.2", path = "../leakpolicy" }
-leakfinder = { version = "0.1.2", path = "../leakfinder" }
-smallvec = { version = "1.9", features = ["serde", "const_generics"] }
-sha2 = "0.10"
-hex = { version = "0.4", features = ["serde"] }
-async-recursion = "1.0"
-protobuf = "3.2"
-wasi = "0.11.0"
-url = "2.3"
+indexmap = { workspace = true, features = ["serde", "std"] }
+prost = { workspace = true }
+prost-types = { workspace = true }
+uuid = { workspace = true, features = ["v4"] }
+getrandom = { workspace = true, features = ["custom"] }
+rand = { workspace = true }
+bytes = { workspace = true }
+futures = { workspace = true }
+flate2 = { workspace = true }
+dlmalloc = { workspace = true, features = ["global"] }
+leakpolicy = { workspace = true }
+leakfinder = { workspace = true }
+smallvec = { workspace = true, features = ["serde", "const_generics"] }
+sha2 = { workspace = true }
+hex = { workspace = true, features = ["serde"] }
+async-recursion = { workspace = true }
+protobuf = { workspace = true }
+wasi = { workspace = true }
+url = { workspace = true }
 
 [dev-dependencies]
-criterion = "0.3"
+criterion = { workspace = true }
 
 [build-dependencies]
-build-data = "0.1"
-prost-build = "0.10"
-
-[features]
+build-data = { workspace = true }
+prost-build = { workspace = true }

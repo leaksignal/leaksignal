@@ -41,7 +41,7 @@ fn extract_istio_service_from_env(env: &IndexMap<String, String>) -> Option<Stri
 
 fn extract_k8s_service_from_env(env: &IndexMap<String, String>) -> Option<String> {
     let pod_name = env.get("POD_NAME")?;
-    let parts = pod_name.split("-").collect::<Vec<_>>();
+    let parts = pod_name.split('-').collect::<Vec<_>>();
     let pod_name = parts[..parts.len().saturating_sub(2)].join("-");
     Some(format!(
         "{}/{}/{}",
@@ -56,7 +56,7 @@ fn try_get_any(
     keys: &[&str],
 ) -> Option<String> {
     for key in keys {
-        if let Some(value) = get_property(*key) {
+        if let Some(value) = get_property(key) {
             return Some(value);
         }
     }
@@ -66,26 +66,19 @@ fn try_get_any(
 pub fn outbound_peer_service_name(
     mut get_property: impl FnMut(&str) -> Option<String>,
 ) -> Option<String> {
-    if let Some(san) = get_property("connection.uri_san_peer_certificate") {
-        Some(parse_service_name(&*san))
-    } else {
-        None
-    }
+    get_property("connection.uri_san_peer_certificate").map(|san| parse_service_name(&san))
 }
 
 #[allow(unused)]
 pub fn peer_service_name(get_property: impl FnMut(&str) -> Option<String>) -> Option<String> {
-    if let Some(san) = try_get_any(
+    try_get_any(
         get_property,
         &[
             "connection.uri_san_peer_certificate",
             "upstream.uri_san_peer_certificate",
         ],
-    ) {
-        Some(parse_service_name(&*san))
-    } else {
-        None
-    }
+    )
+    .map(|san| parse_service_name(&san))
 }
 
 pub fn local_service_name(get_property: impl FnMut(&str) -> Option<String>) -> Option<String> {
@@ -100,10 +93,8 @@ pub fn local_service_name(get_property: impl FnMut(&str) -> Option<String>) -> O
         Some(parse_service_name(&san))
     } else if let Some(istio_service) = extract_istio_service_from_env(&environment) {
         Some(istio_service)
-    } else if let Some(k8s_service) = extract_k8s_service_from_env(&environment) {
-        Some(k8s_service)
     } else {
-        None
+        extract_k8s_service_from_env(&environment)
     }
 }
 
@@ -111,9 +102,7 @@ pub fn local_service_name(get_property: impl FnMut(&str) -> Option<String>) -> O
 pub fn is_response_outbound(mut get_property: impl FnMut(&str) -> Option<String>) -> bool {
     if get_property("connection.uri_san_local_certificate").is_some() {
         true
-    } else if get_property("upstream.uri_san_local_certificate").is_some() {
-        false
     } else {
-        true
+        get_property("upstream.uri_san_local_certificate").is_none()
     }
 }

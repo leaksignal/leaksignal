@@ -31,14 +31,11 @@ fn prepare_match_state<'a>(
             continue;
         }
 
-        if !action.category_config.content_types.is_empty() {
-            if !action
+        if !action.category_config.content_types.is_empty() && !action
                 .category_config
                 .content_types
-                .contains(&ContentType::Json)
-            {
-                continue;
-            }
+                .contains(&ContentType::Json) {
+            continue;
         }
 
         let mut do_key = true;
@@ -80,8 +77,8 @@ fn prepare_match_state<'a>(
 
         if do_key {
             evaluator::prepare_matches(
-                &policy,
-                &**category_name,
+                policy,
+                category_name,
                 &mut key_match_state,
                 &metadata,
                 &action.category_config.ignore,
@@ -89,8 +86,8 @@ fn prepare_match_state<'a>(
         }
         if do_value {
             evaluator::prepare_matches(
-                &policy,
-                &**category_name,
+                policy,
+                category_name,
                 &mut value_match_state,
                 &metadata,
                 &action.category_config.ignore,
@@ -122,9 +119,9 @@ impl Parser for JsonParser {
             |key, start, _end| match key_matcher.do_matching(
                 start,
                 0,
-                &*key,
+                &key,
                 &mut key_matches,
-                &performance,
+                performance,
             ) {
                 ParseResponse::Continue => None,
                 ParseResponse::Block => Some(ParseResponse::Block),
@@ -132,9 +129,9 @@ impl Parser for JsonParser {
             |value, start, _end| match value_matcher.do_matching(
                 start,
                 0,
-                &*value,
+                &value,
                 matches,
-                &performance,
+                performance,
             ) {
                 ParseResponse::Continue => None,
                 ParseResponse::Block => Some(ParseResponse::Block),

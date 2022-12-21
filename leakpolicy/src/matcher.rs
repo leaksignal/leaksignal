@@ -20,8 +20,8 @@ impl AsRef<str> for Mode {
     fn as_ref(&self) -> &str {
         match self {
             Mode::Regex(x) => x.as_str(),
-            Mode::Raw(x) => &**x,
-            Mode::Except(x) => &**x,
+            Mode::Raw(x) => x,
+            Mode::Except(x) => x,
             Mode::ExceptRegex(x) => x.as_str(),
         }
     }
@@ -57,7 +57,7 @@ impl<'de> Deserialize<'de> for Matcher {
         let raw = String::deserialize(deserializer)?;
         raw.parse().map_err(|e| {
             serde::de::Error::invalid_value(
-                Unexpected::Str(&*raw),
+                Unexpected::Str(&raw),
                 &&*format!("invalid PathGlob: {}", e),
             )
         })
@@ -72,14 +72,14 @@ impl Serialize for Matcher {
 
 fn anchor_regex(input: &str) -> Result<Regex> {
     // this can be tricked using escaped dollar signs, but that's acceptable.
-    if input.starts_with("^") && input.ends_with("$") {
+    if input.starts_with('^') && input.ends_with('$') {
         Ok(Regex::new(input)?)
-    } else if input.starts_with("^") {
-        Ok(Regex::new(&*format!("{input}$"))?)
-    } else if input.ends_with("$") {
-        Ok(Regex::new(&*format!("^{input}"))?)
+    } else if input.starts_with('^') {
+        Ok(Regex::new(&format!("{input}$"))?)
+    } else if input.ends_with('$') {
+        Ok(Regex::new(&format!("^{input}"))?)
     } else {
-        Ok(Regex::new(&*format!("^{input}$"))?)
+        Ok(Regex::new(&format!("^{input}$"))?)
     }
 }
 
@@ -87,21 +87,21 @@ impl FromStr for Matcher {
     type Err = anyhow::Error;
 
     fn from_str(s: &str) -> Result<Self> {
-        if s.starts_with("raw:") {
+        if let Some(s) = s.strip_prefix("raw:") {
             Ok(Self {
-                mode: Mode::Raw(s[4..].to_string()),
+                mode: Mode::Raw(s.to_string()),
             })
-        } else if s.starts_with("regex:") {
+        } else if let Some(s) = s.strip_prefix("regex:") {
             Ok(Self {
-                mode: Mode::Regex(anchor_regex(&s[6..])?),
+                mode: Mode::Regex(anchor_regex(s)?),
             })
-        } else if s.starts_with("except:") {
+        } else if let Some(s) = s.strip_prefix("except:") {
             Ok(Self {
-                mode: Mode::Except(s[7..].to_string()),
+                mode: Mode::Except(s.to_string()),
             })
-        } else if s.starts_with("except_regex:") {
+        } else if let Some(s) = s.strip_prefix("except_regex:") {
             Ok(Self {
-                mode: Mode::ExceptRegex(anchor_regex(&s[13..])?),
+                mode: Mode::ExceptRegex(anchor_regex(s)?),
             })
         } else {
             Ok(Self {

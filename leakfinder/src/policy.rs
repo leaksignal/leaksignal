@@ -16,14 +16,14 @@ impl Deref for PolicyRef {
     type Target = Policy;
 
     fn deref(&self) -> &Self::Target {
-        &(&*self.0).as_ref().unwrap().1
+        &(*self.0).as_ref().unwrap().1
     }
 }
 
 impl PolicyRef {
     #[allow(dead_code)]
     pub fn policy_id(&self) -> &str {
-        &*(&*self.0).as_ref().unwrap().0
+        &(*self.0).as_ref().unwrap().0
     }
 }
 

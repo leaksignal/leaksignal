@@ -49,9 +49,9 @@ pub fn block_state() -> RwLockReadGuard<'static, BlockState> {
     BLOCK_STATE.read().unwrap()
 }
 
-impl Into<BlockReason> for crate::proto::BlockReason {
-    fn into(self) -> BlockReason {
-        match self {
+impl From<crate::proto::BlockReason> for BlockReason {
+    fn from(val: crate::proto::BlockReason) -> Self {
+        match val {
             crate::proto::BlockReason::Unspecified => BlockReason::Unspecified,
             crate::proto::BlockReason::Unblock => BlockReason::Unblock,
             crate::proto::BlockReason::Ratelimit => BlockReason::Ratelimit,
@@ -71,21 +71,21 @@ impl crate::proto::BlockItem {
     }
 }
 
-impl Into<BlockState> for crate::proto::BlockState {
-    fn into(self) -> BlockState {
+impl From<crate::proto::BlockState> for BlockState {
+    fn from(val: crate::proto::BlockState) -> Self {
         let now = crate::time::TIMESTAMP_PROVIDER.elapsed().as_millis() as u64;
         BlockState {
-            ips: self
+            ips: val
                 .ips
                 .into_iter()
                 .map(|(k, v)| (k, v.into_block_item(now)))
                 .collect(),
-            tokens: self
+            tokens: val
                 .tokens
                 .into_iter()
                 .map(|(k, v)| (k, v.into_block_item(now)))
                 .collect(),
-            services: self
+            services: val
                 .services
                 .into_iter()
                 .map(|(k, v)| (k, v.into_block_item(now)))
@@ -110,7 +110,7 @@ pub enum FilterInboundMessageRef<'a> {
 pub enum FilterInboundMessage {
     PolicyUpdate {
         id: String,
-        policy: Policy,
+        policy: Box<Policy>,
         environment_variables: IndexMap<String, String>,
     },
     UpstreamUpdate(Option<UpstreamConfig>),
@@ -193,9 +193,9 @@ impl Context for EnvoyRootContext {
         if let Some((policy_id, policy)) = policy {
             warn!("received new leaksignal policy: {}", policy_id);
 
-            match parse_policy(&*policy) {
+            match parse_policy(&policy) {
                 Ok(policy) => {
-                    self.do_policy_update(policy_id.clone(), policy);
+                    self.do_policy_update(policy_id, policy);
                 }
                 Err(e) => {
                     error!("failed to parse new policy: {:?}", e);
@@ -253,7 +253,7 @@ fn policy_update<'a>(id: &'a str, policy: &'a Policy) -> FilterInboundMessageRef
     FilterInboundMessageRef::PolicyUpdate {
         id,
         policy,
-        environment_variables: &*ENVIRONMENT,
+        environment_variables: &ENVIRONMENT,
     }
 }
 
@@ -261,7 +261,7 @@ impl EnvoyRootContext {
     fn do_policy_update(&mut self, policy_id: impl Into<String>, policy: Policy) {
         let policy_id: String = policy_id.into();
         if Config::get().mode() == Mode::LocalCollector {
-            self.broadcast_to_workers(policy_update(&*policy_id, &policy));
+            self.broadcast_to_workers(policy_update(&policy_id, &policy));
         }
 
         POLICY.update_policy(policy_id, policy);
@@ -375,7 +375,7 @@ impl EnvoyRootContext {
             Mode::Filter if self.data.filter_worker_register_queue().is_none() => {
                 *self.data.filter_worker_register_queue() = self.resolve_shared_queue(
                     LOCAL_COLLECTOR_VM,
-                    &*format!("{}{}", POLICY_SHARED_QUEUE_PREFIX, config.group),
+                    &format!("{}{}", POLICY_SHARED_QUEUE_PREFIX, config.group),
                 );
                 if let Some(worker_register_queue) = *self.data.filter_worker_register_queue() {
                     self.enqueue_shared_queue(
@@ -449,7 +449,7 @@ impl RootContext for EnvoyRootContext {
             match config.mode() {
                 Mode::LocalCollector => {
                     self.data = RootContextData::Collector {
-                        worker_register_queue: self.register_shared_queue(&*format!(
+                        worker_register_queue: self.register_shared_queue(&format!(
                             "{}{}",
                             POLICY_SHARED_QUEUE_PREFIX, config.group
                         )),
@@ -459,7 +459,7 @@ impl RootContext for EnvoyRootContext {
                 Mode::Filter => {
                     let uuid = Uuid::new_v4();
                     self.data = RootContextData::Filter {
-                        policy_update_queue: self.register_shared_queue(&*format!(
+                        policy_update_queue: self.register_shared_queue(&format!(
                             "{}{}_{}",
                             POLICY_SHARED_QUEUE_PREFIX, uuid, config.group
                         )),
@@ -578,7 +578,7 @@ impl RootContext for EnvoyRootContext {
                     let uuid = Uuid::from_bytes((&value[..]).try_into().unwrap());
                     let queue = match self.resolve_shared_queue(
                         PROXY_VM,
-                        &*format!("{}{}_{}", POLICY_SHARED_QUEUE_PREFIX, uuid, config.group),
+                        &format!("{}{}_{}", POLICY_SHARED_QUEUE_PREFIX, uuid, config.group),
                     ) {
                         Some(x) => x,
                         None => {
@@ -587,7 +587,7 @@ impl RootContext for EnvoyRootContext {
                         }
                     };
                     if let Some(policy) = POLICY.policy() {
-                        let message = policy_update(policy.policy_id(), &*policy);
+                        let message = policy_update(policy.policy_id(), &policy);
                         let message = serde_json::to_string(&message)
                             .expect("failed to serialize PolicyUpdate message");
                         if let Err(e) = self.enqueue_shared_queue(queue, Some(message.as_bytes())) {
@@ -625,7 +625,7 @@ impl RootContext for EnvoyRootContext {
                         }
                         Some(value) => value,
                     };
-                    let value: FilterInboundMessage = match serde_json::from_slice(&*value) {
+                    let value: FilterInboundMessage = match serde_json::from_slice(&value) {
                         Ok(x) => x,
                         Err(e) => {
                             error!("failed to deserialize message from local collector, version mismatch? (restarting envoy may fix this): {e:?}");
@@ -638,7 +638,7 @@ impl RootContext for EnvoyRootContext {
                             policy,
                             environment_variables,
                         } => {
-                            POLICY.update_policy(id, policy);
+                            POLICY.update_policy(id, *policy);
                             DYN_ENVIRONMENT.store(Arc::new(environment_variables));
                         }
                         FilterInboundMessage::UpstreamUpdate(upstream) => {
@@ -660,7 +660,7 @@ impl RootContext for EnvoyRootContext {
         let config = Config::get();
 
         match config.mode() {
-            Mode::DirectFilter | Mode::Filter => Some(Box::new(HttpResponseContext::default())),
+            Mode::DirectFilter | Mode::Filter => Some(Box::<HttpResponseContext>::default()),
             Mode::LocalCollector => None,
         }
     }

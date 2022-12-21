@@ -72,10 +72,7 @@ mod tests {
         assert_eq!(
             format!(
                 "{}",
-                LowEntropyHash::new(23)
-                    .update_chained(b"test")
-                    .finalize()
-                    .to_string()
+                LowEntropyHash::new(23).update_chained(b"test").finalize()
             ),
             "9F8680".to_string()
         );

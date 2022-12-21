@@ -81,7 +81,7 @@ fn prepare_match_group<'a>(
     for raw in raw {
         state.raws.push(MatchRaw {
             metadata: metadata.clone(),
-            raw: &**raw,
+            raw,
             case_insensitive: *case_insensitive,
         });
     }
@@ -193,9 +193,9 @@ impl<'a> MatcherState<'a> {
                 continue;
             }
             if let Some(handle) = handle.as_mut() {
-                handle.chain(&*metadata.category_name);
+                handle.chain(&metadata.category_name);
             } else {
-                handle = Some(performance.measure(&*metadata.category_name));
+                handle = Some(performance.measure(&metadata.category_name));
             }
             let mut source_iter = source.char_indices().peekable();
             while let Some((i, _)) = source_iter.next() {
@@ -248,9 +248,9 @@ impl<'a> MatcherState<'a> {
 
         for regex in &self.regexes {
             if let Some(handle) = handle.as_mut() {
-                handle.chain(&*regex.metadata.category_name);
+                handle.chain(&regex.metadata.category_name);
             } else {
-                handle = Some(performance.measure(&*regex.metadata.category_name));
+                handle = Some(performance.measure(&regex.metadata.category_name));
             }
             for matching in regex.regex.find_iter(source) {
                 let matching = matching.unwrap();
@@ -332,9 +332,8 @@ impl<'a> MatcherState<'a> {
 
                 let correlation = group1[0].metadata.correlation.unwrap();
                 let distance = correlation.max_distance;
-                let mut group1 = group1.into_iter();
                 let mut group2_index = 0usize;
-                'outer: while let Some(group1_item) = group1.next() {
+                'outer: for group1_item in group1 {
                     let group1_end = group1_item.start + group1_item.length;
                     if group1_end + offset <= minimum_end_index {
                         debug!("skipping duplicated match (group1)");

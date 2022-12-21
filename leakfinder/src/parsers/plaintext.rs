@@ -71,7 +71,7 @@ impl Parser for PlaintextParser {
             match match_state.do_matching(
                 index,
                 minimum_end_index,
-                &*String::from_utf8_lossy(&data[..]),
+                &String::from_utf8_lossy(data),
                 matches,
                 performance,
             ) {

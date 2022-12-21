@@ -20,7 +20,7 @@ fn parse_message(
     matcher: &MatcherState,
     performance: &PerformanceMonitor,
 ) -> Result<(Vec<Match>, ParseResponse)> {
-    let mut reader = CodedInputStream::from_bytes(&input[..]);
+    let mut reader = CodedInputStream::from_bytes(input);
     let mut out_response = ParseResponse::Continue;
     let mut out = vec![];
     while !reader.eof()? {
@@ -35,21 +35,15 @@ fn parse_message(
                 match String::from_utf8(bytes) {
                     Ok(string) => {
                         // we found a UTF-8 string, scan it
-                        matcher.do_matching(position, 0, &*string, &mut out, performance);
+                        matcher.do_matching(position, 0, &string, &mut out, performance);
                     }
                     Err(e) => {
                         // not a UTF-8 string, try to parse as a message
                         let bytes = e.into_bytes();
-                        match parse_message(&bytes[..], position, matcher, performance) {
-                            Ok((results, response)) => {
-                                out.extend(results);
-                                if response != ParseResponse::Continue {
-                                    out_response = response;
-                                }
-                            }
-                            // definitely not a message, byte blob or packed repeated fields
-                            Err(_) => {
-                                // we don't do any parsing on unconfirmed byte blobs
+                        if let Ok((results, response)) = parse_message(&bytes[..], position, matcher, performance) {
+                            out.extend(results);
+                            if response != ParseResponse::Continue {
+                                out_response = response;
                             }
                         }
                     }

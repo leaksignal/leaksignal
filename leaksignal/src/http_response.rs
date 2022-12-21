@@ -23,23 +23,23 @@ use crate::{
 
 const MATCH_PUSH_TIMEOUT: Duration = Duration::from_secs(5);
 
-impl Into<ProtoHeader> for Header {
-    fn into(self) -> ProtoHeader {
+impl From<Header> for ProtoHeader {
+    fn from(val: Header) -> Self {
         ProtoHeader {
-            name: self.name,
-            value: self.value,
+            name: val.name,
+            value: val.value,
         }
     }
 }
 
-impl Into<ProtoMatch> for Match {
-    fn into(self) -> ProtoMatch {
+impl From<Match> for ProtoMatch {
+    fn from(val: Match) -> Self {
         ProtoMatch {
-            category_name: self.category_name,
-            global_start_position: self.global_start_position,
-            global_length: self.global_length,
-            matcher_path: self.matcher_path,
-            matched_value: self.matched_value,
+            category_name: val.category_name,
+            global_start_position: val.global_start_position,
+            global_length: val.global_length,
+            matcher_path: val.matcher_path,
+            matched_value: val.matched_value,
         }
     }
 }
@@ -170,7 +170,7 @@ impl HttpResponseContext {
                 format!("ls.{policy_path}.resp.{category_name}.us_taken"),
                 MetricType::Histogram,
             );
-            metric.set_value(*us_taken as u64);
+            metric.set_value(*us_taken);
         }
 
         if let Some(upstream) = upstream() {
@@ -315,7 +315,7 @@ impl HttpResponseContext {
     }
 
     fn check_token_blocked(&mut self, token: &str) -> bool {
-        if let Some(reason) = block_state().is_ip_blocked(&**TIMESTAMP_PROVIDER, &token) {
+        if let Some(reason) = block_state().is_ip_blocked(&**TIMESTAMP_PROVIDER, token) {
             warn!("blocking request by token {token} due to {reason}");
             if matches!(reason, BlockReason::Ratelimit) {
                 self.early_response(429, vec![], None, Some(&*reason.to_string()));
@@ -404,7 +404,7 @@ impl HttpContext for HttpResponseContext {
             let policy = self.parser_ref().policy();
             let mut service_policy = None;
             for entry in &policy.services {
-                match entry.service_matched(&*local_service) {
+                match entry.service_matched(&local_service) {
                     Err(e) => {
                         error!(
                             "failed to match service {local_service} for entry {entry:?}: {e:?}"
@@ -442,7 +442,7 @@ impl HttpContext for HttpResponseContext {
                     }
                     if let Some(peer_service) = peer_service.as_deref() {
                         if let Some(reason) =
-                            block_state().is_service_blocked(&**TIMESTAMP_PROVIDER, &peer_service)
+                            block_state().is_service_blocked(&**TIMESTAMP_PROVIDER, peer_service)
                         {
                             warn!("blocking request by service {peer_service} due to {reason}");
                             if matches!(reason, BlockReason::Ratelimit) {
@@ -463,7 +463,7 @@ impl HttpContext for HttpResponseContext {
                 self.early_response(403, vec![], None, Some("blocked_token"));
                 return Action::Continue;
             }
-            if self.check_token_blocked(&*token) {
+            if self.check_token_blocked(&token) {
                 return Action::Continue;
             }
         }
@@ -553,7 +553,7 @@ impl HttpContext for HttpResponseContext {
                 self.early_response(403, vec![], None, Some("blocked_token"));
                 return Action::Continue;
             }
-            if self.check_token_blocked(&*token) {
+            if self.check_token_blocked(&token) {
                 return Action::Continue;
             }
         }

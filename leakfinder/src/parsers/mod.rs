@@ -73,10 +73,8 @@ fn prepare_match_state<'a>(
         {
             continue;
         }
-        if !action.category_config.content_types.is_empty() {
-            if !action.category_config.content_types.contains(&content_type) {
-                continue;
-            }
+        if !action.category_config.content_types.is_empty() && !action.category_config.content_types.contains(&content_type) {
+            continue;
         }
 
         if matches!(
@@ -97,8 +95,8 @@ fn prepare_match_state<'a>(
         };
 
         evaluator::prepare_matches(
-            &policy,
-            &**category_name,
+            policy,
+            category_name,
             &mut match_state,
             &metadata,
             &action.category_config.ignore,

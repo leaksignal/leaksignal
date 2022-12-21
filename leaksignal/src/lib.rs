@@ -2,7 +2,6 @@ use dlmalloc::GlobalDlmalloc;
 use leakfinder::TimestampProvider;
 use log::error;
 use proxy_wasm::{traits::RootContext, types::LogLevel};
-use root::EnvoyRootContext;
 use time::TIMESTAMP_PROVIDER;
 
 mod config;
@@ -71,7 +70,7 @@ fn init() {
         );
     }
     proxy_wasm::set_root_context(|_| -> Box<dyn RootContext> {
-        Box::new(EnvoyRootContext::default())
+        Box::<root::EnvoyRootContext>::default()
     });
 }
 

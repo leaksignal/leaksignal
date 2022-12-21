@@ -153,7 +153,7 @@ impl<'a> HttpParser<'a> {
             if self.path_policy.is_none() {
                 if let (Some(path), Some(hostname)) = (&self.path, &self.hostname) {
                     let full_path = format!("{}{}", hostname, path);
-                    self.path_policy = Some(Arc::new(self.policy.get_path_config(&*full_path)));
+                    self.path_policy = Some(Arc::new(self.policy.get_path_config(&full_path)));
                 }
             }
             // token extraction on request body
@@ -169,7 +169,7 @@ impl<'a> HttpParser<'a> {
                         regex,
                         hash,
                     } if &name == header => {
-                        self.token = extract_token_regex(&*value, regex.as_ref(), *hash);
+                        self.token = extract_token_regex(&value, regex.as_ref(), *hash);
                     }
                     TokenExtractionConfig {
                         location: TokenExtractionSite::RequestCookie,
@@ -221,7 +221,7 @@ impl<'a> HttpParser<'a> {
                     regex,
                     hash,
                 }) if &name == header => {
-                    self.token = extract_token_regex(&*value, regex.as_ref(), *hash);
+                    self.token = extract_token_regex(&value, regex.as_ref(), *hash);
                 }
                 _ => (),
             }
