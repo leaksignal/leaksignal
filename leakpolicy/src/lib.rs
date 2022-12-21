@@ -329,7 +329,7 @@ pub struct TokenExtractionConfig {
     pub hash: bool,
 }
 
-#[derive(Default, Clone, Copy, Debug, Serialize, Deserialize, PartialEq)]
+#[derive(Default, Clone, Copy, Debug, Serialize, Deserialize, PartialEq, Eq, PartialOrd, Ord)]
 #[serde(rename_all = "snake_case")]
 pub enum RateLimitGroup {
     Global,
@@ -338,7 +338,7 @@ pub enum RateLimitGroup {
     PerEndpoint,
 }
 
-#[derive(Clone, Copy, Debug, Serialize, Deserialize, PartialEq)]
+#[derive(Clone, Copy, Debug, Serialize, Deserialize, PartialEq, Eq, PartialOrd, Ord)]
 #[serde(rename_all = "snake_case")]
 pub enum RateLimitBy {
     Ip,
