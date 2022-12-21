@@ -1,14 +1,14 @@
 use std::{
     sync::{
         atomic::{AtomicBool, Ordering},
-        Arc,
+        Arc, RwLock, RwLockReadGuard,
     },
     time::{Duration, SystemTime},
 };
 
 use arc_swap::ArcSwap;
 use indexmap::IndexMap;
-use leakfinder::{PolicyHolder, TimestampProvider};
+use leakfinder::{BlockItem, BlockReason, BlockState, PolicyHolder, TimestampProvider};
 use leakpolicy::{parse_policy, Policy};
 use log::{debug, error, warn};
 use prost::Message;
@@ -28,7 +28,7 @@ use crate::{
     http_response::HttpResponseContext,
     proto::{PingMessage, UpdatePolicyRequest, UpdatePolicyResponse},
     time::TIMESTAMP_PROVIDER,
-    GIT_COMMIT,
+    CRATE_VERSION, GIT_COMMIT,
 };
 
 const POLICY_SHARED_QUEUE_PREFIX: &str = "leaksignal_queue_";
@@ -38,10 +38,60 @@ const PROXY_VM: &str = "leaksignal_proxy";
 lazy_static::lazy_static! {
     pub static ref DYN_ENVIRONMENT: ArcSwap<IndexMap<String, String>> = ArcSwap::new(Arc::new(ENVIRONMENT.clone()));
     pub static ref POLICY: Arc<PolicyHolder> = Default::default();
+    static ref BLOCK_STATE: RwLock<BlockState> = Default::default();
     pub static ref LEAKFINDER_CONFIG: leakfinder::Config = leakfinder::Config {
         policy: POLICY.clone(),
         timestamp_source: TIMESTAMP_PROVIDER.clone(),
     };
+}
+
+pub fn block_state() -> RwLockReadGuard<'static, BlockState> {
+    BLOCK_STATE.read().unwrap()
+}
+
+impl Into<BlockReason> for crate::proto::BlockReason {
+    fn into(self) -> BlockReason {
+        match self {
+            crate::proto::BlockReason::Unspecified => BlockReason::Unspecified,
+            crate::proto::BlockReason::Unblock => BlockReason::Unblock,
+            crate::proto::BlockReason::Ratelimit => BlockReason::Ratelimit,
+            crate::proto::BlockReason::Violation => BlockReason::Violation,
+        }
+    }
+}
+
+impl crate::proto::BlockItem {
+    pub fn into_block_item(self, now: u64) -> BlockItem {
+        BlockItem {
+            expire_at: now + self.max_duration_ms,
+            reason: crate::proto::BlockReason::from_i32(self.reason)
+                .map(Into::into)
+                .unwrap_or_default(),
+        }
+    }
+}
+
+impl Into<BlockState> for crate::proto::BlockState {
+    fn into(self) -> BlockState {
+        let now = crate::time::TIMESTAMP_PROVIDER.elapsed().as_millis() as u64;
+        BlockState {
+            ips: self
+                .ips
+                .into_iter()
+                .map(|(k, v)| (k, v.into_block_item(now)))
+                .collect(),
+            tokens: self
+                .tokens
+                .into_iter()
+                .map(|(k, v)| (k, v.into_block_item(now)))
+                .collect(),
+            services: self
+                .services
+                .into_iter()
+                .map(|(k, v)| (k, v.into_block_item(now)))
+                .collect(),
+        }
+    }
 }
 
 #[derive(Serialize)]
@@ -52,6 +102,8 @@ pub enum FilterInboundMessageRef<'a> {
         environment_variables: &'a IndexMap<String, String>,
     },
     UpstreamUpdate(Option<&'a UpstreamConfig>),
+    BlockStateUpdate(&'a BlockState),
+    BlockStateReset,
 }
 
 #[derive(Deserialize)]
@@ -62,6 +114,8 @@ pub enum FilterInboundMessage {
         environment_variables: IndexMap<String, String>,
     },
     UpstreamUpdate(Option<UpstreamConfig>),
+    BlockStateUpdate(BlockState),
+    BlockStateReset,
 }
 
 pub enum RootContextData {
@@ -131,17 +185,26 @@ impl Context for EnvoyRootContext {
                 return;
             }
         };
-        warn!("received new leaksignal policy: {}", response.policy_id);
-
-        let policy: Policy = match parse_policy(&*response.policy) {
-            Ok(x) => x,
-            Err(e) => {
-                error!("failed to parse new policy: {:?}", e);
-                return;
-            }
+        let policy = if !response.legacy_policy_id.is_empty() {
+            Some((response.legacy_policy_id, response.legacy_policy))
+        } else {
+            response.policy.map(|x| (x.policy_id, x.policy))
         };
+        if let Some((policy_id, policy)) = policy {
+            warn!("received new leaksignal policy: {}", policy_id);
 
-        self.do_policy_update(response.policy_id.clone(), policy);
+            match parse_policy(&*policy) {
+                Ok(policy) => {
+                    self.do_policy_update(policy_id.clone(), policy);
+                }
+                Err(e) => {
+                    error!("failed to parse new policy: {:?}", e);
+                }
+            }
+        }
+        if let Some(block_state) = response.block_state {
+            self.do_block_state_update(block_state.into());
+        }
     }
 
     fn on_grpc_stream_close(&mut self, token_id: u32, status_code: u32) {
@@ -204,6 +267,22 @@ impl EnvoyRootContext {
         POLICY.update_policy(policy_id, policy);
     }
 
+    fn do_block_state_update(&mut self, state: BlockState) {
+        if Config::get().mode() == Mode::LocalCollector {
+            self.broadcast_to_workers(FilterInboundMessageRef::BlockStateUpdate(&state));
+        }
+
+        BLOCK_STATE.write().unwrap().merge(state);
+    }
+
+    fn reset_block_state(&mut self) {
+        if Config::get().mode() == Mode::LocalCollector {
+            self.broadcast_to_workers(FilterInboundMessageRef::BlockStateReset);
+        }
+
+        *BLOCK_STATE.write().unwrap() = Default::default();
+    }
+
     fn broadcast_to_workers(&mut self, message: FilterInboundMessageRef) {
         assert_eq!(Config::get().mode(), Mode::LocalCollector);
 
@@ -258,6 +337,7 @@ impl EnvoyRootContext {
                         api_key: upstream.api_key.clone(),
                         deployment_name: upstream.deployment_name.clone(),
                         commit: GIT_COMMIT.to_string(),
+                        semver: CRATE_VERSION.to_string(),
                     };
                     let request = request.encode_to_vec();
 
@@ -287,6 +367,9 @@ impl EnvoyRootContext {
                         None
                     }
                 };
+                if self.policy_stream_id.is_some() {
+                    self.reset_block_state();
+                }
                 self.last_ping_sent = None;
             }
             Mode::Filter if self.data.filter_worker_register_queue().is_none() => {
@@ -560,6 +643,12 @@ impl RootContext for EnvoyRootContext {
                         }
                         FilterInboundMessage::UpstreamUpdate(upstream) => {
                             update_upstream(upstream);
+                        }
+                        FilterInboundMessage::BlockStateUpdate(state) => {
+                            BLOCK_STATE.write().unwrap().merge(state)
+                        }
+                        FilterInboundMessage::BlockStateReset => {
+                            *BLOCK_STATE.write().unwrap() = Default::default();
                         }
                     }
                 }

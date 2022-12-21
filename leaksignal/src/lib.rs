@@ -31,6 +31,8 @@ lazy_static::lazy_static! {
     };
 }
 
+pub const CRATE_VERSION: &str = env!("CARGO_PKG_VERSION");
+
 #[no_mangle]
 #[cfg(target_family = "wasm")]
 pub fn _start() {
@@ -40,9 +42,9 @@ pub fn _start() {
 fn init() {
     std::panic::set_hook(Box::new(|info| {
         let message = if let Some(s) = info.payload().downcast_ref::<&str>() {
-            format!("{}", s)
+            s.to_string()
         } else if let Some(s) = info.payload().downcast_ref::<String>() {
-            format!("{}", s)
+            s.to_string()
         } else {
             format!("<couldn't parse panic message> {:?}", info)
         };

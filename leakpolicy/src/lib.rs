@@ -329,6 +329,43 @@ pub struct TokenExtractionConfig {
     pub hash: bool,
 }
 
+#[derive(Default, Clone, Copy, Debug, Serialize, Deserialize, PartialEq)]
+#[serde(rename_all = "snake_case")]
+pub enum RateLimitGroup {
+    Global,
+    PerService,
+    #[default]
+    PerEndpoint,
+}
+
+#[derive(Clone, Copy, Debug, Serialize, Deserialize, PartialEq)]
+#[serde(rename_all = "snake_case")]
+pub enum RateLimitBy {
+    Ip,
+    Token,
+    Service,
+}
+
+#[derive(Default, Clone, Copy, Debug, Serialize, Deserialize, PartialEq)]
+#[serde(rename_all = "snake_case")]
+pub enum RateLimitAction {
+    Nothing,
+    Alert,
+    #[default]
+    Block,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
+pub struct RateLimitConfig {
+    #[serde(default)]
+    pub grouping: RateLimitGroup,
+    pub by: RateLimitBy,
+    #[serde(default)]
+    pub action: RateLimitAction,
+    pub timespan_secs: u64,
+    pub limit: u64,
+}
+
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
 pub struct EndpointConfig {
     pub matches: SingleOrVec<'static, PathGlob>,
@@ -342,6 +379,8 @@ pub struct EndpointConfig {
     pub token_extractor: Option<Arc<TokenExtractionConfig>>,
     #[serde(flatten, default, skip_serializing_if = "Option::is_none")]
     pub report_style: Option<DataReportStyle>,
+    #[serde(default)]
+    pub rate_limits: Vec<RateLimitConfig>,
 }
 
 fn collected_request_headers_default() -> IndexSet<String> {

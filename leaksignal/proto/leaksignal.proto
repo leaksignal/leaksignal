@@ -61,11 +61,37 @@ message UpdatePolicyRequest {
     optional string api_key = 1;
     string deployment_name = 2;
     string commit = 3;
+    string semver = 4;
+}
+
+message PolicyUpdate {
+    string policy_id = 1;
+    string policy = 2;
+}
+
+enum BlockReason {
+    UNSPECIFIED = 0;
+    UNBLOCK = 1;
+    RATELIMIT = 2;
+    VIOLATION = 3;
+}
+
+message BlockItem {
+    uint64 max_duration_ms = 1;
+    BlockReason reason = 2;
+}
+
+message BlockState {
+    map<string, BlockItem> ips = 1;
+    map<string, BlockItem> tokens = 2;
+    map<string, BlockItem> services = 3;
 }
 
 message UpdatePolicyResponse {
-    string policy_id = 1;
-    string policy = 2;
+    string legacy_policy_id = 1;
+    string legacy_policy = 2;
+    PolicyUpdate policy = 3;
+    BlockState block_state = 4;
 }
 
 message HealthCheckMsg {

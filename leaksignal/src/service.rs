@@ -97,10 +97,10 @@ pub fn local_service_name(get_property: impl FnMut(&str) -> Option<String>) -> O
             "upstream.uri_san_local_certificate",
         ],
     ) {
-        Some(parse_service_name(&*san))
-    } else if let Some(istio_service) = extract_istio_service_from_env(&**environment) {
+        Some(parse_service_name(&san))
+    } else if let Some(istio_service) = extract_istio_service_from_env(&environment) {
         Some(istio_service)
-    } else if let Some(k8s_service) = extract_k8s_service_from_env(&**environment) {
+    } else if let Some(k8s_service) = extract_k8s_service_from_env(&environment) {
         Some(k8s_service)
     } else {
         None

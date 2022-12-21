@@ -2,7 +2,7 @@ use std::{collections::HashMap, time::Duration};
 
 use anyhow::{bail, Result};
 use leakfinder::{
-    BodyContext, FullHeader, Header, HttpParser, Match, ParseResponse, ParsedMatches,
+    BlockReason, BodyContext, FullHeader, Header, HttpParser, Match, ParseResponse, ParsedMatches,
     TimestampProvider,
 };
 use log::{error, warn};
@@ -16,7 +16,7 @@ use crate::{
     config::{upstream, LEAKSIGNAL_SERVICE_NAME},
     metric::Metric,
     proto::{Component, Header as ProtoHeader, Match as ProtoMatch, MatchDataRequest},
-    root::{DYN_ENVIRONMENT, LEAKFINDER_CONFIG},
+    root::{block_state, DYN_ENVIRONMENT, LEAKFINDER_CONFIG},
     time::TIMESTAMP_PROVIDER,
     GIT_COMMIT,
 };
@@ -308,8 +308,23 @@ impl HttpResponseContext {
         }
         for property in INT_CONNECTION_PROPERTIES {
             if let Some(value) = self.get_property_int(property) {
-                self.connection_info.insert(property.to_string(), value.to_string());
+                self.connection_info
+                    .insert(property.to_string(), value.to_string());
             }
+        }
+    }
+
+    fn check_token_blocked(&mut self, token: &str) -> bool {
+        if let Some(reason) = block_state().is_ip_blocked(&**TIMESTAMP_PROVIDER, &token) {
+            warn!("blocking request by token {token} due to {reason}");
+            if matches!(reason, BlockReason::Ratelimit) {
+                self.early_response(429, vec![], None, Some(&*reason.to_string()));
+            } else {
+                self.early_response(403, vec![], None, Some(&*reason.to_string()));
+            }
+            true
+        } else {
+            false
         }
     }
 }
@@ -333,9 +348,7 @@ const STRING_CONNECTION_PROPERTIES: &[&str] = &[
     "upstream.uri_san_peer_certificate",
 ];
 
-const INT_CONNECTION_PROPERTIES: &[&str] = &[
-    "listener_direction",
-];
+const INT_CONNECTION_PROPERTIES: &[&str] = &["listener_direction"];
 
 impl HttpContext for HttpResponseContext {
     fn on_http_request_headers(&mut self, _num_headers: usize, _end_of_stream: bool) -> Action {
@@ -361,6 +374,16 @@ impl HttpContext for HttpResponseContext {
                 warn!("blocking request by ip {ip}");
                 self.parser().with_ip(ip);
                 self.early_response(403, vec![], None, Some("blocked_ip"));
+                return Action::Continue;
+            }
+            if let Some(reason) = block_state().is_ip_blocked(&**TIMESTAMP_PROVIDER, &ip) {
+                warn!("blocking request by ip {ip} due to {reason}");
+                self.parser().with_ip(ip);
+                if matches!(reason, BlockReason::Ratelimit) {
+                    self.early_response(429, vec![], None, Some(&*reason.to_string()));
+                } else {
+                    self.early_response(403, vec![], None, Some(&*reason.to_string()));
+                }
                 return Action::Continue;
             }
             self.parser().with_ip(ip);
@@ -396,7 +419,9 @@ impl HttpContext for HttpResponseContext {
                 }
             }
             if let Some(service_policy) = service_policy {
-                let direction = self.get_property_int("listener_direction").and_then(ListenerDirection::from_i64);
+                let direction = self
+                    .get_property_int("listener_direction")
+                    .and_then(ListenerDirection::from_i64);
                 // envoy notion if inbound/outbound is reversed to ours
                 if !matches!(direction, Some(ListenerDirection::Outbound)) {
                     let peer_service =
@@ -415,14 +440,30 @@ impl HttpContext for HttpResponseContext {
                         }
                         Ok(true) => (),
                     }
+                    if let Some(peer_service) = peer_service.as_deref() {
+                        if let Some(reason) =
+                            block_state().is_service_blocked(&**TIMESTAMP_PROVIDER, &peer_service)
+                        {
+                            warn!("blocking request by service {peer_service} due to {reason}");
+                            if matches!(reason, BlockReason::Ratelimit) {
+                                self.early_response(429, vec![], None, Some(&*reason.to_string()));
+                            } else {
+                                self.early_response(403, vec![], None, Some(&*reason.to_string()));
+                            }
+                            return Action::Continue;
+                        }
+                    }
                 }
             }
         }
 
-        if let Some(token) = self.parser_ref().token() {
-            if self.parser_ref().policy().blocked_tokens.contains(token) {
+        if let Some(token) = self.parser_ref().token().map(|x| x.to_string()) {
+            if self.parser_ref().policy().blocked_tokens.contains(&*token) {
                 warn!("blocking request by token {token}");
                 self.early_response(403, vec![], None, Some("blocked_token"));
+                return Action::Continue;
+            }
+            if self.check_token_blocked(&*token) {
                 return Action::Continue;
             }
         }
@@ -506,10 +547,14 @@ impl HttpContext for HttpResponseContext {
             self.parser()
                 .with_response_headers([FullHeader { name, value }]);
         }
-        if let Some(token) = self.parser_ref().token() {
-            if self.parser_ref().policy().blocked_tokens.contains(token) {
+        if let Some(token) = self.parser_ref().token().map(|x| x.to_string()) {
+            if self.parser_ref().policy().blocked_tokens.contains(&*token) {
                 warn!("blocking response by token {token}");
                 self.early_response(403, vec![], None, Some("blocked_token"));
+                return Action::Continue;
+            }
+            if self.check_token_blocked(&*token) {
+                return Action::Continue;
             }
         }
 
