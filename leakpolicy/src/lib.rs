@@ -580,7 +580,7 @@ impl Policy {
                 .iter()
                 .next()
                 .map(|(x, _)| x.to_string())
-                .unwrap_or_else(String::new),
+                .unwrap_or_default(),
             configuration: output,
             token_extractor,
         }
