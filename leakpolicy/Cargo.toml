@@ -11,10 +11,10 @@ readme = "../README.md"
 homepage = "https://www.leaksignal.com/"
 
 [dependencies]
-serde = { version = "1.0", features = ["derive", "rc"] }
-serde_yaml = "0.8"
-fancy-regex = "0.10"
-indexmap = { version = "1.9", features = ["serde", "std"] }
-anyhow = "1.0"
-log = "0.4"
-serde_single_or_vec2 = "1.0"
+serde = { workspace = true, features = ["derive", "rc"] }
+serde_yaml = { workspace = true }
+fancy-regex = { workspace = true }
+indexmap = { workspace = true, features = ["serde", "std"] }
+anyhow = { workspace = true }
+log = { workspace = true }
+serde_single_or_vec2 = { workspace = true }

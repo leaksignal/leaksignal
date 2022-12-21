@@ -27,8 +27,8 @@ mod regex_serde {
 
     pub fn deserialize<'de, D: Deserializer<'de>>(deserializer: D) -> Result<Regex, D::Error> {
         let raw: Cow<'de, str> = Deserialize::deserialize(deserializer)?;
-        Regex::new(&*raw)
-            .map_err(|e| serde::de::Error::invalid_value(Unexpected::Str(&*raw), &&*e.to_string()))
+        Regex::new(&raw)
+            .map_err(|e| serde::de::Error::invalid_value(Unexpected::Str(&raw), &&*e.to_string()))
     }
 }
 
@@ -463,7 +463,7 @@ impl ServicePolicy {
 
     pub fn block_unknown_services(&self) -> bool {
         self.block_unknown_services
-            .unwrap_or_else(|| !self.whitelist.is_empty())
+            .unwrap_or(!self.whitelist.is_empty())
     }
 
     pub fn inbound_allowed(&self, service_name: Option<&str>) -> Result<bool> {
@@ -527,7 +527,7 @@ pub struct PathConfiguration {
 }
 
 impl Policy {
-    pub fn get_path_config<'a>(&'a self, path: &str) -> PathPolicy {
+    pub fn get_path_config(&self, path: &str) -> PathPolicy {
         let path = if let Some((left, _)) = path.split_once('?') {
             left
         } else {
@@ -565,7 +565,7 @@ impl Policy {
                                 .report_style
                                 .or(config.report_style)
                                 .unwrap_or(self.report_style),
-                            search: config.search.clone(),
+                            search: config.search,
                         },
                     );
                 }
@@ -580,7 +580,7 @@ impl Policy {
                 .iter()
                 .next()
                 .map(|(x, _)| x.to_string())
-                .unwrap_or_else(|| String::new()),
+                .unwrap_or_else(String::new),
             configuration: output,
             token_extractor,
         }

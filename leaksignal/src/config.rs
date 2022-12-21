@@ -70,7 +70,7 @@ impl Deref for ConfigRef {
     type Target = Config;
 
     fn deref(&self) -> &Self::Target {
-        (&**self.0).as_ref().unwrap()
+        (**self.0).as_ref().unwrap()
     }
 }
 
@@ -137,13 +137,14 @@ pub struct UpstreamConfig {
 pub const LEAKSIGNAL_SERVICE_NAME: &str = "leaksignal.Leaksignal";
 
 pub fn create_service_definition(upstream_cluster: &str) -> Vec<u8> {
-    let mut service = grpc_service::GrpcService::default();
-    service.target_specifier = Some(TargetSpecifier::EnvoyGrpc(EnvoyGrpc {
-        cluster_name: upstream_cluster.to_string(),
-        authority: upstream_cluster.to_string(),
-    }));
-    let service = service.encode_to_vec();
-    service
+    let service = grpc_service::GrpcService {
+        target_specifier: Some(TargetSpecifier::EnvoyGrpc(EnvoyGrpc {
+            cluster_name: upstream_cluster.to_string(),
+            authority: upstream_cluster.to_string(),
+        })),
+        ..Default::default()
+    };
+    service.encode_to_vec()
 }
 
 pub fn update_upstream(config: Option<UpstreamConfig>) {
@@ -156,7 +157,7 @@ impl Deref for UpstreamConfigHandle {
     type Target = UpstreamConfig;
 
     fn deref(&self) -> &Self::Target {
-        (&**self.0).as_ref().unwrap()
+        (**self.0).as_ref().unwrap()
     }
 }
 

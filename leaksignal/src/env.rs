@@ -17,7 +17,7 @@ fn read_environment() -> Result<IndexMap<String, String>> {
         let cstr = unsafe { CStr::from_ptr(entry as *const i8) };
         let (name, value) = cstr
             .to_str()?
-            .split_once("=")
+            .split_once('=')
             .context("missing = in environment variable")?;
         out.insert(name.to_string(), value.to_string());
     }

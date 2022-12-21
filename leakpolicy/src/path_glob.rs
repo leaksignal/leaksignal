@@ -88,11 +88,11 @@ impl AsRef<str> for GlobComponent {
         match self {
             GlobComponent::AnyOne => "*",
             GlobComponent::AnyMany => "**",
-            GlobComponent::Regex(s, _) => &**s,
-            GlobComponent::Contains(s) => &**s,
-            GlobComponent::Prefix(s) => &**s,
-            GlobComponent::Suffix(s) => &**s,
-            GlobComponent::Literal(s) => &**s,
+            GlobComponent::Regex(s, _) => s,
+            GlobComponent::Contains(s) => s,
+            GlobComponent::Prefix(s) => s,
+            GlobComponent::Suffix(s) => s,
+            GlobComponent::Literal(s) => s,
         }
     }
 }
@@ -174,7 +174,7 @@ impl<'de> Deserialize<'de> for PathGlob {
         let raw = String::deserialize(deserializer)?;
         raw.parse().map_err(|e| {
             serde::de::Error::invalid_value(
-                Unexpected::Str(&*raw),
+                Unexpected::Str(&raw),
                 &&*format!("invalid PathGlob: {}", e),
             )
         })
@@ -199,14 +199,14 @@ impl FromStr for PathGlob {
                 Ok(match item {
                     "*" => GlobComponent::AnyOne,
                     "**" => GlobComponent::AnyMany,
-                    s if s.starts_with("#") => {
+                    s if s.starts_with('#') => {
                         GlobComponent::Regex(s.to_string(), Regex::new(&s[1..])?)
                     }
-                    s if s.starts_with("*") && s.ends_with("*") => {
+                    s if s.starts_with('*') && s.ends_with('*') => {
                         GlobComponent::Contains(s.to_string())
                     }
-                    s if s.starts_with("*") => GlobComponent::Suffix(s.to_string()),
-                    s if s.ends_with("*") => GlobComponent::Prefix(s.to_string()),
+                    s if s.starts_with('*') => GlobComponent::Suffix(s.to_string()),
+                    s if s.ends_with('*') => GlobComponent::Prefix(s.to_string()),
                     s => GlobComponent::Literal(s.to_string()),
                 })
             })

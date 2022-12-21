@@ -167,7 +167,7 @@ async fn body_task(
 
         match parser
             .parse(
-                &*policy,
+                &policy,
                 &mut reader,
                 configuration,
                 &mut matches,
