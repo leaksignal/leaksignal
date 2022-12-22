@@ -66,36 +66,6 @@ ratelimits:
     action: block
     timespan_secs: 60
     limit: 1500
-
-
-
-#[derive(Clone, Copy, Debug, Serialize, Deserialize, PartialEq, Eq, PartialOrd, Ord)]
-#[serde(rename_all = "snake_case")]
-pub enum RateLimitBy {
-    Ip,
-    Token,
-    Service,
-}
-
-#[derive(Default, Clone, Copy, Debug, Serialize, Deserialize, PartialEq)]
-#[serde(rename_all = "snake_case")]
-pub enum RateLimitAction {
-    Nothing,
-    Alert,
-    #[default]
-    Block,
-}
-
-#[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
-pub struct RateLimitConfig {
-    #[serde(default)]
-    pub grouping: RateLimitGroup,
-    pub by: RateLimitBy,
-    #[serde(default)]
-    pub action: RateLimitAction,
-    pub timespan_secs: u64,
-    pub limit: u64,
-}
 endpoints:
   - matches: "**"
     config:
