@@ -674,6 +674,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "ipnetwork"
+version = "0.20.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "bf466541e9d546596ee94f9f69590f89473455f88372423e0008fc1a7daf100e"
+dependencies = [
+ "serde",
+]
+
+[[package]]
 name = "itertools"
 version = "0.10.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -741,6 +750,7 @@ dependencies = [
  "anyhow",
  "fancy-regex",
  "indexmap",
+ "ipnetwork",
  "log",
  "serde",
  "serde_single_or_vec2",

@@ -31,10 +31,12 @@ fn prepare_match_state<'a>(
             continue;
         }
 
-        if !action.category_config.content_types.is_empty() && !action
+        if !action.category_config.content_types.is_empty()
+            && !action
                 .category_config
                 .content_types
-                .contains(&ContentType::Json) {
+                .contains(&ContentType::Json)
+        {
             continue;
         }
 

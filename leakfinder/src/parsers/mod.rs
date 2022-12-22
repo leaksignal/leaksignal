@@ -73,7 +73,9 @@ fn prepare_match_state<'a>(
         {
             continue;
         }
-        if !action.category_config.content_types.is_empty() && !action.category_config.content_types.contains(&content_type) {
+        if !action.category_config.content_types.is_empty()
+            && !action.category_config.content_types.contains(&content_type)
+        {
             continue;
         }
 
