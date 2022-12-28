@@ -41,6 +41,7 @@ wasi = "0.11.0"
 url = "2.3"
 build-data = "0.1"
 prost-build = "0.10"
+ipnetwork = "0.20"
 
 leakfinder = { path = "leakfinder" }
 leakpolicy = { path = "leakpolicy" }

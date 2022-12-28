@@ -18,3 +18,4 @@ indexmap = { workspace = true, features = ["serde", "std"] }
 anyhow = { workspace = true }
 log = { workspace = true }
 serde_single_or_vec2 = { workspace = true }
+ipnetwork = { workspace = true, features = ["serde"] }
