@@ -1,5 +1,6 @@
 use anyhow::Result;
 use leakpolicy::MatchContext;
+use std::collections::VecDeque;
 
 mod parse;
 
@@ -31,10 +32,12 @@ fn prepare_match_state<'a>(
             continue;
         }
 
-        if !action.category_config.content_types.is_empty() && !action
+        if !action.category_config.content_types.is_empty()
+            && !action
                 .category_config
                 .content_types
-                .contains(&ContentType::Json) {
+                .contains(&ContentType::Json)
+        {
             continue;
         }
 
@@ -98,6 +101,101 @@ fn prepare_match_state<'a>(
     (key_match_state, value_match_state)
 }
 
+struct SegmentMap {
+    /// original starting index
+    original: u64,
+    /// start and end index in the current buffer
+    buffered: (u64, u64),
+}
+
+/// wrapper around `MatcherState` to aid in batched matching
+struct JsonMatcher<'a> {
+    matcher: MatcherState<'a>,
+    performance: &'a PerformanceMonitor,
+    /// buffer of segments for the next batch of matching
+    str_buf: String,
+    /// index mappings corresponding to the current `str_buf`
+    idx_map: VecDeque<SegmentMap>,
+    /// buffer of matches with uncorrected indexes
+    match_buf: Vec<Match>,
+}
+
+impl<'a> JsonMatcher<'a> {
+    /// 1mb buffer limit
+    const BATCH_SIZE_LIMIT: usize = 1_000_000;
+
+    fn new(matcher: MatcherState<'a>, performance: &'a PerformanceMonitor) -> Self {
+        Self {
+            matcher,
+            performance,
+            str_buf: Default::default(),
+            idx_map: Default::default(),
+            match_buf: Default::default(),
+        }
+    }
+
+    fn process(
+        &mut self,
+        matches: &mut Vec<Match>,
+        key: String,
+        start: usize,
+    ) -> Option<ParseResponse> {
+        // push newline to avoid matches across multiple keys
+        self.str_buf.push('\n');
+        let buf_start = self.str_buf.len();
+        self.str_buf.push_str(&key);
+
+        // create mapping
+        self.idx_map.push_back(SegmentMap {
+            original: start as u64,
+            buffered: (buf_start as u64, self.str_buf.len() as u64),
+        });
+
+        if self.str_buf.len() >= Self::BATCH_SIZE_LIMIT {
+            // populate `match_buf` with matches
+            let match_result = self.matcher.do_matching(
+                0,
+                0,
+                &self.str_buf,
+                &mut self.match_buf,
+                self.performance,
+            );
+
+            // sort matches so that we check indexes in order.
+            // this allows us to ignore previously checked segments when searching
+            self.match_buf.sort_by(|a, b| {
+                a.global_start_position
+                    .unwrap()
+                    .cmp(&b.global_start_position.unwrap())
+            });
+
+            for m in &mut self.match_buf {
+                let start = m.global_start_position.unwrap();
+
+                // advance to the currently matched segment
+                let skip_n = self
+                    .idx_map
+                    .iter()
+                    .position(|o| start >= o.buffered.0)
+                    .unwrap();
+                self.idx_map.rotate_left(skip_n);
+                let offset = &self.idx_map[0];
+
+                // restore index of match
+                m.global_start_position = Some(offset.original + (start - offset.buffered.0));
+            }
+
+            // store matches and clear buffers
+            matches.append(&mut self.match_buf);
+            self.idx_map.clear();
+            self.str_buf.clear();
+            (match_result == ParseResponse::Block).then_some(match_result)
+        } else {
+            None
+        }
+    }
+}
+
 pub struct JsonParser;
 
 #[async_trait::async_trait(?Send)]
@@ -111,35 +209,17 @@ impl Parser for JsonParser {
         performance: &PerformanceMonitor,
     ) -> Result<ParseResponse> {
         let (key_matcher, value_matcher) = prepare_match_state(policy, configuration);
+        let mut key_matcher = JsonMatcher::new(key_matcher, performance);
+        let mut value_matcher = JsonMatcher::new(value_matcher, performance);
 
-        let mut key_matches = vec![];
-
+        let mut key_matches = Vec::new();
         parse::parse_json(
             body,
-            |key, start, _end| match key_matcher.do_matching(
-                start,
-                0,
-                &key,
-                &mut key_matches,
-                performance,
-            ) {
-                ParseResponse::Continue => None,
-                ParseResponse::Block => Some(ParseResponse::Block),
-            },
-            |value, start, _end| match value_matcher.do_matching(
-                start,
-                0,
-                &value,
-                matches,
-                performance,
-            ) {
-                ParseResponse::Continue => None,
-                ParseResponse::Block => Some(ParseResponse::Block),
-            },
+            |key, start, _| key_matcher.process(&mut key_matches, key, start),
+            |value, start, _| value_matcher.process(matches, value, start),
         )
         .await?;
-
-        matches.extend(key_matches);
+        matches.append(&mut key_matches);
 
         Ok(ParseResponse::Continue)
     }
