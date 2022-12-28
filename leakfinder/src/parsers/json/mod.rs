@@ -162,6 +162,8 @@ impl<'a> JsonMatcher<'a> {
 
     /// match on the current batch, appending matches to `matches` then resetting the batch state
     fn match_batch(&mut self, matches: &mut Vec<Match>) -> Option<ParseResponse> {
+        // TODO: logging displays the uncorrected indexes.
+        //      not sure how to get around this without using a near-duplicate custom matching function
         // populate `match_buf` with matches
         let match_result =
             self.matcher
@@ -185,7 +187,7 @@ impl<'a> JsonMatcher<'a> {
                 .position(|o| match_start >= o.buffered.0 && match_start < o.buffered.1)
                 .unwrap();
             self.idx_map.rotate_left(skip_n);
-            let offset = &self.idx_map.front().unwrap();
+            let offset = &self.idx_map[0];
 
             // restore index of match
             m.global_start_position = Some(offset.original + (match_start - offset.buffered.0));
