@@ -134,16 +134,17 @@ impl<'a> JsonMatcher<'a> {
         }
     }
 
+    /// add some data and its index into the batch and perform matching if buf is larger than `Self::BATCH_SIZE_LIMIT`
     fn process(
         &mut self,
         matches: &mut Vec<Match>,
-        key: String,
+        data: String,
         start: usize,
     ) -> Option<ParseResponse> {
         // push newline to avoid matches across multiple keys
         self.str_buf.push('\n');
         let buf_start = self.str_buf.len();
-        self.str_buf.push_str(&key);
+        self.str_buf.push_str(&data);
 
         // create mapping
         self.idx_map.push_back(SegmentMap {
@@ -152,47 +153,48 @@ impl<'a> JsonMatcher<'a> {
         });
 
         if self.str_buf.len() >= Self::BATCH_SIZE_LIMIT {
-            // populate `match_buf` with matches
-            let match_result = self.matcher.do_matching(
-                0,
-                0,
-                &self.str_buf,
-                &mut self.match_buf,
-                self.performance,
-            );
-
-            // sort matches so that we check indexes in order.
-            // this allows us to ignore previously checked segments when searching
-            self.match_buf.sort_by(|a, b| {
-                a.global_start_position
-                    .unwrap()
-                    .cmp(&b.global_start_position.unwrap())
-            });
-
-            for m in &mut self.match_buf {
-                let start = m.global_start_position.unwrap();
-
-                // advance to the currently matched segment
-                let skip_n = self
-                    .idx_map
-                    .iter()
-                    .position(|o| start >= o.buffered.0)
-                    .unwrap();
-                self.idx_map.rotate_left(skip_n);
-                let offset = &self.idx_map[0];
-
-                // restore index of match
-                m.global_start_position = Some(offset.original + (start - offset.buffered.0));
-            }
-
-            // store matches and clear buffers
-            matches.append(&mut self.match_buf);
-            self.idx_map.clear();
-            self.str_buf.clear();
-            (match_result == ParseResponse::Block).then_some(match_result)
+            self.match_batch(matches)
         } else {
             None
         }
+    }
+
+    /// match on the current batch, appending matches to `matches` then resetting the batch state
+    fn match_batch(&mut self, matches: &mut Vec<Match>) -> Option<ParseResponse> {
+        // populate `match_buf` with matches
+        let match_result =
+            self.matcher
+                .do_matching(0, 0, &self.str_buf, &mut self.match_buf, self.performance);
+
+        // sort matches so that we check indexes in order.
+        // this allows us to ignore previously checked segments when searching
+        self.match_buf.sort_by(|a, b| {
+            a.global_start_position
+                .unwrap()
+                .cmp(&b.global_start_position.unwrap())
+        });
+
+        for m in &mut self.match_buf {
+            let start = m.global_start_position.unwrap();
+
+            // advance to the currently matched segment
+            let skip_n = self
+                .idx_map
+                .iter()
+                .position(|o| start >= o.buffered.0)
+                .unwrap();
+            self.idx_map.rotate_left(skip_n);
+            let offset = &self.idx_map[0];
+
+            // restore index of match
+            m.global_start_position = Some(offset.original + (start - offset.buffered.0));
+        }
+
+        // store matches and clear buffers
+        matches.append(&mut self.match_buf);
+        self.idx_map.clear();
+        self.str_buf.clear();
+        (match_result == ParseResponse::Block).then_some(match_result)
     }
 }
 
@@ -219,6 +221,9 @@ impl Parser for JsonParser {
             |value, start, _| value_matcher.process(matches, value, start),
         )
         .await?;
+        // perform final match on any pending batches
+        key_matcher.match_batch(&mut key_matches);
+        value_matcher.match_batch(matches);
         matches.append(&mut key_matches);
 
         Ok(ParseResponse::Continue)
