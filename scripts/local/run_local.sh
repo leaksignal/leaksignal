@@ -16,6 +16,6 @@ ENVOY_CONFIG=${ENVOY_CONFIG:-./config/envoy_local.yaml}
 envsubst < $ENVOY_CONFIG > ./config/$ENVOY_YAML
 
 cp ../../target/wasm32-unknown-unknown/release/leaksignal.wasm .
-sudo docker compose build --no-cache
+sudo -E docker-compose build --no-cache
 rm -f leaksignal.wasm
-sudo docker compose up
+sudo -E docker-compose up

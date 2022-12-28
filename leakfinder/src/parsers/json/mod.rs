@@ -101,6 +101,7 @@ fn prepare_match_state<'a>(
     (key_match_state, value_match_state)
 }
 
+#[derive(Debug)]
 struct SegmentMap {
     /// original starting index
     original: u64,
@@ -175,19 +176,19 @@ impl<'a> JsonMatcher<'a> {
         });
 
         for m in &mut self.match_buf {
-            let start = m.global_start_position.unwrap();
+            let match_start = m.global_start_position.unwrap();
 
             // advance to the currently matched segment
             let skip_n = self
                 .idx_map
                 .iter()
-                .position(|o| start >= o.buffered.0)
+                .position(|o| match_start >= o.buffered.0 && match_start < o.buffered.1)
                 .unwrap();
             self.idx_map.rotate_left(skip_n);
-            let offset = &self.idx_map[0];
+            let offset = &self.idx_map.front().unwrap();
 
             // restore index of match
-            m.global_start_position = Some(offset.original + (start - offset.buffered.0));
+            m.global_start_position = Some(offset.original + (match_start - offset.buffered.0));
         }
 
         // store matches and clear buffers
