@@ -380,7 +380,7 @@ pub enum RateLimitFilter {
 
 impl Default for RateLimitFilter {
     fn default() -> Self {
-        Self::All(vec![])
+        Self::All(Vec::default())
     }
 }
 
@@ -396,57 +396,29 @@ impl RateLimitFilter {
     pub fn matches(&self, input: &RateLimitFilterInput<'_>) -> Result<bool> {
         Ok(match self {
             RateLimitFilter::Endpoint(endpoints) => {
-                for endpoint in endpoints.iter() {
-                    if endpoint.matches(input.endpoint) {
-                        return Ok(true);
-                    }
-                }
-                false
+                endpoints.iter().any(|x| x.matches(input.endpoint))
             }
             RateLimitFilter::ExcludeEndpoint(endpoints) => {
-                for endpoint in endpoints.iter() {
-                    if endpoint.matches(input.endpoint) {
-                        return Ok(false);
-                    }
-                }
-                true
+                !endpoints.iter().any(|x| x.matches(input.endpoint))
             }
             RateLimitFilter::PeerService(matchers) => {
-                Matcher::match_all(input.peer_service, &matchers[..])?
+                Matcher::match_all(input.peer_service, &matchers)?
             }
             RateLimitFilter::ExcludePeerService(matchers) => {
-                !Matcher::match_all(input.peer_service, &matchers[..])?
+                !Matcher::match_all(input.peer_service, &matchers)?
             }
             RateLimitFilter::LocalService(matchers) => {
-                Matcher::match_all(input.peer_service, &matchers[..])?
+                Matcher::match_all(input.local_service, &matchers)?
             }
             RateLimitFilter::ExcludeLocalService(matchers) => {
-                !Matcher::match_all(input.peer_service, &matchers[..])?
+                !Matcher::match_all(input.local_service, &matchers)?
             }
-            RateLimitFilter::Token(matchers) => {
-                Matcher::match_all(input.peer_service, &matchers[..])?
-            }
-            RateLimitFilter::ExcludeToken(matchers) => {
-                !Matcher::match_all(input.peer_service, &matchers[..])?
-            }
-            RateLimitFilter::Ip(matchers) => {
-                for matcher in matchers.iter() {
-                    if matcher.contains(input.ip) {
-                        return Ok(true);
-                    }
-                }
-                false
-            }
-            RateLimitFilter::ExcludeIp(matchers) => {
-                for matcher in matchers.iter() {
-                    if matcher.contains(input.ip) {
-                        return Ok(false);
-                    }
-                }
-                true
-            }
-            RateLimitFilter::Any(filters) => Self::matches_any(&filters[..], input)?,
-            RateLimitFilter::All(filters) => Self::matches_all(&filters[..], input)?,
+            RateLimitFilter::Token(matchers) => Matcher::match_all(input.token, &matchers)?,
+            RateLimitFilter::ExcludeToken(matchers) => !Matcher::match_all(input.token, &matchers)?,
+            RateLimitFilter::Ip(matchers) => matchers.iter().any(|x| x.contains(input.ip)),
+            RateLimitFilter::ExcludeIp(matchers) => !matchers.iter().any(|x| x.contains(input.ip)),
+            RateLimitFilter::Any(filters) => Self::matches_any(&filters, input)?,
+            RateLimitFilter::All(filters) => Self::matches_all(&filters, input)?,
         })
     }
 

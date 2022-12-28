@@ -41,7 +41,7 @@ fn parse_message(
                         // not a UTF-8 string, try to parse as a message
                         let bytes = e.into_bytes();
                         if let Ok((results, response)) =
-                            parse_message(&bytes[..], position, matcher, performance)
+                            parse_message(&bytes, position, matcher, performance)
                         {
                             out.extend(results);
                             if response != ParseResponse::Continue {
