@@ -38,7 +38,7 @@ categories:
       max_distance: 64
       interest: group1
 ratelimits:
-  - grouping: service
+  - grouping: per_service
     by: service
     filter:
       any:
@@ -47,7 +47,7 @@ ratelimits:
     action: block
     timespan_secs: 30
     limit: 3000
-  - grouping: endpoint
+  - grouping: per_endpoint
     by: ip
     filter:
       all:
@@ -56,7 +56,7 @@ ratelimits:
     action: alert
     timespan_secs: 60
     limit: 750
-  - grouping: endpoint
+  - grouping: per_endpoint
     by: ip
     filter:
       all:
