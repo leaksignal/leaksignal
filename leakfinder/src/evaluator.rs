@@ -1,8 +1,8 @@
 use std::collections::{BTreeMap, HashSet};
 
-use fancy_regex::Regex;
 use leakpolicy::{CorrelateInterest, DataReportStyle, MatchGroup};
 use log::{debug, error, info, warn};
+use regex::Regex;
 use smallvec::SmallVec;
 
 use crate::{
@@ -253,7 +253,6 @@ impl<'a> MatcherState<'a> {
                 handle = Some(performance.measure(&regex.metadata.category_name));
             }
             for matching in regex.regex.find_iter(source) {
-                let matching = matching.unwrap();
                 if regex.ignore.iter().any(|x| x.contains(matching.as_str())) {
                     continue;
                 }

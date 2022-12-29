@@ -20,7 +20,6 @@ log = { workspace = true }
 anyhow = { workspace = true }
 arc-swap = { workspace = true }
 serde_yaml = { workspace = true }
-fancy-regex = { workspace = true }
 regex = { workspace = true }
 indexmap = { workspace = true, features = ["serde", "std"] }
 rand = { workspace = true }

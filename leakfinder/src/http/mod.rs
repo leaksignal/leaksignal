@@ -90,7 +90,7 @@ impl Config {
 fn extract_token_regex(value: &str, regex: Option<&RegexWrapper>, hash: bool) -> Option<String> {
     let value = match regex {
         Some(RegexWrapper(regex)) => {
-            let captures = regex.captures(value).ok()??;
+            let captures = regex.captures(value)?;
             if let Some(captured) = captures.get(1) {
                 captured.as_str()
             } else {

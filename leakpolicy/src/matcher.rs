@@ -5,7 +5,7 @@ use std::{
 };
 
 use anyhow::Result;
-use fancy_regex::Regex;
+use regex::Regex;
 use serde::{de::Unexpected, Deserialize, Deserializer, Serialize, Serializer};
 
 #[derive(Clone, Debug)]
@@ -138,11 +138,11 @@ impl AsRef<Matcher> for Matcher {
 
 impl Matcher {
     /// Returns `true` if this matcher individually matches the given text. `except`/`except_regex` are matched as if they were not `except`-class.
-    pub fn matches(&self, input: &str) -> Result<bool> {
-        Ok(match &self.mode {
-            Mode::Regex(x) | Mode::ExceptRegex(x) => x.is_match(input)?,
+    pub fn matches(&self, input: &str) -> bool {
+        match &self.mode {
+            Mode::Regex(x) | Mode::ExceptRegex(x) => x.is_match(input),
             Mode::Except(x) | Mode::Raw(x) => input == x,
-        })
+        }
     }
 
     /// Returns `true` if this is a negative matcher.
@@ -151,23 +151,23 @@ impl Matcher {
     }
 
     /// Matches a slice of matchers, properly evaluating negative rules.
-    pub fn match_all<A: AsRef<Matcher>>(input: &str, matchers: &[A]) -> Result<bool> {
+    pub fn match_all<A: AsRef<Matcher>>(input: &str, matchers: &[A]) -> bool {
         let mut matched = None::<bool>;
         for rule in matchers {
             let item = rule.as_ref();
             if matched == Some(true) && !item.is_exception() {
                 continue;
             }
-            if item.matches(input)? {
+            if item.matches(input) {
                 if item.is_exception() {
-                    return Ok(false);
+                    return false;
                 }
                 matched = Some(true);
             } else if !item.is_exception() {
                 matched = Some(false);
             }
         }
-        Ok(matched.unwrap_or(true))
+        matched.unwrap_or(true)
     }
 }
 
@@ -186,28 +186,28 @@ mod tests {
         let except_regex: Matcher = "except_regex:ta.*t".parse().unwrap();
         let except_regex2: Matcher = "except_regex:tb.*t".parse().unwrap();
 
-        assert!(raw.matches("test").unwrap());
-        assert!(!raw.matches("test2").unwrap());
-        assert!(!raw.matches("2test").unwrap());
-        assert!(raw2.matches("test").unwrap());
-        assert!(!raw2.matches("test2").unwrap());
-        assert!(!raw2.matches("2test").unwrap());
-        assert!(regex.matches("test").unwrap());
-        assert!(!regex.matches("test2").unwrap());
-        assert!(!regex.matches("2test").unwrap());
-        assert!(regex2.matches("test").unwrap());
-        assert!(!regex2.matches("test2").unwrap());
-        assert!(!regex2.matches("2test").unwrap());
+        assert!(raw.matches("test"));
+        assert!(!raw.matches("test2"));
+        assert!(!raw.matches("2test"));
+        assert!(raw2.matches("test"));
+        assert!(!raw2.matches("test2"));
+        assert!(!raw2.matches("2test"));
+        assert!(regex.matches("test"));
+        assert!(!regex.matches("test2"));
+        assert!(!regex.matches("2test"));
+        assert!(regex2.matches("test"));
+        assert!(!regex2.matches("test2"));
+        assert!(!regex2.matches("2test"));
 
-        assert!(regex2.matches("tast").unwrap());
-        assert!(!regex2.matches("taste").unwrap());
+        assert!(regex2.matches("tast"));
+        assert!(!regex2.matches("taste"));
 
-        assert!(Matcher::match_all("test", &[&regex2, &except]).unwrap());
-        assert!(!Matcher::match_all("tast", &[&regex2, &except]).unwrap());
-        assert!(!Matcher::match_all("tset", &[&except2, &regex2, &except]).unwrap());
-        assert!(!Matcher::match_all("tasst", &[&regex2, &except_regex]).unwrap());
-        assert!(Matcher::match_all("tbest", &[&regex2, &except_regex]).unwrap());
-        assert!(!Matcher::match_all("tbsst", &[&regex2, &except_regex2]).unwrap());
-        assert!(Matcher::match_all("taest", &[&regex2, &except_regex2]).unwrap());
+        assert!(Matcher::match_all("test", &[&regex2, &except]));
+        assert!(!Matcher::match_all("tast", &[&regex2, &except]));
+        assert!(!Matcher::match_all("tset", &[&except2, &regex2, &except]));
+        assert!(!Matcher::match_all("tasst", &[&regex2, &except_regex]));
+        assert!(Matcher::match_all("tbest", &[&regex2, &except_regex]));
+        assert!(!Matcher::match_all("tbsst", &[&regex2, &except_regex2]));
+        assert!(Matcher::match_all("taest", &[&regex2, &except_regex2]));
     }
 }

@@ -122,8 +122,8 @@ struct JsonMatcher<'a> {
 }
 
 impl<'a> JsonMatcher<'a> {
-    /// 1mb buffer limit
-    const BATCH_SIZE_LIMIT: usize = 1_000;
+    /// 10kb buffer limit
+    const BATCH_SIZE_LIMIT: usize = 10_000;
 
     fn new(matcher: MatcherState<'a>, performance: &'a PerformanceMonitor) -> Self {
         Self {

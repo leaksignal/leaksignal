@@ -5,8 +5,8 @@ use std::{
 };
 
 use anyhow::Result;
-use fancy_regex::Regex;
 use indexmap::{IndexMap, IndexSet};
+use regex::Regex;
 use serde::{Deserialize, Serialize};
 
 mod matcher;
@@ -18,7 +18,7 @@ use serde_single_or_vec2::SingleOrVec;
 mod regex_serde {
     use std::borrow::Cow;
 
-    use fancy_regex::Regex;
+    use regex::Regex;
     use serde::{de::Unexpected, Deserialize, Deserializer, Serialize, Serializer};
 
     pub fn serialize<S: Serializer>(regex: &Regex, serializer: S) -> Result<S::Ok, S::Error> {
@@ -457,7 +457,7 @@ pub struct ServicePolicy {
 }
 
 impl ServicePolicy {
-    pub fn service_matched(&self, service_name: &str) -> Result<bool> {
+    pub fn service_matched(&self, service_name: &str) -> bool {
         Matcher::match_all(service_name, &self.services[..])
     }
 
@@ -466,14 +466,14 @@ impl ServicePolicy {
             .unwrap_or(!self.whitelist.is_empty())
     }
 
-    pub fn inbound_allowed(&self, service_name: Option<&str>) -> Result<bool> {
+    pub fn inbound_allowed(&self, service_name: Option<&str>) -> bool {
         let Some(service_name) = service_name else {
-            return Ok(!self.block_unknown_services());
+            return !self.block_unknown_services();
         };
         if !self.whitelist.is_empty() {
             Matcher::match_all(service_name, &self.whitelist[..])
         } else {
-            Ok(!Matcher::match_all(service_name, &self.blacklist[..])?)
+            !Matcher::match_all(service_name, &self.blacklist[..])
         }
     }
 }
