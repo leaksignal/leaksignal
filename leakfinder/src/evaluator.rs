@@ -68,6 +68,7 @@ fn prepare_match_group<'a>(
     state: &mut MatcherState<'a>,
     metadata: &MatcherMetadata,
     extra_ignore: &'a HashSet<String>,
+    use_multiline: bool,
 ) {
     let MatchGroup {
         raw,
@@ -89,7 +90,11 @@ fn prepare_match_group<'a>(
     for regex in regexes {
         state.regexes.push(MatchRegex {
             metadata: metadata.clone(),
-            regex: &regex.0,
+            regex: if use_multiline {
+                &regex.multiline
+            } else {
+                &regex.original
+            },
             regex_strip: *regex_strip,
             ignore: smallvec::smallvec![extra_ignore, ignore],
         });
@@ -105,6 +110,7 @@ pub fn prepare_matches<'a>(
     state: &mut MatcherState<'a>,
     metadata: &MatcherMetadata,
     extra_ignore: &'a HashSet<String>,
+    use_multiline: bool,
 ) {
     let category = match policy.categories.get(category_name) {
         Some(x) => x,
@@ -116,7 +122,7 @@ pub fn prepare_matches<'a>(
 
     match category {
         Category::Matchers { match_group } => {
-            prepare_match_group(match_group, state, metadata, extra_ignore);
+            prepare_match_group(match_group, state, metadata, extra_ignore, use_multiline);
         }
         Category::Correlate {
             group1,
@@ -147,14 +153,14 @@ pub fn prepare_matches<'a>(
                 is_second: false,
                 interest: *interest,
             });
-            prepare_match_group(group1, state, &metadata, extra_ignore);
+            prepare_match_group(group1, state, &metadata, extra_ignore, use_multiline);
             metadata.correlation = Some(CorrelationState {
                 correlation_index,
                 max_distance: *max_distance,
                 is_second: true,
                 interest: *interest,
             });
-            prepare_match_group(group2, state, &metadata, extra_ignore);
+            prepare_match_group(group2, state, &metadata, extra_ignore, use_multiline);
         }
         Category::Rematch { .. } => {
             error!("rematch in prepared evaluation not implemented");

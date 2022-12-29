@@ -85,6 +85,7 @@ fn prepare_match_state<'a>(
                 &mut key_match_state,
                 &metadata,
                 &action.category_config.ignore,
+                true,
             );
         }
         if do_value {
@@ -94,6 +95,7 @@ fn prepare_match_state<'a>(
                 &mut value_match_state,
                 &metadata,
                 &action.category_config.ignore,
+                true,
             );
         }
     }

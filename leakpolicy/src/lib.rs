@@ -1,4 +1,5 @@
 use std::{
+    borrow::Cow,
     collections::{BTreeMap, HashSet},
     str::FromStr,
     sync::Arc,
@@ -7,30 +8,13 @@ use std::{
 use anyhow::Result;
 use indexmap::{IndexMap, IndexSet};
 use regex::Regex;
-use serde::{Deserialize, Serialize};
+use serde::{de::Unexpected, Deserialize, Serialize};
 
 mod matcher;
 mod path_glob;
 pub use matcher::Matcher;
 pub use path_glob::PathGlob;
 use serde_single_or_vec2::SingleOrVec;
-
-mod regex_serde {
-    use std::borrow::Cow;
-
-    use regex::Regex;
-    use serde::{de::Unexpected, Deserialize, Deserializer, Serialize, Serializer};
-
-    pub fn serialize<S: Serializer>(regex: &Regex, serializer: S) -> Result<S::Ok, S::Error> {
-        regex.as_str().serialize(serializer)
-    }
-
-    pub fn deserialize<'de, D: Deserializer<'de>>(deserializer: D) -> Result<Regex, D::Error> {
-        let raw: Cow<'de, str> = Deserialize::deserialize(deserializer)?;
-        Regex::new(&raw)
-            .map_err(|e| serde::de::Error::invalid_value(Unexpected::Str(&raw), &&*e.to_string()))
-    }
-}
 
 pub fn parse_policy(policy: &str) -> Result<Policy> {
     let parsed: Policy = match serde_yaml::from_str(policy) {
@@ -45,12 +29,46 @@ pub fn parse_policy(policy: &str) -> Result<Policy> {
     Ok(parsed)
 }
 
-#[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct RegexWrapper(#[serde(with = "regex_serde")] pub Regex);
+#[derive(Clone, Debug)]
+pub struct RegexWrapper {
+    /// the original, unmodified regex
+    pub original: Regex,
+    /// the same regex as `original` but with multiline mode turned on.
+    /// used for json's batched matching
+    pub multiline: Regex,
+}
 
 impl PartialEq for RegexWrapper {
     fn eq(&self, other: &Self) -> bool {
-        self.0.as_str() == other.0.as_str()
+        self.original.as_str() == other.original.as_str()
+    }
+}
+
+impl Serialize for RegexWrapper {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        self.original.as_str().serialize(serializer)
+    }
+}
+
+impl<'de> Deserialize<'de> for RegexWrapper {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        let r: Cow<'de, str> = Deserialize::deserialize(deserializer)?;
+        let m_r = format!("{}m", r);
+
+        Ok(Self {
+            original: Regex::new(&r).map_err(|e| {
+                serde::de::Error::invalid_value(Unexpected::Str(&r), &&*e.to_string())
+            })?,
+            multiline: Regex::new(&m_r).map_err(|e| {
+                serde::de::Error::invalid_value(Unexpected::Str(&m_r), &&*e.to_string())
+            })?,
+        })
     }
 }
 
