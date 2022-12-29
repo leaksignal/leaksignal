@@ -17,7 +17,7 @@ use super::{ParseResponse, Parser, ParserConfiguration};
 /// returns (key, value) matcher states
 fn prepare_match_state<'a>(
     policy: &'a Policy,
-    configuration: ParserConfiguration<'a>,
+    configuration: &ParserConfiguration<'a>,
 ) -> (MatcherState<'a>, MatcherState<'a>) {
     let mut key_match_state = MatcherState::default();
     let mut value_match_state = MatcherState::default();
@@ -123,7 +123,7 @@ struct JsonMatcher<'a> {
 
 impl<'a> JsonMatcher<'a> {
     /// 1mb buffer limit
-    const BATCH_SIZE_LIMIT: usize = 1_000_000;
+    const BATCH_SIZE_LIMIT: usize = 1_000;
 
     fn new(matcher: MatcherState<'a>, performance: &'a PerformanceMonitor) -> Self {
         Self {
@@ -139,13 +139,13 @@ impl<'a> JsonMatcher<'a> {
     fn process(
         &mut self,
         matches: &mut Vec<Match>,
-        data: String,
+        data: &str,
         start: usize,
     ) -> Option<ParseResponse> {
         // push newline to avoid matches across multiple keys
         self.str_buf.push('\n');
         let buf_start = self.str_buf.len();
-        self.str_buf.push_str(&data);
+        self.str_buf.push_str(data);
 
         // create mapping
         self.idx_map.push_back(SegmentMap {
@@ -213,15 +213,15 @@ impl Parser for JsonParser {
         matches: &mut Vec<Match>,
         performance: &PerformanceMonitor,
     ) -> Result<ParseResponse> {
-        let (key_matcher, value_matcher) = prepare_match_state(policy, configuration);
+        let (key_matcher, value_matcher) = prepare_match_state(policy, &configuration);
         let mut key_matcher = JsonMatcher::new(key_matcher, performance);
         let mut value_matcher = JsonMatcher::new(value_matcher, performance);
 
         let mut key_matches = Vec::new();
         parse::parse_json(
             body,
-            |key, start, _| key_matcher.process(&mut key_matches, key, start),
-            |value, start, _| value_matcher.process(matches, value, start),
+            |key, start, _| key_matcher.process(&mut key_matches, &key, start),
+            |value, start, _| value_matcher.process(matches, &value, start),
         )
         .await?;
         // perform final match on any pending batches

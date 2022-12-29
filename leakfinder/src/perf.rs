@@ -4,7 +4,7 @@ use crate::config::TimestampSource;
 
 pub struct PerformanceMonitor {
     inner: RefCell<HashMap<String, u64>>,
-    timestamp_source: TimestampSource,
+    pub timestamp_source: TimestampSource,
 }
 
 impl PerformanceMonitor {
