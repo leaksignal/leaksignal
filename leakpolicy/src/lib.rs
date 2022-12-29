@@ -441,14 +441,6 @@ impl RateLimitFilter {
             RateLimitFilter::All(filters) => filters.iter().all(|f| f.matches(input)),
         }
     }
-
-    pub fn matches_all(filters: &[Self], input: &RateLimitFilterInput<'_>) -> bool {
-        filters.iter().all(|f| f.matches(input))
-    }
-
-    pub fn matches_any(filters: &[Self], input: &RateLimitFilterInput<'_>) -> bool {
-        filters.iter().any(|f| f.matches(input))
-    }
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
