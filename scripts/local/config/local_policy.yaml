@@ -37,6 +37,35 @@ categories:
         case_insensitive: true
       max_distance: 64
       interest: group1
+ratelimits:
+  - grouping: per_service
+    by: service
+    filter:
+      any:
+        - peer_service: "cluster.local/default/cartservice"
+        - peer_service: "cluster.local/default/checkoutservice"
+    action: block
+    timespan_secs: 30
+    limit: 3000
+  - grouping: per_endpoint
+    by: ip
+    filter:
+      all:
+        - endpoint: "**/api/**"
+        - exclude_endpoint: "**/api/v1/health"
+    action: alert
+    timespan_secs: 60
+    limit: 750
+  - grouping: per_endpoint
+    by: ip
+    filter:
+      all:
+        - endpoint: "**/api/**"
+        - exclude_endpoint: "**/api/v1/health"
+        - exclude_token: exampleToken123
+    action: block
+    timespan_secs: 60
+    limit: 1500
 endpoints:
   - matches: "**"
     config:

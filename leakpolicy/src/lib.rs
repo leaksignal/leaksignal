@@ -1,12 +1,14 @@
 use std::{
     borrow::Cow,
     collections::{BTreeMap, HashSet},
+    net::IpAddr,
     str::FromStr,
     sync::Arc,
 };
 
 use anyhow::Result;
 use indexmap::{IndexMap, IndexSet};
+use ipnetwork::IpNetwork;
 use regex::{Regex, RegexBuilder};
 use serde::{de::Unexpected, Deserialize, Serialize};
 
@@ -375,6 +377,80 @@ pub enum RateLimitAction {
     Block,
 }
 
+fn default_timespan_secs() -> u64 {
+    60
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
+#[serde(rename_all = "snake_case")]
+pub enum RateLimitFilter {
+    Endpoint(SingleOrVec<'static, PathGlob>),
+    ExcludeEndpoint(SingleOrVec<'static, PathGlob>),
+    PeerService(SingleOrVec<'static, Matcher>),
+    ExcludePeerService(SingleOrVec<'static, Matcher>),
+    LocalService(SingleOrVec<'static, Matcher>),
+    ExcludeLocalService(SingleOrVec<'static, Matcher>),
+    Token(SingleOrVec<'static, Matcher>),
+    ExcludeToken(SingleOrVec<'static, Matcher>),
+    Ip(SingleOrVec<'static, IpNetwork>),
+    ExcludeIp(SingleOrVec<'static, IpNetwork>),
+    Any(Vec<RateLimitFilter>),
+    All(Vec<RateLimitFilter>),
+}
+
+impl Default for RateLimitFilter {
+    fn default() -> Self {
+        Self::All(Vec::default())
+    }
+}
+
+pub struct RateLimitFilterInput<'a> {
+    pub ip: IpAddr,
+    pub token: &'a str,
+    pub endpoint: &'a str,
+    pub peer_service: &'a str,
+    pub local_service: &'a str,
+}
+
+impl RateLimitFilter {
+    pub fn matches(&self, input: &RateLimitFilterInput<'_>) -> bool {
+        match self {
+            RateLimitFilter::Endpoint(endpoints) => {
+                endpoints.iter().any(|x| x.matches(input.endpoint))
+            }
+            RateLimitFilter::ExcludeEndpoint(endpoints) => {
+                !endpoints.iter().any(|x| x.matches(input.endpoint))
+            }
+            RateLimitFilter::PeerService(matchers) => {
+                Matcher::match_all(input.peer_service, matchers)
+            }
+            RateLimitFilter::ExcludePeerService(matchers) => {
+                !Matcher::match_all(input.peer_service, matchers)
+            }
+            RateLimitFilter::LocalService(matchers) => {
+                Matcher::match_all(input.local_service, matchers)
+            }
+            RateLimitFilter::ExcludeLocalService(matchers) => {
+                !Matcher::match_all(input.local_service, matchers)
+            }
+            RateLimitFilter::Token(matchers) => Matcher::match_all(input.token, matchers),
+            RateLimitFilter::ExcludeToken(matchers) => !Matcher::match_all(input.token, matchers),
+            RateLimitFilter::Ip(matchers) => matchers.iter().any(|x| x.contains(input.ip)),
+            RateLimitFilter::ExcludeIp(matchers) => !matchers.iter().any(|x| x.contains(input.ip)),
+            RateLimitFilter::Any(filters) => filters.iter().any(|f| f.matches(input)),
+            RateLimitFilter::All(filters) => filters.iter().all(|f| f.matches(input)),
+        }
+    }
+
+    pub fn matches_all(filters: &[Self], input: &RateLimitFilterInput<'_>) -> bool {
+        filters.iter().all(|f| f.matches(input))
+    }
+
+    pub fn matches_any(filters: &[Self], input: &RateLimitFilterInput<'_>) -> bool {
+        filters.iter().any(|f| f.matches(input))
+    }
+}
+
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
 pub struct RateLimitConfig {
     #[serde(default)]
@@ -382,8 +458,11 @@ pub struct RateLimitConfig {
     pub by: RateLimitBy,
     #[serde(default)]
     pub action: RateLimitAction,
+    #[serde(default = "default_timespan_secs")]
     pub timespan_secs: u64,
     pub limit: u64,
+    #[serde(default)]
+    pub filter: RateLimitFilter,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
@@ -399,8 +478,6 @@ pub struct EndpointConfig {
     pub token_extractor: Option<Arc<TokenExtractionConfig>>,
     #[serde(flatten, default, skip_serializing_if = "Option::is_none")]
     pub report_style: Option<DataReportStyle>,
-    #[serde(default)]
-    pub rate_limits: Vec<RateLimitConfig>,
 }
 
 fn collected_request_headers_default() -> IndexSet<String> {
@@ -531,6 +608,8 @@ pub struct Policy {
     pub blocked_ips: IndexSet<String>,
     #[serde(default)]
     pub blocked_tokens: IndexSet<String>,
+    #[serde(default)]
+    pub ratelimits: Vec<RateLimitConfig>,
 }
 
 pub struct PathPolicy {
