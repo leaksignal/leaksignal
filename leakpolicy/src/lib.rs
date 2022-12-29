@@ -7,7 +7,7 @@ use std::{
 
 use anyhow::Result;
 use indexmap::{IndexMap, IndexSet};
-use regex::Regex;
+use regex::{Regex, RegexBuilder};
 use serde::{de::Unexpected, Deserialize, Serialize};
 
 mod matcher;
@@ -59,15 +59,17 @@ impl<'de> Deserialize<'de> for RegexWrapper {
         D: serde::Deserializer<'de>,
     {
         let r: Cow<'de, str> = Deserialize::deserialize(deserializer)?;
-        let m_r = format!("{}m", r);
 
         Ok(Self {
             original: Regex::new(&r).map_err(|e| {
                 serde::de::Error::invalid_value(Unexpected::Str(&r), &&*e.to_string())
             })?,
-            multiline: Regex::new(&m_r).map_err(|e| {
-                serde::de::Error::invalid_value(Unexpected::Str(&m_r), &&*e.to_string())
-            })?,
+            multiline: RegexBuilder::new(&r)
+                .multi_line(true)
+                .build()
+                .map_err(|e| {
+                    serde::de::Error::invalid_value(Unexpected::Str(&r), &&*e.to_string())
+                })?,
         })
     }
 }
