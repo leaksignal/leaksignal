@@ -4,7 +4,7 @@ use crate::config::TimestampSource;
 
 pub struct PerformanceMonitor {
     inner: RefCell<HashMap<String, u64>>,
-    pub timestamp_source: TimestampSource,
+    timestamp_source: TimestampSource,
 }
 
 impl PerformanceMonitor {
@@ -25,6 +25,12 @@ impl PerformanceMonitor {
 
     pub fn into_inner(self) -> HashMap<String, u64> {
         self.inner.into_inner()
+    }
+
+    #[allow(unused)]
+    /// convenience function for quick temporary benchmarking
+    pub fn elapsed(&self) -> Duration {
+        self.timestamp_source.elapsed()
     }
 }
 

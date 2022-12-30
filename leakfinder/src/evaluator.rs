@@ -1,7 +1,7 @@
 use std::collections::{BTreeMap, HashSet};
 
 use leakpolicy::{CorrelateInterest, DataReportStyle, MatchGroup};
-use log::{debug, error, info, warn};
+use log::{debug, error, warn};
 use regex::Regex;
 use smallvec::SmallVec;
 
@@ -312,14 +312,6 @@ impl<'a> MatcherState<'a> {
                 matching.metadata.local_report_style,
                 &body[matching.start..matching.start + matching.length],
             );
-            info!(
-                "matched {} @ {}-{} -> {:?}: '{}'",
-                matching.metadata.category_name,
-                matching.start + offset,
-                matching.start + offset + matching.length,
-                matching.metadata.action,
-                matched_value.as_deref().unwrap_or_default()
-            );
             matches.push(Match {
                 category_name: matching.metadata.category_name.to_string(),
                 global_start_position: Some(matching.start as u64 + offset as u64),
@@ -392,14 +384,6 @@ impl<'a> MatcherState<'a> {
                         };
                         let matched_value =
                             evaluate_report_style(emit_report_style, &body[emit_start..emit_end]);
-                        info!(
-                            "matched correlate {} @ {}-{} -> {:?}: '{}'",
-                            group1_item.metadata.category_name,
-                            total_start + offset,
-                            total_end + offset,
-                            group1_item.metadata.action,
-                            matched_value.as_deref().unwrap_or_default()
-                        );
                         matches.push(Match {
                             category_name: group1_item.metadata.category_name.to_string(),
                             global_start_position: Some(emit_start as u64 + offset as u64),

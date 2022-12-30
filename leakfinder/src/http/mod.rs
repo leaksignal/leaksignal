@@ -2,6 +2,7 @@ use std::{fmt::Write as FmtWrite, str::FromStr, sync::Arc};
 
 use anyhow::Result;
 use leakpolicy::{ContentType, EndpointContext, RegexWrapper};
+use log::info;
 use sha2::{Digest, Sha256};
 
 use crate::{
@@ -306,6 +307,16 @@ impl<'a> HttpParser<'a> {
             time_parse_start: 0,
             time_parse_end: 0,
         });
+        for m in response.matches.iter().chain(&request.matches) {
+            info!(
+                "matched {} @ {}-{} -> {:?}: {:?}",
+                m.category_name,
+                m.global_start_position.unwrap(),
+                m.global_start_position.unwrap() + m.global_length.unwrap(),
+                m.matcher_path,
+                m.matched_value.as_ref().unwrap()
+            );
+        }
         EvaluationOutput {
             policy_id: self.policy.policy_id().to_string(),
             time_request_start: self.time_request_start,

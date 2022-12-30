@@ -144,9 +144,9 @@ impl<'a> JsonMatcher<'a> {
         data: &str,
         start: usize,
     ) -> Option<ParseResponse> {
+        let buf_start = self.str_buf.len();
         // push newline to avoid matches across multiple keys
         self.str_buf.push('\n');
-        let buf_start = self.str_buf.len();
         self.str_buf.push_str(data);
 
         // create mapping
