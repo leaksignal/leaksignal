@@ -26,6 +26,12 @@ impl PerformanceMonitor {
     pub fn into_inner(self) -> HashMap<String, u64> {
         self.inner.into_inner()
     }
+
+    #[allow(unused)]
+    /// convenience function for quick temporary benchmarking
+    pub fn elapsed(&self) -> Duration {
+        self.timestamp_source.elapsed()
+    }
 }
 
 pub struct PerformanceHandle<'a> {

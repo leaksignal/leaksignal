@@ -6,8 +6,7 @@ use std::{
 };
 
 use anyhow::Result;
-use fancy_regex::Regex;
-use log::warn;
+use regex::Regex;
 use serde::{de::Unexpected, Deserialize, Deserializer, Serialize, Serializer};
 
 #[derive(Clone, Debug)]
@@ -68,12 +67,8 @@ impl GlobComponent {
             GlobComponent::AnyOne => true,
             GlobComponent::AnyMany => true,
             GlobComponent::Regex(_, r) => match r.find(target) {
-                Err(e) => {
-                    warn!("regex error: {:?}", e);
-                    false
-                }
-                Ok(None) => false,
-                Ok(Some(matching)) => matching.start() == 0 && matching.end() == target.len(),
+                None => false,
+                Some(matching) => matching.start() == 0 && matching.end() == target.len(),
             },
             GlobComponent::Contains(s) => target.contains(&s[1..s.len() - 1]),
             GlobComponent::Prefix(s) => target.starts_with(&s[..s.len() - 1]),

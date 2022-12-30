@@ -102,6 +102,7 @@ fn prepare_match_state<'a>(
             &mut match_state,
             &metadata,
             &action.category_config.ignore,
+            content_type == ContentType::Json,
         );
     }
 

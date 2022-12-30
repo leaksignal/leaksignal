@@ -1,4 +1,5 @@
 use std::{
+    borrow::Cow,
     collections::{BTreeMap, HashSet},
     net::IpAddr,
     str::FromStr,
@@ -6,33 +7,16 @@ use std::{
 };
 
 use anyhow::Result;
-use fancy_regex::Regex;
 use indexmap::{IndexMap, IndexSet};
 use ipnetwork::IpNetwork;
-use serde::{Deserialize, Serialize};
+use regex::{Regex, RegexBuilder};
+use serde::{de::Unexpected, Deserialize, Serialize};
 
 mod matcher;
 mod path_glob;
 pub use matcher::Matcher;
 pub use path_glob::PathGlob;
 use serde_single_or_vec2::SingleOrVec;
-
-mod regex_serde {
-    use std::borrow::Cow;
-
-    use fancy_regex::Regex;
-    use serde::{de::Unexpected, Deserialize, Deserializer, Serialize, Serializer};
-
-    pub fn serialize<S: Serializer>(regex: &Regex, serializer: S) -> Result<S::Ok, S::Error> {
-        regex.as_str().serialize(serializer)
-    }
-
-    pub fn deserialize<'de, D: Deserializer<'de>>(deserializer: D) -> Result<Regex, D::Error> {
-        let raw: Cow<'de, str> = Deserialize::deserialize(deserializer)?;
-        Regex::new(&raw)
-            .map_err(|e| serde::de::Error::invalid_value(Unexpected::Str(&raw), &&*e.to_string()))
-    }
-}
 
 pub fn parse_policy(policy: &str) -> Result<Policy> {
     let parsed: Policy = match serde_yaml::from_str(policy) {
@@ -47,12 +31,48 @@ pub fn parse_policy(policy: &str) -> Result<Policy> {
     Ok(parsed)
 }
 
-#[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct RegexWrapper(#[serde(with = "regex_serde")] pub Regex);
+#[derive(Clone, Debug)]
+pub struct RegexWrapper {
+    /// the original, unmodified regex
+    pub original: Regex,
+    /// the same regex as `original` but with multiline mode turned on.
+    /// used for json's batched matching
+    pub multiline: Regex,
+}
 
 impl PartialEq for RegexWrapper {
     fn eq(&self, other: &Self) -> bool {
-        self.0.as_str() == other.0.as_str()
+        self.original.as_str() == other.original.as_str()
+    }
+}
+
+impl Serialize for RegexWrapper {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        self.original.as_str().serialize(serializer)
+    }
+}
+
+impl<'de> Deserialize<'de> for RegexWrapper {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        let r: Cow<'de, str> = Deserialize::deserialize(deserializer)?;
+
+        Ok(Self {
+            original: Regex::new(&r).map_err(|e| {
+                serde::de::Error::invalid_value(Unexpected::Str(&r), &&*e.to_string())
+            })?,
+            multiline: RegexBuilder::new(&r)
+                .multi_line(true)
+                .build()
+                .map_err(|e| {
+                    serde::de::Error::invalid_value(Unexpected::Str(&r), &&*e.to_string())
+                })?,
+        })
     }
 }
 
@@ -393,8 +413,8 @@ pub struct RateLimitFilterInput<'a> {
 }
 
 impl RateLimitFilter {
-    pub fn matches(&self, input: &RateLimitFilterInput<'_>) -> Result<bool> {
-        Ok(match self {
+    pub fn matches(&self, input: &RateLimitFilterInput<'_>) -> bool {
+        match self {
             RateLimitFilter::Endpoint(endpoints) => {
                 endpoints.iter().any(|x| x.matches(input.endpoint))
             }
@@ -402,42 +422,24 @@ impl RateLimitFilter {
                 !endpoints.iter().any(|x| x.matches(input.endpoint))
             }
             RateLimitFilter::PeerService(matchers) => {
-                Matcher::match_all(input.peer_service, &matchers)?
+                Matcher::match_all(input.peer_service, matchers)
             }
             RateLimitFilter::ExcludePeerService(matchers) => {
-                !Matcher::match_all(input.peer_service, &matchers)?
+                !Matcher::match_all(input.peer_service, matchers)
             }
             RateLimitFilter::LocalService(matchers) => {
-                Matcher::match_all(input.local_service, &matchers)?
+                Matcher::match_all(input.local_service, matchers)
             }
             RateLimitFilter::ExcludeLocalService(matchers) => {
-                !Matcher::match_all(input.local_service, &matchers)?
+                !Matcher::match_all(input.local_service, matchers)
             }
-            RateLimitFilter::Token(matchers) => Matcher::match_all(input.token, &matchers)?,
-            RateLimitFilter::ExcludeToken(matchers) => !Matcher::match_all(input.token, &matchers)?,
+            RateLimitFilter::Token(matchers) => Matcher::match_all(input.token, matchers),
+            RateLimitFilter::ExcludeToken(matchers) => !Matcher::match_all(input.token, matchers),
             RateLimitFilter::Ip(matchers) => matchers.iter().any(|x| x.contains(input.ip)),
             RateLimitFilter::ExcludeIp(matchers) => !matchers.iter().any(|x| x.contains(input.ip)),
-            RateLimitFilter::Any(filters) => Self::matches_any(&filters, input)?,
-            RateLimitFilter::All(filters) => Self::matches_all(&filters, input)?,
-        })
-    }
-
-    pub fn matches_all(filters: &[Self], input: &RateLimitFilterInput<'_>) -> Result<bool> {
-        for filter in filters {
-            if !filter.matches(input)? {
-                return Ok(false);
-            }
+            RateLimitFilter::Any(filters) => filters.iter().any(|f| f.matches(input)),
+            RateLimitFilter::All(filters) => filters.iter().all(|f| f.matches(input)),
         }
-        Ok(true)
-    }
-
-    pub fn matches_any(filters: &[Self], input: &RateLimitFilterInput<'_>) -> Result<bool> {
-        for filter in filters {
-            if filter.matches(input)? {
-                return Ok(true);
-            }
-        }
-        Ok(false)
     }
 }
 
@@ -544,7 +546,7 @@ pub struct ServicePolicy {
 }
 
 impl ServicePolicy {
-    pub fn service_matched(&self, service_name: &str) -> Result<bool> {
+    pub fn service_matched(&self, service_name: &str) -> bool {
         Matcher::match_all(service_name, &self.services[..])
     }
 
@@ -553,14 +555,14 @@ impl ServicePolicy {
             .unwrap_or(!self.whitelist.is_empty())
     }
 
-    pub fn inbound_allowed(&self, service_name: Option<&str>) -> Result<bool> {
+    pub fn inbound_allowed(&self, service_name: Option<&str>) -> bool {
         let Some(service_name) = service_name else {
-            return Ok(!self.block_unknown_services());
+            return !self.block_unknown_services();
         };
         if !self.whitelist.is_empty() {
             Matcher::match_all(service_name, &self.whitelist[..])
         } else {
-            Ok(!Matcher::match_all(service_name, &self.blacklist[..])?)
+            !Matcher::match_all(service_name, &self.blacklist[..])
         }
     }
 }

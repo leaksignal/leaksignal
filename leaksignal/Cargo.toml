@@ -26,7 +26,6 @@ anyhow = { workspace = true }
 lazy_static = { workspace = true }
 arc-swap = { workspace = true }
 serde_yaml = { workspace = true }
-fancy-regex = { workspace = true }
 regex = { workspace = true }
 # kamadak-exif = "0.5"
 indexmap = { workspace = true, features = ["serde", "std"] }

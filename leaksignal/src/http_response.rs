@@ -402,22 +402,11 @@ impl HttpContext for HttpResponseContext {
             crate::service::local_service_name(|x| self.get_property_string(x))
         {
             let policy = self.parser_ref().policy();
-            let mut service_policy = None;
-            for entry in &policy.services {
-                match entry.service_matched(&local_service) {
-                    Err(e) => {
-                        error!(
-                            "failed to match service {local_service} for entry {entry:?}: {e:?}"
-                        );
-                        continue;
-                    }
-                    Ok(false) => continue,
-                    Ok(true) => {
-                        service_policy = Some(entry);
-                        break;
-                    }
-                }
-            }
+            let service_policy = policy
+                .services
+                .iter()
+                .find(|e| e.service_matched(&local_service));
+
             if let Some(service_policy) = service_policy {
                 let direction = self
                     .get_property_int("listener_direction")
@@ -426,19 +415,13 @@ impl HttpContext for HttpResponseContext {
                 if !matches!(direction, Some(ListenerDirection::Outbound)) {
                     let peer_service =
                         crate::service::outbound_peer_service_name(|x| self.get_property_string(x));
-                    match service_policy.inbound_allowed(peer_service.as_deref()) {
-                        Err(e) => {
-                            error!("failed to evaluate service policy for {local_service} on peer {}: {e:?}", peer_service.as_deref().unwrap_or("external"));
-                        }
-                        Ok(false) => {
-                            warn!(
-                                "blocking request by service {} by policy",
-                                peer_service.as_deref().unwrap_or("external")
-                            );
-                            self.early_response(403, vec![], None, Some("blocked_service"));
-                            return Action::Continue;
-                        }
-                        Ok(true) => (),
+                    if !service_policy.inbound_allowed(peer_service.as_deref()) {
+                        warn!(
+                            "blocking request by service {} by policy",
+                            peer_service.as_deref().unwrap_or("external")
+                        );
+                        self.early_response(403, vec![], None, Some("blocked_service"));
+                        return Action::Continue;
                     }
                     if let Some(peer_service) = peer_service.as_deref() {
                         if let Some(reason) =

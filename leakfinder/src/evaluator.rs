@@ -1,8 +1,8 @@
 use std::collections::{BTreeMap, HashSet};
 
-use fancy_regex::Regex;
 use leakpolicy::{CorrelateInterest, DataReportStyle, MatchGroup};
-use log::{debug, error, info, warn};
+use log::{debug, error, warn};
+use regex::Regex;
 use smallvec::SmallVec;
 
 use crate::{
@@ -68,6 +68,7 @@ fn prepare_match_group<'a>(
     state: &mut MatcherState<'a>,
     metadata: &MatcherMetadata,
     extra_ignore: &'a HashSet<String>,
+    use_multiline: bool,
 ) {
     let MatchGroup {
         raw,
@@ -89,7 +90,11 @@ fn prepare_match_group<'a>(
     for regex in regexes {
         state.regexes.push(MatchRegex {
             metadata: metadata.clone(),
-            regex: &regex.0,
+            regex: if use_multiline {
+                &regex.multiline
+            } else {
+                &regex.original
+            },
             regex_strip: *regex_strip,
             ignore: smallvec::smallvec![extra_ignore, ignore],
         });
@@ -105,6 +110,7 @@ pub fn prepare_matches<'a>(
     state: &mut MatcherState<'a>,
     metadata: &MatcherMetadata,
     extra_ignore: &'a HashSet<String>,
+    use_multiline: bool,
 ) {
     let category = match policy.categories.get(category_name) {
         Some(x) => x,
@@ -116,7 +122,7 @@ pub fn prepare_matches<'a>(
 
     match category {
         Category::Matchers { match_group } => {
-            prepare_match_group(match_group, state, metadata, extra_ignore);
+            prepare_match_group(match_group, state, metadata, extra_ignore, use_multiline);
         }
         Category::Correlate {
             group1,
@@ -147,14 +153,14 @@ pub fn prepare_matches<'a>(
                 is_second: false,
                 interest: *interest,
             });
-            prepare_match_group(group1, state, &metadata, extra_ignore);
+            prepare_match_group(group1, state, &metadata, extra_ignore, use_multiline);
             metadata.correlation = Some(CorrelationState {
                 correlation_index,
                 max_distance: *max_distance,
                 is_second: true,
                 interest: *interest,
             });
-            prepare_match_group(group2, state, &metadata, extra_ignore);
+            prepare_match_group(group2, state, &metadata, extra_ignore, use_multiline);
         }
         Category::Rematch { .. } => {
             error!("rematch in prepared evaluation not implemented");
@@ -253,7 +259,6 @@ impl<'a> MatcherState<'a> {
                 handle = Some(performance.measure(&regex.metadata.category_name));
             }
             for matching in regex.regex.find_iter(source) {
-                let matching = matching.unwrap();
                 if regex.ignore.iter().any(|x| x.contains(matching.as_str())) {
                     continue;
                 }
@@ -306,14 +311,6 @@ impl<'a> MatcherState<'a> {
             let matched_value = evaluate_report_style(
                 matching.metadata.local_report_style,
                 &body[matching.start..matching.start + matching.length],
-            );
-            info!(
-                "matched {} @ {}-{} -> {:?}: '{}'",
-                matching.metadata.category_name,
-                matching.start + offset,
-                matching.start + offset + matching.length,
-                matching.metadata.action,
-                matched_value.as_deref().unwrap_or_default()
             );
             matches.push(Match {
                 category_name: matching.metadata.category_name.to_string(),
@@ -387,14 +384,6 @@ impl<'a> MatcherState<'a> {
                         };
                         let matched_value =
                             evaluate_report_style(emit_report_style, &body[emit_start..emit_end]);
-                        info!(
-                            "matched correlate {} @ {}-{} -> {:?}: '{}'",
-                            group1_item.metadata.category_name,
-                            total_start + offset,
-                            total_end + offset,
-                            group1_item.metadata.action,
-                            matched_value.as_deref().unwrap_or_default()
-                        );
                         matches.push(Match {
                             category_name: group1_item.metadata.category_name.to_string(),
                             global_start_position: Some(emit_start as u64 + offset as u64),

@@ -13,7 +13,7 @@ homepage = "https://www.leaksignal.com/"
 [dependencies]
 serde = { workspace = true, features = ["derive", "rc"] }
 serde_yaml = { workspace = true }
-fancy-regex = { workspace = true }
+regex = { workspace = true }
 indexmap = { workspace = true, features = ["serde", "std"] }
 anyhow = { workspace = true }
 log = { workspace = true }
