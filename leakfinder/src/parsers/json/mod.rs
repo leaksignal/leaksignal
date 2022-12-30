@@ -164,8 +164,6 @@ impl<'a> JsonMatcher<'a> {
 
     /// match on the current batch, appending matches to `matches` then resetting the batch state
     fn match_batch(&mut self, matches: &mut Vec<Match>) -> Option<ParseResponse> {
-        // TODO: logging displays the uncorrected indexes.
-        //      not sure how to get around this without using a near-duplicate custom matching function
         // populate `match_buf` with matches
         let match_result =
             self.matcher
