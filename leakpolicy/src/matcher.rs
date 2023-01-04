@@ -1,6 +1,7 @@
 use std::{
     fmt,
     hash::{Hash, Hasher},
+    ops::Deref,
     str::FromStr,
 };
 
@@ -58,7 +59,7 @@ impl<'de> Deserialize<'de> for Matcher {
         raw.parse().map_err(|e| {
             serde::de::Error::invalid_value(
                 Unexpected::Str(&raw),
-                &&*format!("invalid PathGlob: {}", e),
+                &format!("invalid PathGlob: {}", e).deref(),
             )
         })
     }

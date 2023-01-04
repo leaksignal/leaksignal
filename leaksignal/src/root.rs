@@ -8,6 +8,7 @@ use std::{
 
 use arc_swap::ArcSwap;
 use indexmap::IndexMap;
+use lazy_static::__Deref;
 use leakfinder::{BlockItem, BlockReason, BlockState, PolicyHolder, TimestampProvider};
 use leakpolicy::{parse_policy, Policy};
 use log::{debug, error, warn};
@@ -178,7 +179,7 @@ impl Context for EnvoyRootContext {
             .get_grpc_stream_message(0, message_size)
             .expect("missing grpc stream body");
 
-        let response = match UpdatePolicyResponse::decode(&body[..]) {
+        let response = match UpdatePolicyResponse::decode(body.deref()) {
             Ok(x) => x,
             Err(e) => {
                 error!("failed to decode policy response: {:?}", e);
@@ -230,7 +231,7 @@ impl Context for EnvoyRootContext {
                     .get_grpc_call_response_body(0, response_size)
                     .expect("missing grpc ping response body");
 
-                let response = match PingMessage::decode(&body[..]) {
+                let response = match PingMessage::decode(body.deref()) {
                     Ok(x) => x,
                     Err(e) => {
                         error!("failed to decode ping response: {:?}", e);
@@ -347,7 +348,7 @@ impl EnvoyRootContext {
                 };
 
                 self.policy_stream_id = match self.open_grpc_stream(
-                    unsafe { std::str::from_utf8_unchecked(&upstream.service_definition[..]) },
+                    unsafe { std::str::from_utf8_unchecked(&upstream.service_definition) },
                     LEAKSIGNAL_SERVICE_NAME,
                     "UpdatePolicy",
                     vec![],
@@ -356,7 +357,7 @@ impl EnvoyRootContext {
                         if let Some(policy_request) = policy_request {
                             self.send_grpc_stream_message(
                                 policy_stream_id,
-                                Some(&policy_request[..]),
+                                Some(&policy_request),
                                 false,
                             );
                         }
@@ -394,10 +395,11 @@ static CONFIGURED: AtomicBool = AtomicBool::new(false);
 
 impl RootContext for EnvoyRootContext {
     fn on_configure(&mut self, plugin_configuration_size: usize) -> bool {
-        let parsed_config: Config = match self.get_plugin_configuration() {
-            Some(config) => serde_yaml::from_slice(&config[..plugin_configuration_size])
-                .expect("failed to parse proxy_wasm configuration"),
-            None => Config::default(),
+        let parsed_config: Config = if let Some(config) = self.get_plugin_configuration() {
+            serde_yaml::from_slice(&config[..plugin_configuration_size])
+                .expect("failed to parse proxy_wasm configuration")
+        } else {
+            Config::default()
         };
         if let Some(previous_config) = Config::try_get() {
             if previous_config.mode() != parsed_config.mode() {
@@ -492,9 +494,8 @@ impl RootContext for EnvoyRootContext {
             Mode::DirectFilter | Mode::LocalCollector
         ));
         drop(config);
-        let upstream = match upstream() {
-            Some(x) => x,
-            None => return,
+        let Some(upstream) = upstream() else {
+            return
         };
 
         let now = TIMESTAMP_PROVIDER.elapsed();
@@ -526,11 +527,11 @@ impl RootContext for EnvoyRootContext {
             let ping = PingMessage { timestamp };
 
             match self.dispatch_grpc_call(
-                unsafe { std::str::from_utf8_unchecked(&upstream.service_definition[..]) },
+                unsafe { std::str::from_utf8_unchecked(&upstream.service_definition) },
                 LEAKSIGNAL_SERVICE_NAME,
                 "Ping",
                 vec![],
-                Some(&ping.encode_to_vec()[..]),
+                Some(&ping.encode_to_vec()),
                 PING_TIMEOUT,
             ) {
                 Err(e) => {
@@ -564,27 +565,21 @@ impl RootContext for EnvoyRootContext {
                 ..
             } => {
                 if queue_id == *worker_register_queue {
-                    let value = match self.dequeue_shared_queue(queue_id).unwrap() {
-                        None => {
+                    let Some(value) = self.dequeue_shared_queue(queue_id).unwrap() else {
                             warn!("empty worker register queue?");
-                            return;
-                        }
-                        Some(value) => value,
+                        return
                     };
                     if value.len() != 16 {
                         error!("invalid uuid in register queue");
                         return;
                     }
-                    let uuid = Uuid::from_bytes((&value[..]).try_into().unwrap());
-                    let queue = match self.resolve_shared_queue(
+                    let uuid = Uuid::from_bytes(value.try_into().unwrap());
+                    let Some(queue) = self.resolve_shared_queue(
                         PROXY_VM,
                         &format!("{}{}_{}", POLICY_SHARED_QUEUE_PREFIX, uuid, config.group),
-                    ) {
-                        Some(x) => x,
-                        None => {
+                    ) else {
                             error!("missing registered policy queue");
-                            return;
-                        }
+                        return
                     };
                     if let Some(policy) = POLICY.policy() {
                         let message = policy_update(policy.policy_id(), &policy);
@@ -618,12 +613,9 @@ impl RootContext for EnvoyRootContext {
                 ..
             } => {
                 if *policy_update_queue == queue_id {
-                    let value = match self.dequeue_shared_queue(queue_id).unwrap() {
-                        None => {
+                    let Some(value) = self.dequeue_shared_queue(queue_id).unwrap() else {
                             warn!("empty policy queue?");
-                            return;
-                        }
-                        Some(value) => value,
+                        return
                     };
                     let value: FilterInboundMessage = match serde_json::from_slice(&value) {
                         Ok(x) => x,

@@ -54,9 +54,8 @@ pub fn pipe(max_persistance: usize) -> (PipeReader, PipeWriter) {
 impl PipeWriter {
     /// Returns true if successfully appended
     pub fn append(&mut self, data: impl Into<Vec<u8>>) -> bool {
-        let inner = match &self.inner {
-            Some(inner) => inner,
-            None => return false,
+        let Some(inner) = &self.inner else {
+            return false
         };
         if Rc::strong_count(inner) != 2 {
             return false;
@@ -128,7 +127,7 @@ impl PipeReader {
         }
         let mut out = Vec::with_capacity(inner.total_written);
         for item in &inner.data {
-            out.extend_from_slice(&item[..]);
+            out.extend_from_slice(item);
         }
         assert_eq!(inner.total_written, out.len());
         Some(out)
@@ -215,14 +214,14 @@ mod tests {
         let waker = waker(Arc::new(DummyWaker));
         let mut context = Context::from_waker(&waker);
         assert!(matches!(
-            reader.read(&mut scratch[..]).poll_unpin(&mut context),
+            reader.read(&mut scratch).poll_unpin(&mut context),
             Poll::Pending
         ));
 
         const TEST_MESSAGE: &[u8] = b"HELLO WORLD";
         writer.write_all(TEST_MESSAGE).unwrap();
         assert!(
-            matches!(reader.read(&mut scratch[..]).poll_unpin(&mut context), Poll::Ready(Ok(x)) if x == TEST_MESSAGE.len())
+            matches!(reader.read(&mut scratch).poll_unpin(&mut context), Poll::Ready(Ok(x)) if x == TEST_MESSAGE.len())
         );
         assert_eq!(&scratch[..TEST_MESSAGE.len()], TEST_MESSAGE);
 
@@ -237,7 +236,7 @@ mod tests {
         writer.write_all(TEST_MESSAGE).unwrap();
         writer.write_all(TEST_MESSAGE).unwrap();
         assert!(
-            matches!(reader.read(&mut scratch[..]).poll_unpin(&mut context), Poll::Ready(Ok(x)) if x == TEST_MESSAGE.len() * 3)
+            matches!(reader.read(&mut scratch).poll_unpin(&mut context), Poll::Ready(Ok(x)) if x == TEST_MESSAGE.len() * 3)
         );
         assert_eq!(&scratch[..TEST_MESSAGE.len()], TEST_MESSAGE);
         assert_eq!(
@@ -250,17 +249,17 @@ mod tests {
         );
 
         assert!(matches!(
-            reader.read(&mut scratch[..]).poll_unpin(&mut context),
+            reader.read(&mut scratch).poll_unpin(&mut context),
             Poll::Pending
         ));
         writer.write_all(TEST_MESSAGE).unwrap();
         drop(writer);
         assert!(
-            matches!(reader.read(&mut scratch[..]).poll_unpin(&mut context), Poll::Ready(Ok(x)) if x == TEST_MESSAGE.len())
+            matches!(reader.read(&mut scratch).poll_unpin(&mut context), Poll::Ready(Ok(x)) if x == TEST_MESSAGE.len())
         );
         assert_eq!(&scratch[..TEST_MESSAGE.len()], TEST_MESSAGE);
         assert!(matches!(
-            reader.read(&mut scratch[..]).poll_unpin(&mut context),
+            reader.read(&mut scratch).poll_unpin(&mut context),
             Poll::Ready(Ok(0))
         ));
         drop(reader);
@@ -273,16 +272,16 @@ mod tests {
         let (mut reader, mut writer) = pipe(0);
         writer.write_all(TEST_MESSAGE).unwrap();
         assert!(
-            matches!(reader.read(&mut scratch[..]).poll_unpin(&mut context), Poll::Ready(Ok(x)) if x == 5)
+            matches!(reader.read(&mut scratch).poll_unpin(&mut context), Poll::Ready(Ok(x)) if x == 5)
         );
         assert!(
-            matches!(reader.read(&mut scratch[..]).poll_unpin(&mut context), Poll::Ready(Ok(x)) if x == 5)
+            matches!(reader.read(&mut scratch).poll_unpin(&mut context), Poll::Ready(Ok(x)) if x == 5)
         );
         assert!(
-            matches!(reader.read(&mut scratch[..]).poll_unpin(&mut context), Poll::Ready(Ok(x)) if x == 1)
+            matches!(reader.read(&mut scratch).poll_unpin(&mut context), Poll::Ready(Ok(x)) if x == 1)
         );
         assert!(matches!(
-            reader.read(&mut scratch[..]).poll_unpin(&mut context),
+            reader.read(&mut scratch).poll_unpin(&mut context),
             Poll::Pending
         ));
     }
@@ -294,7 +293,7 @@ mod tests {
         let waker = waker(Arc::new(DummyWaker));
         let mut context = Context::from_waker(&waker);
         assert!(matches!(
-            reader.read(&mut scratch[..]).poll_unpin(&mut context),
+            reader.read(&mut scratch).poll_unpin(&mut context),
             Poll::Pending
         ));
 
@@ -302,7 +301,7 @@ mod tests {
         for _ in 0..100 {
             writer.write_all(TEST_MESSAGE).unwrap();
             assert!(
-                matches!(reader.read(&mut scratch[..]).poll_unpin(&mut context), Poll::Ready(Ok(x)) if x == TEST_MESSAGE.len())
+                matches!(reader.read(&mut scratch).poll_unpin(&mut context), Poll::Ready(Ok(x)) if x == TEST_MESSAGE.len())
             );
             assert_eq!(&scratch[..TEST_MESSAGE.len()], TEST_MESSAGE);
         }
@@ -325,7 +324,7 @@ mod tests {
         for _ in 0..1000 {
             writer.write_all(TEST_MESSAGE).unwrap();
             assert!(
-                matches!(reader.read(&mut scratch[..]).poll_unpin(&mut context), Poll::Ready(Ok(x)) if x == TEST_MESSAGE.len())
+                matches!(reader.read(&mut scratch).poll_unpin(&mut context), Poll::Ready(Ok(x)) if x == TEST_MESSAGE.len())
             );
             assert_eq!(&scratch[..TEST_MESSAGE.len()], TEST_MESSAGE);
         }
@@ -345,7 +344,7 @@ mod tests {
         let waker = waker(Arc::new(DummyWaker));
         let mut context = Context::from_waker(&waker);
         assert!(matches!(
-            reader.read(&mut scratch[..]).poll_unpin(&mut context),
+            reader.read(&mut scratch).poll_unpin(&mut context),
             Poll::Pending
         ));
 
@@ -353,7 +352,7 @@ mod tests {
         writer.write_all(TEST_MESSAGE).unwrap();
 
         let raw = reader.fetch_full_content().expect("missing content");
-        assert_eq!(&raw[..], TEST_MESSAGE);
+        assert_eq!(&raw, TEST_MESSAGE);
 
         writer.write_all(TEST_MESSAGE).unwrap();
         assert!(reader.fetch_full_content().is_none());

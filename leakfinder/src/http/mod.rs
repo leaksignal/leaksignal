@@ -89,18 +89,18 @@ impl Config {
 }
 
 fn extract_token_regex(value: &str, regex: Option<&RegexWrapper>, hash: bool) -> Option<String> {
-    let value = match regex {
-        Some(RegexWrapper {
-            original: regex, ..
-        }) => {
-            let captures = regex.captures(value)?;
-            if let Some(captured) = captures.get(1) {
-                captured.as_str()
-            } else {
-                captures.get(0)?.as_str()
-            }
+    let value = if let Some(RegexWrapper {
+        original: regex, ..
+    }) = regex
+    {
+        let captures = regex.captures(value)?;
+        if let Some(captured) = captures.get(1) {
+            captured.as_str()
+        } else {
+            captures.get(0)?.as_str()
         }
-        None => value,
+    } else {
+        value
     };
     if hash {
         let mut out = String::with_capacity(64);
@@ -137,20 +137,20 @@ impl<'a> HttpParser<'a> {
         }
 
         for FullHeader { name, value } in headers {
-            if name == ":path" {
-                self.path = Some(value.clone());
-            } else if name == ":authority" {
-                self.hostname = Some(value.clone());
-            } else if name == "content-type" {
-                let value: ContentType = value
-                    .parse()
-                    .expect("content-type parse failed (impossible)");
-                self.request_description.content_type = value;
-            } else if name == "content-encoding" {
-                let value: ContentEncoding = value
-                    .parse()
-                    .expect("content-encoding parse failed (impossible)");
-                self.request_description.content_encoding = value;
+            match name.as_str() {
+                ":path" => self.path = Some(value.clone()),
+                ":authority" => self.hostname = Some(value.clone()),
+                "content-type" => {
+                    self.request_description.content_type = value
+                        .parse()
+                        .expect("content-type parse failed (impossible)")
+                }
+                "content-encoding" => {
+                    self.request_description.content_encoding = value
+                        .parse()
+                        .expect("content-encoding parse failed (impossible)")
+                }
+                _ => {}
             }
 
             if self.path_policy.is_none() {
@@ -191,16 +191,16 @@ impl<'a> HttpParser<'a> {
                             }
                         }
                     }
-                    _ => (),
+                    _ => {}
                 }
             }
 
             // record request headers
-            let value = if self.policy.collected_request_headers.contains(&name) {
-                Some(value)
-            } else {
-                None
-            };
+            let value = self
+                .policy
+                .collected_request_headers
+                .contains(&name)
+                .then_some(value);
 
             self.request_headers.push(Header { name, value });
         }
@@ -226,27 +226,29 @@ impl<'a> HttpParser<'a> {
                 }) if &name == header => {
                     self.token = extract_token_regex(&value, regex.as_ref(), *hash);
                 }
-                _ => (),
+                _ => {}
             }
 
-            if name == "content-type" {
-                let value: ContentType = value
-                    .parse()
-                    .expect("content-type parse failed (impossible)");
-                self.response_description.content_type = value;
-            } else if name == "content-encoding" {
-                let value: ContentEncoding = value
-                    .parse()
-                    .expect("content-encoding parse failed (impossible)");
-                self.response_description.content_encoding = value;
+            match name.as_str() {
+                "content-type" => {
+                    self.response_description.content_type = value
+                        .parse()
+                        .expect("content-type parse failed (impossible)")
+                }
+                "content-encoding" => {
+                    self.response_description.content_encoding = value
+                        .parse()
+                        .expect("content-encoding parse failed (impossible)")
+                }
+                _ => {}
             }
 
             // record response headers
-            let value = if self.policy.collected_response_headers.contains(&name) {
-                Some(value)
-            } else {
-                None
-            };
+            let value = self
+                .policy
+                .collected_response_headers
+                .contains(&name)
+                .then_some(value);
 
             self.response_headers.push(Header { name, value });
         }
@@ -255,11 +257,11 @@ impl<'a> HttpParser<'a> {
     pub fn with_response_trailers(&mut self, headers: impl IntoIterator<Item = FullHeader>) {
         for FullHeader { name, value } in headers {
             // record response trailers
-            let value = if self.policy.collected_response_headers.contains(&name) {
-                Some(value)
-            } else {
-                None
-            };
+            let value = self
+                .policy
+                .collected_response_headers
+                .contains(&name)
+                .then_some(value);
 
             self.response_headers.push(Header { name, value });
         }

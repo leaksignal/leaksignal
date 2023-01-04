@@ -1,6 +1,6 @@
 use std::{collections::HashMap, time::Duration};
 
-use anyhow::{bail, Result};
+use anyhow::{anyhow, Result};
 use leakfinder::{
     BlockReason, BodyContext, FullHeader, Header, HttpParser, Match, ParseResponse, ParsedMatches,
     TimestampProvider,
@@ -94,23 +94,13 @@ impl Context for HttpResponseContext {
 
 impl HttpResponseContext {
     fn receive_response_body_chunk(&mut self, body_size: usize) -> Result<Vec<u8>> {
-        let body = match self.get_http_response_body(0, body_size) {
-            Some(x) => x,
-            None => {
-                bail!("missing body for response");
-            }
-        };
-        Ok(body)
+        self.get_http_response_body(0, body_size)
+            .ok_or_else(|| anyhow!("missing body for response"))
     }
 
     fn receive_request_body_chunk(&mut self, body_size: usize) -> Result<Vec<u8>> {
-        let body = match self.get_http_request_body(0, body_size) {
-            Some(x) => x,
-            None => {
-                bail!("missing body for response");
-            }
-        };
-        Ok(body)
+        self.get_http_request_body(0, body_size)
+            .ok_or_else(|| anyhow!("missing body for response"))
     }
 
     fn parser(&mut self) -> &mut HttpParser<'static> {
@@ -136,7 +126,7 @@ impl HttpResponseContext {
 
     fn get_property_string(&self, name: &str) -> Option<String> {
         let raw = self.get_property_parse(name)?;
-        Some(String::from_utf8_lossy(&raw[..]).into_owned())
+        Some(String::from_utf8_lossy(&raw).into_owned())
     }
 
     fn get_property_int(&self, name: &str) -> Option<i64> {
@@ -151,11 +141,11 @@ impl HttpResponseContext {
         let policy_id = self.parser().policy().policy_id().to_string();
         let output = self.parser.take().unwrap().finish();
 
-        let policy_path = &*output.policy_path;
+        let policy_path = &output.policy_path;
 
         let mut match_counts: HashMap<&str, i64> = HashMap::new();
         for matching in &output.response.matches {
-            *match_counts.entry(&*matching.category_name).or_default() += 1;
+            *match_counts.entry(&matching.category_name).or_default() += 1;
         }
 
         for (category_name, count) in match_counts {
@@ -232,11 +222,11 @@ impl HttpResponseContext {
             let emitted_packet = packet.encode_to_vec();
 
             if let Err(e) = self.dispatch_grpc_call(
-                unsafe { std::str::from_utf8_unchecked(&upstream.service_definition[..]) },
+                unsafe { std::str::from_utf8_unchecked(&upstream.service_definition) },
                 LEAKSIGNAL_SERVICE_NAME,
                 "MatchData",
                 vec![],
-                Some(&emitted_packet[..]),
+                Some(&emitted_packet),
                 MATCH_PUSH_TIMEOUT,
             ) {
                 error!("failed to upstream match information: {:?}", e);
@@ -264,7 +254,7 @@ impl HttpResponseContext {
 
         let request_id = self.get_property_string("request.id").unwrap_or_default();
         let mut headers: Vec<_> = headers.into_iter().collect();
-        headers.push(("x-ls-request-id", &*request_id));
+        headers.push(("x-ls-request-id", &request_id));
         headers.push(("x-source", "leaksignal"));
         if let Some(source) = source {
             headers.push(("x-ls-source", source));
@@ -318,9 +308,9 @@ impl HttpResponseContext {
         if let Some(reason) = block_state().is_ip_blocked(&**TIMESTAMP_PROVIDER, token) {
             warn!("blocking request by token {token} due to {reason}");
             if matches!(reason, BlockReason::Ratelimit) {
-                self.early_response(429, vec![], None, Some(&*reason.to_string()));
+                self.early_response(429, vec![], None, Some(&reason.to_string()));
             } else {
-                self.early_response(403, vec![], None, Some(&*reason.to_string()));
+                self.early_response(403, vec![], None, Some(&reason.to_string()));
             }
             true
         } else {
@@ -358,10 +348,8 @@ impl HttpContext for HttpResponseContext {
         }
 
         for (name, value) in self.get_http_request_headers_bytes() {
-            let value = match String::from_utf8(value) {
-                Ok(x) => x,
-                Err(e) => String::from_utf8_lossy(&e.into_bytes()[..]).into_owned(),
-            };
+            let value = String::from_utf8(value)
+                .unwrap_or_else(|e| String::from_utf8_lossy(&e.into_bytes()).into_owned());
             self.parser()
                 .with_request_headers([FullHeader { name, value }]);
         }
@@ -372,7 +360,7 @@ impl HttpContext for HttpResponseContext {
             let mut ip = String::from_utf8_lossy(
                 &self
                     .get_property(vec!["source", "address"])
-                    .unwrap_or_default()[..],
+                    .unwrap_or_default(),
             )
             .into_owned();
             // remove port number
@@ -389,9 +377,9 @@ impl HttpContext for HttpResponseContext {
                 warn!("blocking request by ip {ip} due to {reason}");
                 self.parser().with_ip(ip);
                 if matches!(reason, BlockReason::Ratelimit) {
-                    self.early_response(429, vec![], None, Some(&*reason.to_string()));
+                    self.early_response(429, vec![], None, Some(&reason.to_string()));
                 } else {
-                    self.early_response(403, vec![], None, Some(&*reason.to_string()));
+                    self.early_response(403, vec![], None, Some(&reason.to_string()));
                 }
                 return Action::Continue;
             }
@@ -429,9 +417,9 @@ impl HttpContext for HttpResponseContext {
                         {
                             warn!("blocking request by service {peer_service} due to {reason}");
                             if matches!(reason, BlockReason::Ratelimit) {
-                                self.early_response(429, vec![], None, Some(&*reason.to_string()));
+                                self.early_response(429, vec![], None, Some(&reason.to_string()));
                             } else {
-                                self.early_response(403, vec![], None, Some(&*reason.to_string()));
+                                self.early_response(403, vec![], None, Some(&reason.to_string()));
                             }
                             return Action::Continue;
                         }
@@ -441,7 +429,7 @@ impl HttpContext for HttpResponseContext {
         }
 
         if let Some(token) = self.parser_ref().token().map(|x| x.to_string()) {
-            if self.parser_ref().policy().blocked_tokens.contains(&*token) {
+            if self.parser_ref().policy().blocked_tokens.contains(&token) {
                 warn!("blocking request by token {token}");
                 self.early_response(403, vec![], None, Some("blocked_token"));
                 return Action::Continue;
@@ -479,13 +467,10 @@ impl HttpContext for HttpResponseContext {
                 Ok(x) => x,
             };
 
-            match parse_request {
-                ParseResponse::Block => {
-                    warn!("blocking request");
-                    self.early_response(403, vec![], None, Some("blocked_match"));
-                    return Action::Continue;
-                }
-                ParseResponse::Continue => (),
+            if parse_request == ParseResponse::Block {
+                warn!("blocking request");
+                self.early_response(403, vec![], None, Some("blocked_match"));
+                return Action::Continue;
             }
         }
 
@@ -499,12 +484,9 @@ impl HttpContext for HttpResponseContext {
             };
             self.parser().finish_request_stream(request.matches);
 
-            match request.response {
-                ParseResponse::Block => {
-                    warn!("blocking request");
-                    self.send_http_response(403, vec![], None);
-                }
-                ParseResponse::Continue => (),
+            if request.response == ParseResponse::Block {
+                warn!("blocking request");
+                self.send_http_response(403, vec![], None);
             }
         }
 
@@ -523,15 +505,13 @@ impl HttpContext for HttpResponseContext {
 
         self.set_http_response_header("content-length", None);
         for (name, value) in self.get_http_response_headers_bytes() {
-            let value = match String::from_utf8(value) {
-                Ok(x) => x,
-                Err(e) => String::from_utf8_lossy(&e.into_bytes()[..]).into_owned(),
-            };
+            let value = String::from_utf8(value)
+                .unwrap_or_else(|e| String::from_utf8_lossy(&e.into_bytes()).into_owned());
             self.parser()
                 .with_response_headers([FullHeader { name, value }]);
         }
         if let Some(token) = self.parser_ref().token().map(|x| x.to_string()) {
-            if self.parser_ref().policy().blocked_tokens.contains(&*token) {
+            if self.parser_ref().policy().blocked_tokens.contains(&token) {
                 warn!("blocking response by token {token}");
                 self.early_response(403, vec![], None, Some("blocked_token"));
                 return Action::Continue;
@@ -550,10 +530,8 @@ impl HttpContext for HttpResponseContext {
         }
 
         for (name, value) in self.get_http_response_trailers_bytes() {
-            let value = match String::from_utf8(value) {
-                Ok(x) => x,
-                Err(e) => String::from_utf8_lossy(&e.into_bytes()[..]).into_owned(),
-            };
+            let value = String::from_utf8(value)
+                .unwrap_or_else(|e| String::from_utf8_lossy(&e.into_bytes()).into_owned());
             self.parser()
                 .with_response_trailers([FullHeader { name, value }]);
         }
@@ -586,12 +564,9 @@ impl HttpContext for HttpResponseContext {
                 Ok(x) => x,
             };
 
-            match parse_response {
-                ParseResponse::Block => {
-                    warn!("blocking response");
-                    self.set_http_response_body(0, body_size, &[]);
-                }
-                ParseResponse::Continue => (),
+            if parse_response == ParseResponse::Block {
+                warn!("blocking response");
+                self.set_http_response_body(0, body_size, &[]);
             }
         }
 
@@ -606,12 +581,9 @@ impl HttpContext for HttpResponseContext {
             self.parser().finish_response_stream(response.matches);
             self.finish_internal();
 
-            match response.response {
-                ParseResponse::Block => {
-                    warn!("blocking response");
-                    self.set_http_response_body(0, body_size, &[]);
-                }
-                ParseResponse::Continue => (),
+            if response.response == ParseResponse::Block {
+                warn!("blocking response");
+                self.set_http_response_body(0, body_size, &[]);
             }
         }
 

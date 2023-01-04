@@ -66,7 +66,7 @@ impl BodyContext {
         match &mut self.decoder {
             Decoder::None => Ok(body),
             Decoder::Gzip(decompressor) => {
-                decompressor.write_all(&body[..])?;
+                decompressor.write_all(&body)?;
                 Ok(decompressor.get_mut().drain(..).collect::<Vec<_>>())
             }
         }
@@ -74,7 +74,7 @@ impl BodyContext {
 
     fn decode_finish(&mut self) -> Result<Vec<u8>> {
         match std::mem::replace(&mut self.decoder, Decoder::None) {
-            Decoder::None => Ok(vec![]),
+            Decoder::None => Ok(Vec::default()),
             Decoder::Gzip(decoder) => Ok(decoder.finish()?),
         }
     }

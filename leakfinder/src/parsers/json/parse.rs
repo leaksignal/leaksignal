@@ -9,18 +9,17 @@ use std::{
 
 async fn read_u8(reader: &mut (impl AsyncRead + Unpin)) -> IoResult<u8> {
     let mut out = [0u8; 1];
-    reader.read_exact(&mut out[..]).await?;
+    reader.read_exact(&mut out).await?;
     Ok(out[0])
 }
 
 async fn maybe_read_u8(reader: &mut (impl AsyncRead + Unpin)) -> IoResult<Option<u8>> {
     let mut out = [0u8; 1];
-    match reader.read_exact(&mut out[..]).await {
-        Ok(()) => (),
-        Err(e) if e.kind() == ErrorKind::UnexpectedEof => return Ok(None),
-        Err(e) => return Err(e),
+    match reader.read_exact(&mut out).await {
+        Ok(()) => Ok(Some(out[0])),
+        Err(e) if e.kind() == ErrorKind::UnexpectedEof => Ok(None),
+        Err(e) => Err(e),
     }
-    Ok(Some(out[0]))
 }
 
 async fn read_u8_non_whitespace(reader: &mut (impl AsyncRead + Unpin)) -> IoResult<u8> {
@@ -37,9 +36,8 @@ async fn maybe_read_u8_non_whitespace(
     reader: &mut (impl AsyncRead + Unpin),
 ) -> IoResult<Option<u8>> {
     loop {
-        let value = match maybe_read_u8(reader).await? {
-            Some(x) => x,
-            None => break Ok(None),
+        let Some(value) = maybe_read_u8(reader).await? else {
+            break Ok(None)
         };
         if value == b' ' || value == b'\n' || value == b'\r' || value == b'\t' {
             continue;
@@ -77,7 +75,7 @@ fn decode_hex4(bytes: [u8; 4]) -> Option<u16> {
 
 async fn read_hex4(input: &mut PipeReader) -> IoResult<Result<u16, [u8; 4]>> {
     let mut bytes = [0u8; 4];
-    input.read_exact(&mut bytes[..]).await?;
+    input.read_exact(&mut bytes).await?;
     Ok(decode_hex4(bytes).ok_or(bytes))
 }
 
@@ -159,7 +157,7 @@ async fn read_json_string(input: &mut PipeReader) -> IoResult<String> {
                         Ok(hex) => current_unicode_sequence.push(hex),
                         Err(_bytes) => {
                             let mut out = [0u16; 1];
-                            REPLACEMENT_CHARACTER.encode_utf16(&mut out[..]);
+                            REPLACEMENT_CHARACTER.encode_utf16(&mut out);
                             current_unicode_sequence.push(out[0]);
                         }
                     },
@@ -323,11 +321,12 @@ async fn parse_json_internal<T>(
         }
         // number
         b'-' | b'0' | b'1' | b'2' | b'3' | b'4' | b'5' | b'6' | b'7' | b'8' | b'9' => {
-            return match read_json_number(first_byte, input).await? {
-                Some(c) => Ok(JsonResult::NextByte(
+            if let Some(c) = read_json_number(first_byte, input).await? {
+                return Ok(JsonResult::NextByte(
                     reread_u8_non_whitespace(c, input).await?,
-                )),
-                None => Ok(JsonResult::Eof),
+                ));
+            } else {
+                return Ok(JsonResult::Eof);
             };
         }
         b't' => {
