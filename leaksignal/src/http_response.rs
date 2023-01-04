@@ -357,6 +357,15 @@ impl HttpContext for HttpResponseContext {
             return Action::Continue;
         }
 
+        for (name, value) in self.get_http_request_headers_bytes() {
+            let value = match String::from_utf8(value) {
+                Ok(x) => x,
+                Err(e) => String::from_utf8_lossy(&e.into_bytes()[..]).into_owned(),
+            };
+            self.parser()
+                .with_request_headers([FullHeader { name, value }]);
+        }
+
         if !self.request_started {
             self.request_started = true;
 
@@ -387,15 +396,6 @@ impl HttpContext for HttpResponseContext {
                 return Action::Continue;
             }
             self.parser().with_ip(ip);
-        }
-
-        for (name, value) in self.get_http_request_headers_bytes() {
-            let value = match String::from_utf8(value) {
-                Ok(x) => x,
-                Err(e) => String::from_utf8_lossy(&e.into_bytes()[..]).into_owned(),
-            };
-            self.parser()
-                .with_request_headers([FullHeader { name, value }]);
         }
 
         if let Some(local_service) =

@@ -323,7 +323,11 @@ impl<'a> HttpParser<'a> {
             time_response_start: self.time_response_start,
             request_headers: self.request_headers,
             response_headers: self.response_headers,
-            policy_path: self.path_policy.as_ref().unwrap().policy_path.clone(),
+            policy_path: self
+                .path_policy
+                .as_ref()
+                .map(|x| x.policy_path.to_string())
+                .unwrap_or_default(),
             token: self.token.unwrap_or_default(),
             ip: self.ip.unwrap_or_default(),
             response,
