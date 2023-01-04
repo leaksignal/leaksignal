@@ -55,12 +55,7 @@ fn try_get_any(
     mut get_property: impl FnMut(&str) -> Option<String>,
     keys: &[&str],
 ) -> Option<String> {
-    for key in keys {
-        if let Some(value) = get_property(key) {
-            return Some(value);
-        }
-    }
-    None
+    keys.iter().find_map(|k| get_property(k))
 }
 
 pub fn outbound_peer_service_name(

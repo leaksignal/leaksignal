@@ -10,7 +10,7 @@ use anyhow::{Context, Result};
 
 async fn read<const N: usize>(reader: &mut (impl AsyncRead + Unpin)) -> Result<[u8; N]> {
     let mut output = [0u8; N];
-    reader.read_exact(&mut output[..]).await?;
+    reader.read_exact(&mut output).await?;
     Ok(output)
 }
 
@@ -87,7 +87,7 @@ impl Parser for GrpcParser {
         .await?;
         unsafe { raw_body.set_len(length as usize) };
 
-        let (new_matches, response) = parse_message(&raw_body[..], 0, &matcher, performance)?;
+        let (new_matches, response) = parse_message(&raw_body, 0, &matcher, performance)?;
         matches.extend(new_matches);
 
         Ok(response)
@@ -109,7 +109,7 @@ mod tests {
         let mut matcher = MatcherState::default();
         matcher.push_raw("test_raw", "6c-42");
         let (matches, _) = parse_message(
-            &raw_body[..],
+            &raw_body,
             0,
             &matcher,
             &PerformanceMonitor::new(std::sync::Arc::new(StdTimestampProvider::default())),

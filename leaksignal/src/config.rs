@@ -77,9 +77,10 @@ impl Deref for ConfigRef {
 lazy_static::lazy_static! {
     static ref IS_BOOTSTRAP: bool = {
         let plugin_vm_id = hostcalls::get_property(vec!["plugin_vm_id"]).expect("couldn't fetch plugin_vm_id");
-        let plugin_vm_id = match &plugin_vm_id {
-            Some(x) => String::from_utf8_lossy(&x[..]),
-            None => Cow::Borrowed(""),
+        let plugin_vm_id = if let Some(x) = &plugin_vm_id {
+            String::from_utf8_lossy(x)
+        } else {
+            Cow::Borrowed("")
         };
         plugin_vm_id.contains("service")
     };
@@ -96,18 +97,15 @@ impl Config {
 
     pub fn try_get() -> Option<ConfigRef> {
         let config = CONFIG.load();
-        if config.is_none() {
-            return None;
-        }
-        Some(ConfigRef(config))
+        config.is_some().then_some(ConfigRef(config))
     }
 
     pub fn get() -> ConfigRef {
         let config = CONFIG.load();
-        if config.is_none() {
-            panic!("referenced config with none loaded");
-        }
-        ConfigRef(config)
+        config
+            .is_some()
+            .then_some(ConfigRef(config))
+            .expect("referenced config with none loaded")
     }
 
     pub fn set(self) {
@@ -163,10 +161,9 @@ impl Deref for UpstreamConfigHandle {
 
 pub fn upstream() -> Option<UpstreamConfigHandle> {
     let loaded = LEAKSIGNAL_UPSTREAM.load();
-    if loaded.is_none() {
-        return None;
-    }
-    Some(UpstreamConfigHandle(LEAKSIGNAL_UPSTREAM.load()))
+    loaded
+        .is_some()
+        .then(|| UpstreamConfigHandle(LEAKSIGNAL_UPSTREAM.load()))
 }
 
 lazy_static::lazy_static! {

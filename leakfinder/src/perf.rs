@@ -52,13 +52,10 @@ impl<'a> PerformanceHandle<'a> {
     fn submit(&self, now: Duration) {
         let total = (now - self.start).as_micros() as u64;
         let mut category_performance_us = self.monitor.inner.borrow_mut();
-        match category_performance_us.get_mut(self.name) {
-            Some(x) => {
-                *x += total;
-            }
-            None => {
-                category_performance_us.insert(self.name.to_string(), total);
-            }
+        if let Some(x) = category_performance_us.get_mut(self.name) {
+            *x += total;
+        } else {
+            category_performance_us.insert(self.name.to_string(), total);
         }
     }
 }

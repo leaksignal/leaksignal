@@ -30,10 +30,7 @@ impl PolicyRef {
 impl PolicyHolder {
     pub fn policy(&self) -> Option<PolicyRef> {
         let policy = self.0.load_full();
-        if policy.is_none() {
-            return None;
-        }
-        Some(PolicyRef(policy))
+        policy.is_some().then_some(PolicyRef(policy))
     }
 
     pub fn update_policy(&self, policy_id: String, policy: Policy) {

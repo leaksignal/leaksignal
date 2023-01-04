@@ -130,19 +130,13 @@ pub fn prepare_matches<'a>(
             interest,
             max_distance,
         } => {
-            let group1 = match group1.match_group(policy) {
-                Some(x) => x,
-                None => {
-                    warn!("correlate match group for '{category_name}' is missing a group1");
-                    return;
-                }
+            let Some(group1) = group1.match_group(policy) else {
+                warn!("correlate match group for '{category_name}' is missing a group1");
+                return;
             };
-            let group2 = match group2.match_group(policy) {
-                Some(x) => x,
-                None => {
-                    warn!("correlate match group for '{category_name}' is missing a group2");
-                    return;
-                }
+            let Some(group2) = group2.match_group(policy) else {
+                warn!("correlate match group for '{category_name}' is missing a group2");
+                return;
             };
             let correlation_index = state.correlation_index;
             state.correlation_index += 1;

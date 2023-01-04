@@ -1,10 +1,13 @@
-use std::{io::{self, ErrorKind, Write, Seek, Cursor}, collections::HashMap};
+use std::{
+    collections::HashMap,
+    io::{self, Cursor, ErrorKind, Seek, Write},
+};
 
-use exif::{Reader, experimental::Writer, Field};
+use exif::{experimental::Writer, Field, Reader};
 use indexmap::IndexMap;
-use log::{warn, error, debug, info};
+use log::{debug, error, info, warn};
 
-use crate::policy::{PolicyAction, POLICY, Category};
+use crate::policy::{Category, PolicyAction, POLICY};
 
 use super::ParseResponse;
 
@@ -34,8 +37,8 @@ fn read_jpg_entropy(input: &[u8]) -> Option<usize> {
             // ignored byte, reset marker
             0x00 | 0xD0..=0xD7 => {
                 i += 2;
-                continue
-            },
+                continue;
+            }
             _ => return Some(i),
         }
     }
@@ -60,8 +63,12 @@ fn write_jpg_exif_data(mut output: impl Write + Seek, fields: &[&Field]) -> io::
     for field in fields {
         writer.push_field(field);
     }
-    writer.write(&mut output, true)
-        .map_err(|e| io::Error::new(ErrorKind::InvalidData, format!("bad jpeg EXIF data: {:?}", e)))?;
+    writer.write(&mut output, true).map_err(|e| {
+        io::Error::new(
+            ErrorKind::InvalidData,
+            format!("bad jpeg EXIF data: {:?}", e),
+        )
+    })?;
     Ok(())
 }
 
@@ -69,25 +76,21 @@ fn read_jpg_marker_data<'a>(input: &mut &'a [u8], marker: u8) -> io::Result<JpgM
     Ok(match marker {
         0xD8 => JpgMarkerOutput::Continue,
         0xD9 => JpgMarkerOutput::Finished,
-        0xE1 => {
-            match read_marker_length(input)? {
-                None => JpgMarkerOutput::Truncated,
-                Some(length) => {
-                    let output = &input[2..length];
-                    *input = &(*input)[length..];
-                    JpgMarkerOutput::Exif(output)
-                }
+        0xE1 => match read_marker_length(input)? {
+            None => JpgMarkerOutput::Truncated,
+            Some(length) => {
+                let output = &input[2..length];
+                *input = &(*input)[length..];
+                JpgMarkerOutput::Exif(output)
             }
         },
-        0xC0 | 0xC2 | 0xC4 | 0xDB | 0xFE | 0xDD | 0xE0..=0xEF => {
-            match read_marker_length(input)? {
-                None => JpgMarkerOutput::Truncated,
-                Some(length) => {
-                    *input = &(*input)[length..];
-                    JpgMarkerOutput::Continue
-                }
+        0xC0 | 0xC2 | 0xC4 | 0xDB | 0xFE | 0xDD | 0xE0..=0xEF => match read_marker_length(input)? {
+            None => JpgMarkerOutput::Truncated,
+            Some(length) => {
+                *input = &(*input)[length..];
+                JpgMarkerOutput::Continue
             }
-        }
+        },
         0xDA => {
             let mut total_length = 0;
             match read_marker_length(input)? {
@@ -106,7 +109,10 @@ fn read_jpg_marker_data<'a>(input: &mut &'a [u8], marker: u8) -> io::Result<JpgM
             }
         }
         x => {
-            return Err(malformed_jpeg(format!("jpeg: unexpected marker byte: {}", x)));
+            return Err(malformed_jpeg(format!(
+                "jpeg: unexpected marker byte: {}",
+                x
+            )));
         }
     })
 }
@@ -121,13 +127,20 @@ fn read_jpg_marker(input: &[u8]) -> io::Result<(u8, &[u8])> {
     Ok((input[1], &input[2..]))
 }
 
-fn process_jpg_frame(input: &[u8], mut output: impl Write, mut filter_field: impl FnMut(&str) -> bool) -> io::Result<()> {
+fn process_jpg_frame(
+    input: &[u8],
+    mut output: impl Write,
+    mut filter_field: impl FnMut(&str) -> bool,
+) -> io::Result<()> {
     let original_input = input;
     let (mut marker, mut input) = read_jpg_marker(input)?;
 
     // check first marker is SOI
     if marker != 0xD8 {
-        return Err(malformed_jpeg(format!("jpeg: start marker not SOI: {}", marker)));
+        return Err(malformed_jpeg(format!(
+            "jpeg: start marker not SOI: {}",
+            marker
+        )));
     }
 
     let mut index = 0;
@@ -136,7 +149,7 @@ fn process_jpg_frame(input: &[u8], mut output: impl Write, mut filter_field: imp
         let mut new_input = input;
         (marker, new_input) = read_jpg_marker(new_input)?;
         // println!("marker {}", marker);
-        
+
         let total_read_len = original_input.len() - new_input.len();
         output.write_all(&original_input[index..total_read_len])?;
         index = total_read_len;
@@ -144,10 +157,10 @@ fn process_jpg_frame(input: &[u8], mut output: impl Write, mut filter_field: imp
         match read_jpg_marker_data(&mut new_input, marker)? {
             JpgMarkerOutput::Exif(data) => {
                 let exif_reader = Reader::new();
-                //TODO: xmp: 
+                //TODO: xmp:
                 // http://ns.adobe.com/xap/1.0/
                 // http://ns.adobe.com/xmp/extension/
-                
+
                 index = original_input.len() - new_input.len();
 
                 //TODO: identify-im6.q16: Corrupt JPEG data: 2 extraneous bytes before marker 0xe1 `test_deexif.jpg' @ warning/jpeg.c/JPEGWarningHandler/389.
@@ -158,22 +171,22 @@ fn process_jpg_frame(input: &[u8], mut output: impl Write, mut filter_field: imp
                             debug!("{} = {}", field.tag, field.display_value().with_unit(field));
                             #[cfg(test)]
                             eprintln!("{} = {}", field.tag, field.display_value().with_unit(field));
-                            if filter_field(&*field.tag.to_string()) {
+                            if filter_field(field.tag.to_string()) {
                                 output_fields.push(field);
                             }
                         }
                         //todo: remove intermediate allocation
                         let mut exif_data = Cursor::new(vec![]);
-                        write_jpg_exif_data(&mut exif_data, &output_fields[..])?;
+                        write_jpg_exif_data(&mut exif_data, &output_fields)?;
                         let exif_data = exif_data.into_inner();
                         //todo: check for length overflow here
-                        output.write_all(&(exif_data.len() as u16 + 6).to_be_bytes()[..])?;
+                        output.write_all(&(exif_data.len() as u16 + 6).to_be_bytes())?;
                         //todo: check tag
                         output.write_all(b"Exif\x00\x00")?;
-                        output.write_all(&exif_data[..])?;
-                    },
+                        output.write_all(&exif_data)?;
+                    }
                     Err(e) => {
-                        output.write_all(&0u16.to_be_bytes()[..])?;
+                        output.write_all(&0u16.to_be_bytes())?;
                         warn!("malformed exif: {:?}", e);
                         #[cfg(test)]
                         eprintln!("malformed exif: {:?}", e);
@@ -181,14 +194,14 @@ fn process_jpg_frame(input: &[u8], mut output: impl Write, mut filter_field: imp
                 }
                 // println!("exif = {}", data.len());
                 input = new_input;
-            },
+            }
             JpgMarkerOutput::Finished => {
                 input = new_input;
                 break;
-            },
+            }
             JpgMarkerOutput::Continue => {
                 input = new_input;
-            },
+            }
             JpgMarkerOutput::Truncated => return Err(malformed_jpeg("jpeg: truncated")),
         }
     }
@@ -210,10 +223,14 @@ pub fn parse_jpeg(body: &[u8], configuration: &IndexMap<String, PolicyAction>) -
             None => {
                 error!("invalid category in config: {}", category_name);
                 continue;
-            },
+            }
         };
 
-        if let Category::Jpeg { exif_tags, drop_xmp } = category {
+        if let Category::Jpeg {
+            exif_tags,
+            drop_xmp,
+        } = category
+        {
             for tag in exif_tags {
                 proper.insert(tag, (category_name, action));
             }
@@ -245,11 +262,11 @@ pub fn parse_jpeg(body: &[u8], configuration: &IndexMap<String, PolicyAction>) -
                         warn!("mask replacement must be empty for JPEG EXIF matches");
                     }
                     false
-                },
+                }
                 PolicyAction::Block => {
                     blocked = true;
                     false
-                },
+                }
             }
         } else {
             debug!("unmatched EXIF tag: {}", field);
@@ -272,11 +289,11 @@ pub fn parse_jpeg(body: &[u8], configuration: &IndexMap<String, PolicyAction>) -
 #[cfg(test)]
 mod tests {
     use super::*;
-    
+
     #[test]
     fn test_jpeg() {
         let raw = include_bytes!("../../testing/www/test.jpg");
         let mut output = vec![];
-        process_jpg_frame(&mut &raw[..], &mut output, |_| true).unwrap();
+        process_jpg_frame(&mut &raw, &mut output, |_| true).unwrap();
     }
 }

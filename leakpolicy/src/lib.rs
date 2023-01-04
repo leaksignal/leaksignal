@@ -2,6 +2,7 @@ use std::{
     borrow::Cow,
     collections::{BTreeMap, HashSet},
     net::IpAddr,
+    ops::Deref,
     str::FromStr,
     sync::Arc,
 };
@@ -19,16 +20,12 @@ pub use path_glob::PathGlob;
 use serde_single_or_vec2::SingleOrVec;
 
 pub fn parse_policy(policy: &str) -> Result<Policy> {
-    let parsed: Policy = match serde_yaml::from_str(policy) {
-        Ok(x) => x,
-        Err(e) => {
-            log::debug!("bad leakpolicy:\n{}", policy);
-            return Err(e.into());
-        }
-    };
+    serde_yaml::from_str(policy).map_err(|e| {
+        log::debug!("bad leakpolicy:\n{}", policy);
+        e.into()
+    })
 
     // recur_fillin_endpoint(&mut parsed.root_endpoint, "/");
-    Ok(parsed)
 }
 
 #[derive(Clone, Debug)]
@@ -64,13 +61,13 @@ impl<'de> Deserialize<'de> for RegexWrapper {
 
         Ok(Self {
             original: Regex::new(&r).map_err(|e| {
-                serde::de::Error::invalid_value(Unexpected::Str(&r), &&*e.to_string())
+                serde::de::Error::invalid_value(Unexpected::Str(&r), &e.to_string().deref())
             })?,
             multiline: RegexBuilder::new(&r)
                 .multi_line(true)
                 .build()
                 .map_err(|e| {
-                    serde::de::Error::invalid_value(Unexpected::Str(&r), &&*e.to_string())
+                    serde::de::Error::invalid_value(Unexpected::Str(&r), &e.to_string().deref())
                 })?,
         })
     }
@@ -547,7 +544,7 @@ pub struct ServicePolicy {
 
 impl ServicePolicy {
     pub fn service_matched(&self, service_name: &str) -> bool {
-        Matcher::match_all(service_name, &self.services[..])
+        Matcher::match_all(service_name, &self.services)
     }
 
     pub fn block_unknown_services(&self) -> bool {
@@ -560,9 +557,9 @@ impl ServicePolicy {
             return !self.block_unknown_services();
         };
         if !self.whitelist.is_empty() {
-            Matcher::match_all(service_name, &self.whitelist[..])
+            Matcher::match_all(service_name, &self.whitelist)
         } else {
-            !Matcher::match_all(service_name, &self.blacklist[..])
+            !Matcher::match_all(service_name, &self.blacklist)
         }
     }
 }
@@ -635,7 +632,7 @@ impl Policy {
         let mut policy_paths: BTreeMap<&PathGlob, Vec<&EndpointConfig>> = BTreeMap::new();
 
         for endpoint in self.endpoints.iter() {
-            for path in &*endpoint.matches {
+            for path in endpoint.matches.iter() {
                 if path.matches_components(components.iter().copied()) {
                     policy_paths.entry(path).or_default().push(endpoint);
                 }

@@ -2,6 +2,7 @@ use std::{
     cmp::Ordering,
     fmt,
     hash::{Hash, Hasher},
+    ops::Deref,
     str::FromStr,
 };
 
@@ -52,24 +53,21 @@ impl Hash for GlobComponent {
 impl GlobComponent {
     fn globish(&self) -> bool {
         match self {
-            GlobComponent::AnyOne => false,
-            GlobComponent::AnyMany => false,
-            GlobComponent::Regex(_, _) => true,
-            GlobComponent::Contains(_) => true,
-            GlobComponent::Prefix(_) => true,
-            GlobComponent::Suffix(_) => true,
-            GlobComponent::Literal(_) => false,
+            GlobComponent::AnyOne | GlobComponent::AnyMany | GlobComponent::Literal(_) => false,
+            GlobComponent::Regex(_, _)
+            | GlobComponent::Contains(_)
+            | GlobComponent::Prefix(_)
+            | GlobComponent::Suffix(_) => true,
         }
     }
 
     fn matches(&self, target: &str) -> bool {
         match self {
-            GlobComponent::AnyOne => true,
-            GlobComponent::AnyMany => true,
-            GlobComponent::Regex(_, r) => match r.find(target) {
-                None => false,
-                Some(matching) => matching.start() == 0 && matching.end() == target.len(),
-            },
+            GlobComponent::AnyOne | GlobComponent::AnyMany => true,
+            GlobComponent::Regex(_, r) => r
+                .find(target)
+                .map(|matching| matching.start() == 0 && matching.end() == target.len())
+                .unwrap_or_default(),
             GlobComponent::Contains(s) => target.contains(&s[1..s.len() - 1]),
             GlobComponent::Prefix(s) => target.starts_with(&s[..s.len() - 1]),
             GlobComponent::Suffix(s) => target.ends_with(&s[1..]),
@@ -83,11 +81,11 @@ impl AsRef<str> for GlobComponent {
         match self {
             GlobComponent::AnyOne => "*",
             GlobComponent::AnyMany => "**",
-            GlobComponent::Regex(s, _) => s,
-            GlobComponent::Contains(s) => s,
-            GlobComponent::Prefix(s) => s,
-            GlobComponent::Suffix(s) => s,
-            GlobComponent::Literal(s) => s,
+            GlobComponent::Regex(s, _)
+            | GlobComponent::Contains(s)
+            | GlobComponent::Prefix(s)
+            | GlobComponent::Suffix(s)
+            | GlobComponent::Literal(s) => s,
         }
     }
 }
@@ -150,11 +148,7 @@ impl PartialOrd for PathGlob {
         let globish_count_left = self.components.iter().filter(|x| x.globish()).count();
         let globish_count_right = other.components.iter().filter(|x| x.globish()).count();
 
-        match globish_count_left.cmp(&globish_count_right) {
-            Ordering::Equal => (),
-            x => return Some(x),
-        }
-        Some(Ordering::Equal)
+        Some(globish_count_left.cmp(&globish_count_right))
     }
 }
 
@@ -170,7 +164,7 @@ impl<'de> Deserialize<'de> for PathGlob {
         raw.parse().map_err(|e| {
             serde::de::Error::invalid_value(
                 Unexpected::Str(&raw),
-                &&*format!("invalid PathGlob: {}", e),
+                &format!("invalid PathGlob: {}", e).deref(),
             )
         })
     }
@@ -231,9 +225,7 @@ impl PathGlob {
         let mut glob_i = 0;
 
         loop {
-            let glob = if let Some(glob) = self.components.get(glob_i) {
-                glob
-            } else {
+            let Some(glob) = self.components.get(glob_i) else {
                 if components.next().is_some() {
                     return false;
                 }
@@ -259,11 +251,7 @@ impl PathGlob {
                 continue;
             }
             glob_i += 1;
-            let component = match components.next() {
-                Some(x) => x,
-                None => return false,
-            };
-            if !glob.matches(component) {
+            if !matches!(components.next(), Some(c) if glob.matches(c)) {
                 return false;
             }
         }

@@ -64,7 +64,7 @@ fn init() {
             "leaksignal found environment variables {}",
             env::ENVIRONMENT
                 .keys()
-                .map(|x| &**x)
+                .map(|x| x.as_str())
                 .collect::<Vec<_>>()
                 .join(", ")
         );
