@@ -13,9 +13,9 @@ use ipnetwork::IpNetwork;
 use regex::{Regex, RegexBuilder};
 use serde::{de::Unexpected, Deserialize, Serialize};
 
-mod matcher;
+mod match_rule;
 mod path_glob;
-pub use matcher::Matcher;
+pub use match_rule::MatchRule;
 pub use path_glob::PathGlob;
 use serde_single_or_vec2::SingleOrVec;
 
@@ -383,12 +383,12 @@ fn default_timespan_secs() -> u64 {
 pub enum RateLimitFilter {
     Endpoint(SingleOrVec<'static, PathGlob>),
     ExcludeEndpoint(SingleOrVec<'static, PathGlob>),
-    PeerService(SingleOrVec<'static, Matcher>),
-    ExcludePeerService(SingleOrVec<'static, Matcher>),
-    LocalService(SingleOrVec<'static, Matcher>),
-    ExcludeLocalService(SingleOrVec<'static, Matcher>),
-    Token(SingleOrVec<'static, Matcher>),
-    ExcludeToken(SingleOrVec<'static, Matcher>),
+    PeerService(SingleOrVec<'static, MatchRule>),
+    ExcludePeerService(SingleOrVec<'static, MatchRule>),
+    LocalService(SingleOrVec<'static, MatchRule>),
+    ExcludeLocalService(SingleOrVec<'static, MatchRule>),
+    Token(SingleOrVec<'static, MatchRule>),
+    ExcludeToken(SingleOrVec<'static, MatchRule>),
     Ip(SingleOrVec<'static, IpNetwork>),
     ExcludeIp(SingleOrVec<'static, IpNetwork>),
     Any(Vec<RateLimitFilter>),
@@ -419,19 +419,19 @@ impl RateLimitFilter {
                 !endpoints.iter().any(|x| x.matches(input.endpoint))
             }
             RateLimitFilter::PeerService(matchers) => {
-                Matcher::match_all(input.peer_service, matchers)
+                MatchRule::match_all(input.peer_service, matchers)
             }
             RateLimitFilter::ExcludePeerService(matchers) => {
-                !Matcher::match_all(input.peer_service, matchers)
+                !MatchRule::match_all(input.peer_service, matchers)
             }
             RateLimitFilter::LocalService(matchers) => {
-                Matcher::match_all(input.local_service, matchers)
+                MatchRule::match_all(input.local_service, matchers)
             }
             RateLimitFilter::ExcludeLocalService(matchers) => {
-                !Matcher::match_all(input.local_service, matchers)
+                !MatchRule::match_all(input.local_service, matchers)
             }
-            RateLimitFilter::Token(matchers) => Matcher::match_all(input.token, matchers),
-            RateLimitFilter::ExcludeToken(matchers) => !Matcher::match_all(input.token, matchers),
+            RateLimitFilter::Token(matchers) => MatchRule::match_all(input.token, matchers),
+            RateLimitFilter::ExcludeToken(matchers) => !MatchRule::match_all(input.token, matchers),
             RateLimitFilter::Ip(matchers) => matchers.iter().any(|x| x.contains(input.ip)),
             RateLimitFilter::ExcludeIp(matchers) => !matchers.iter().any(|x| x.contains(input.ip)),
             RateLimitFilter::Any(filters) => filters.iter().any(|f| f.matches(input)),
@@ -531,20 +531,20 @@ fn default_max_body_collection_mb() -> f64 {
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
 pub struct ServicePolicy {
     /// List of services this policy matches for
-    pub services: SingleOrVec<'static, Matcher>,
+    pub services: SingleOrVec<'static, MatchRule>,
     /// If specified, these services are disallowed from communicating. Ignored if `whitelist` is nonempty.
     #[serde(default)]
-    pub blacklist: Vec<Matcher>,
+    pub blacklist: Vec<MatchRule>,
     /// If specified, only these services can communicate with this service
     #[serde(default)]
-    pub whitelist: Vec<Matcher>,
+    pub whitelist: Vec<MatchRule>,
     /// If `whitelist` is nonempty, this defaults to `true`. Otherwise, `false`. When `true`, inbound communications from unknown services (no mTLS) is blocked.
     pub block_unknown_services: Option<bool>,
 }
 
 impl ServicePolicy {
     pub fn service_matched(&self, service_name: &str) -> bool {
-        Matcher::match_all(service_name, &self.services)
+        MatchRule::match_all(service_name, &self.services)
     }
 
     pub fn block_unknown_services(&self) -> bool {
@@ -557,9 +557,9 @@ impl ServicePolicy {
             return !self.block_unknown_services();
         };
         if !self.whitelist.is_empty() {
-            Matcher::match_all(service_name, &self.whitelist)
+            MatchRule::match_all(service_name, &self.whitelist)
         } else {
-            !Matcher::match_all(service_name, &self.blacklist)
+            !MatchRule::match_all(service_name, &self.blacklist)
         }
     }
 }

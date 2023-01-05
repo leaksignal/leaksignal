@@ -46,14 +46,14 @@ impl Hash for Mode {
 /// Rules:
 /// `regex:` beginning strings are parsed as regex. Automatically anchored to beginning and end of input.
 /// `raw:` or unprefixed strings are parsed as raw strings.
-/// `except:` meaningless on it's own, but can be used to ignore literal matches from Matchers in the same context.
+/// `except:` meaningless on it's own, but can be used to ignore literal matches from MatchRules in the same context.
 /// `except_regex:` Same as `except`, but uses regex.
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
-pub struct Matcher {
+pub struct MatchRule {
     mode: Mode,
 }
 
-impl<'de> Deserialize<'de> for Matcher {
+impl<'de> Deserialize<'de> for MatchRule {
     fn deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
         let raw = String::deserialize(deserializer)?;
         raw.parse().map_err(|e| {
@@ -65,7 +65,7 @@ impl<'de> Deserialize<'de> for Matcher {
     }
 }
 
-impl Serialize for Matcher {
+impl Serialize for MatchRule {
     fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
         self.to_string().serialize(serializer)
     }
@@ -84,7 +84,7 @@ fn anchor_regex(input: &str) -> Result<Regex> {
     }
 }
 
-impl FromStr for Matcher {
+impl FromStr for MatchRule {
     type Err = anyhow::Error;
 
     fn from_str(s: &str) -> Result<Self> {
@@ -112,7 +112,7 @@ impl FromStr for Matcher {
     }
 }
 
-impl fmt::Display for Matcher {
+impl fmt::Display for MatchRule {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match &self.mode {
             Mode::Regex(x) => write!(f, "regex:{}", x.as_str())?,
@@ -131,14 +131,14 @@ impl fmt::Display for Matcher {
     }
 }
 
-impl AsRef<Matcher> for Matcher {
-    fn as_ref(&self) -> &Matcher {
+impl AsRef<MatchRule> for MatchRule {
+    fn as_ref(&self) -> &MatchRule {
         self
     }
 }
 
-impl Matcher {
-    /// Returns `true` if this matcher individually matches the given text. `except`/`except_regex` are matched as if they were not `except`-class.
+impl MatchRule {
+    /// Returns `true` if this MatchRule individually matches the given text. `except`/`except_regex` are matched as if they were not `except`-class.
     pub fn matches(&self, input: &str) -> bool {
         match &self.mode {
             Mode::Regex(x) | Mode::ExceptRegex(x) => x.is_match(input),
@@ -146,15 +146,15 @@ impl Matcher {
         }
     }
 
-    /// Returns `true` if this is a negative matcher.
+    /// Returns `true` if this is a negative MatchRule.
     pub fn is_exception(&self) -> bool {
         matches!(&self.mode, Mode::Except(_) | Mode::ExceptRegex(_))
     }
 
-    /// Matches a slice of matchers, properly evaluating negative rules.
-    pub fn match_all<A: AsRef<Matcher>>(input: &str, matchers: &[A]) -> bool {
+    /// Matches a slice of MatchRules, properly evaluating negative rules.
+    pub fn match_all<A: AsRef<MatchRule>>(input: &str, match_rules: &[A]) -> bool {
         let mut matched = None::<bool>;
-        for rule in matchers {
+        for rule in match_rules {
             let item = rule.as_ref();
             if matched == Some(true) && !item.is_exception() {
                 continue;
@@ -177,15 +177,15 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_matchers() {
-        let raw: Matcher = "test".parse().unwrap();
-        let raw2: Matcher = "raw:test".parse().unwrap();
-        let regex: Matcher = "regex:test".parse().unwrap();
-        let regex2: Matcher = "regex:t.*t".parse().unwrap();
-        let except: Matcher = "except:tast".parse().unwrap();
-        let except2: Matcher = "except:tset".parse().unwrap();
-        let except_regex: Matcher = "except_regex:ta.*t".parse().unwrap();
-        let except_regex2: Matcher = "except_regex:tb.*t".parse().unwrap();
+    fn test_match_rules() {
+        let raw: MatchRule = "test".parse().unwrap();
+        let raw2: MatchRule = "raw:test".parse().unwrap();
+        let regex: MatchRule = "regex:test".parse().unwrap();
+        let regex2: MatchRule = "regex:t.*t".parse().unwrap();
+        let except: MatchRule = "except:tast".parse().unwrap();
+        let except2: MatchRule = "except:tset".parse().unwrap();
+        let except_regex: MatchRule = "except_regex:ta.*t".parse().unwrap();
+        let except_regex2: MatchRule = "except_regex:tb.*t".parse().unwrap();
 
         assert!(raw.matches("test"));
         assert!(!raw.matches("test2"));
@@ -203,12 +203,12 @@ mod tests {
         assert!(regex2.matches("tast"));
         assert!(!regex2.matches("taste"));
 
-        assert!(Matcher::match_all("test", &[&regex2, &except]));
-        assert!(!Matcher::match_all("tast", &[&regex2, &except]));
-        assert!(!Matcher::match_all("tset", &[&except2, &regex2, &except]));
-        assert!(!Matcher::match_all("tasst", &[&regex2, &except_regex]));
-        assert!(Matcher::match_all("tbest", &[&regex2, &except_regex]));
-        assert!(!Matcher::match_all("tbsst", &[&regex2, &except_regex2]));
-        assert!(Matcher::match_all("taest", &[&regex2, &except_regex2]));
+        assert!(MatchRule::match_all("test", &[&regex2, &except]));
+        assert!(!MatchRule::match_all("tast", &[&regex2, &except]));
+        assert!(!MatchRule::match_all("tset", &[&except2, &regex2, &except]));
+        assert!(!MatchRule::match_all("tasst", &[&regex2, &except_regex]));
+        assert!(MatchRule::match_all("tbest", &[&regex2, &except_regex]));
+        assert!(!MatchRule::match_all("tbsst", &[&regex2, &except_regex2]));
+        assert!(MatchRule::match_all("taest", &[&regex2, &except_regex2]));
     }
 }
