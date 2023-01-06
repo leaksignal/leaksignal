@@ -29,11 +29,7 @@ impl BlockState {
         f(&mut self.services, other.services);
     }
 
-    fn is_blocked(
-        map: &ItemMap,
-        time: &dyn TimestampProvider,
-        key: &str,
-    ) -> Option<BlockReason> {
+    fn is_blocked(map: &ItemMap, time: &dyn TimestampProvider, key: &str) -> Option<BlockReason> {
         let entry = map.get(key)?;
         (entry.expire_at >= time.elapsed().as_millis() as u64).then_some(entry.reason)
     }
