@@ -73,7 +73,11 @@ endpoints:
       ssn: {}
       email: {}
       address: {}
-      phone_number_correlate: {}
+      phone_number_correlate:
+        contexts:
+          - keys
+          - values
+          - header: "bees"
   - matches: "*/product/*"
   - matches: "*/cart"
   - matches: "*/cart/checkout"

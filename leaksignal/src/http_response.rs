@@ -259,12 +259,12 @@ impl HttpResponseContext {
         if let Some(source) = source {
             headers.push(("x-ls-source", source));
         }
-        for (name, value) in &headers {
-            self.parser().with_response_headers([FullHeader {
-                name: name.to_string(),
-                value: value.to_string(),
-            }]);
-        }
+
+        self.parser().with_response_headers(
+            headers
+                .iter()
+                .map(|(n, v)| (n.to_string(), v.to_string()).into()),
+        );
         self.parser().with_response_headers([FullHeader {
             name: ":status".to_string(),
             value: status_code.to_string(),
@@ -347,12 +347,11 @@ impl HttpContext for HttpResponseContext {
             return Action::Continue;
         }
 
-        for (name, value) in self.get_http_request_headers_bytes() {
-            let value = String::from_utf8(value)
-                .unwrap_or_else(|e| String::from_utf8_lossy(&e.into_bytes()).into_owned());
-            self.parser()
-                .with_request_headers([FullHeader { name, value }]);
-        }
+        let full_headers = self
+            .get_http_request_headers_bytes()
+            .into_iter()
+            .map(Into::into);
+        let headers = self.parser().with_request_headers(full_headers);
 
         if !self.request_started {
             self.request_started = true;
@@ -367,7 +366,7 @@ impl HttpContext for HttpResponseContext {
             if let Some(last_colon) = ip.rfind(':') {
                 ip.truncate(last_colon);
             }
-            if self.parser().policy().blocked_ips.contains(&ip) {
+            if self.parser_ref().policy().blocked_ips.contains(&ip) {
                 warn!("blocking request by ip {ip}");
                 self.parser().with_ip(ip);
                 self.early_response(403, vec![], None, Some("blocked_ip"));
@@ -439,6 +438,17 @@ impl HttpContext for HttpResponseContext {
             }
         }
 
+        match self.parser().parse_request_headers(headers) {
+            Some(ParseResponse::Block) => {
+                warn!("blocking request");
+                self.early_response(403, vec![], None, Some("blocked_match"));
+            }
+            None => {
+                warn!("unable to parse request headers, were we missing :path?");
+            }
+            _ => {}
+        }
+
         Action::Continue
     }
 
@@ -504,12 +514,12 @@ impl HttpContext for HttpResponseContext {
         }
 
         self.set_http_response_header("content-length", None);
-        for (name, value) in self.get_http_response_headers_bytes() {
-            let value = String::from_utf8(value)
-                .unwrap_or_else(|e| String::from_utf8_lossy(&e.into_bytes()).into_owned());
-            self.parser()
-                .with_response_headers([FullHeader { name, value }]);
-        }
+        let full_headers = self
+            .get_http_response_headers_bytes()
+            .into_iter()
+            .map(Into::into);
+        let headers = self.parser().with_response_headers(full_headers);
+
         if let Some(token) = self.parser_ref().token().map(|x| x.to_string()) {
             if self.parser_ref().policy().blocked_tokens.contains(&token) {
                 warn!("blocking response by token {token}");
@@ -521,6 +531,17 @@ impl HttpContext for HttpResponseContext {
             }
         }
 
+        match self.parser().parse_response_headers(headers) {
+            Some(ParseResponse::Block) => {
+                warn!("blocking response");
+                self.early_response(403, vec![], None, Some("blocked_match"));
+            }
+            None => {
+                warn!("unable to parse response headers, were we missing :path?");
+            }
+            _ => {}
+        }
+
         Action::Continue
     }
 
@@ -529,11 +550,21 @@ impl HttpContext for HttpResponseContext {
             return Action::Continue;
         }
 
-        for (name, value) in self.get_http_response_trailers_bytes() {
-            let value = String::from_utf8(value)
-                .unwrap_or_else(|e| String::from_utf8_lossy(&e.into_bytes()).into_owned());
-            self.parser()
-                .with_response_trailers([FullHeader { name, value }]);
+        let full_headers = self
+            .get_http_response_trailers_bytes()
+            .into_iter()
+            .map(Into::into);
+        let headers = self.parser().with_response_trailers(full_headers);
+
+        match self.parser().parse_response_headers(headers) {
+            Some(ParseResponse::Block) => {
+                warn!("blocking response");
+                self.early_response(403, vec![], None, Some("blocked_match"));
+            }
+            None => {
+                warn!("unable to parse response trailers, were we missing :path?");
+            }
+            _ => {}
         }
 
         Action::Continue

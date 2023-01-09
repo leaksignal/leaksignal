@@ -9,9 +9,10 @@ use crate::{
     config::Config,
     match_data::Header,
     policy::{PathPolicy, PolicyRef, TokenExtractionConfig, TokenExtractionSite},
-    EvaluationOutput, ParsedMatches,
+    EvaluationOutput, ParsedHeaderMatches, ParsedMatches,
 };
 
+mod headers;
 mod response;
 pub use response::*;
 
@@ -49,8 +50,6 @@ struct ContentDescription {
 pub struct HttpParser<'a> {
     response_description: ContentDescription,
     request_description: ContentDescription,
-    request_headers: Vec<Header>,
-    response_headers: Vec<Header>,
     path: Option<String>,
     hostname: Option<String>,
     config: &'a Config,
@@ -61,6 +60,8 @@ pub struct HttpParser<'a> {
     time_request_start: u64,
     time_request_body_start: Option<u64>,
     time_response_start: u64,
+    response_header_output: Vec<ParsedHeaderMatches>,
+    request_header_output: Vec<ParsedHeaderMatches>,
     response_output: Option<ParsedMatches>,
     request_output: Option<ParsedMatches>,
 }
@@ -70,8 +71,6 @@ impl Config {
         Some(HttpParser {
             response_description: Default::default(),
             request_description: Default::default(),
-            request_headers: vec![],
-            response_headers: vec![],
             config: self,
             policy: self.policy.policy()?,
             ip: Default::default(),
@@ -82,6 +81,8 @@ impl Config {
             time_response_start: 0,
             time_request_body_start: None,
             path_policy: None,
+            response_header_output: Default::default(),
+            request_header_output: Default::default(),
             response_output: None,
             request_output: None,
         })
@@ -118,6 +119,20 @@ pub struct FullHeader {
     pub value: String,
 }
 
+impl From<(String, Vec<u8>)> for FullHeader {
+    fn from((name, value): (String, Vec<u8>)) -> Self {
+        let value = String::from_utf8(value)
+            .unwrap_or_else(|e| String::from_utf8_lossy(&e.into_bytes()).into_owned());
+        Self { name, value }
+    }
+}
+
+impl From<(String, String)> for FullHeader {
+    fn from((name, value): (String, String)) -> Self {
+        Self { name, value }
+    }
+}
+
 impl<'a> HttpParser<'a> {
     pub fn policy(&self) -> &PolicyRef {
         &self.policy
@@ -131,12 +146,15 @@ impl<'a> HttpParser<'a> {
         self.ip = Some(ip);
     }
 
-    pub fn with_request_headers(&mut self, headers: impl IntoIterator<Item = FullHeader>) {
+    pub fn with_request_headers(
+        &mut self,
+        headers: impl IntoIterator<Item = FullHeader> + 'a,
+    ) -> impl Iterator<Item = Header> + '_ {
         if self.time_request_start == 0 {
             self.time_request_start = self.config.timestamp_source.epoch_ns();
         }
 
-        for FullHeader { name, value } in headers {
+        headers.into_iter().map(|FullHeader { name, value }| {
             match name.as_str() {
                 ":path" => self.path = Some(value.clone()),
                 ":authority" => self.hostname = Some(value.clone()),
@@ -181,14 +199,12 @@ impl<'a> HttpParser<'a> {
                         hash,
                     } if name == "cookie" => {
                         for value in value.split("; ") {
-                            let (name, value) = match value.split_once('=') {
-                                Some(x) => x,
-                                None => continue,
+                            if let Some((name, value)) = value.split_once('=') {
+                                if name == header {
+                                    self.token = extract_token_regex(value, regex.as_ref(), *hash);
+                                    break;
+                                }
                             };
-                            if name == header {
-                                self.token = extract_token_regex(value, regex.as_ref(), *hash);
-                                break;
-                            }
                         }
                     }
                     _ => {}
@@ -202,16 +218,19 @@ impl<'a> HttpParser<'a> {
                 .contains(&name)
                 .then_some(value);
 
-            self.request_headers.push(Header { name, value });
-        }
+            Header { name, value }
+        })
     }
 
-    pub fn with_response_headers(&mut self, headers: impl IntoIterator<Item = FullHeader>) {
+    pub fn with_response_headers(
+        &mut self,
+        headers: impl IntoIterator<Item = FullHeader> + 'a,
+    ) -> impl Iterator<Item = Header> + '_ {
         if self.time_response_start == 0 {
             self.time_response_start = self.config.timestamp_source.epoch_ns();
         }
 
-        for FullHeader { name, value } in headers {
+        headers.into_iter().map(|FullHeader { name, value }| {
             // token extraction on response body
             match self
                 .path_policy
@@ -250,21 +269,25 @@ impl<'a> HttpParser<'a> {
                 .contains(&name)
                 .then_some(value);
 
-            self.response_headers.push(Header { name, value });
-        }
+            Header { name, value }
+        })
     }
 
-    pub fn with_response_trailers(&mut self, headers: impl IntoIterator<Item = FullHeader>) {
-        for FullHeader { name, value } in headers {
+    pub fn with_response_trailers(
+        &mut self,
+        headers: impl IntoIterator<Item = FullHeader> + 'a,
+    ) -> impl Iterator<Item = Header> + '_ {
+        headers.into_iter().map(|h| {
             // record response trailers
-            let value = self
-                .policy
-                .collected_response_headers
-                .contains(&name)
-                .then_some(value);
-
-            self.response_headers.push(Header { name, value });
-        }
+            Header {
+                value: self
+                    .policy
+                    .collected_response_headers
+                    .contains(&h.name)
+                    .then_some(h.value),
+                name: h.name,
+            }
+        })
     }
 
     pub fn with_request_stream(&mut self) -> Option<BodyContext> {
@@ -319,12 +342,29 @@ impl<'a> HttpParser<'a> {
                 m.matched_value.as_ref().unwrap()
             );
         }
+        for h in self
+            .request_header_output
+            .iter()
+            .chain(&self.response_header_output)
+        {
+            for m in &h.matches.matches {
+                info!(
+                    "matched {} in header @ {}:{}-{} -> {:?}: {:?}",
+                    m.category_name,
+                    h.name,
+                    m.global_start_position.unwrap(),
+                    m.global_start_position.unwrap() + m.global_length.unwrap(),
+                    m.matcher_path,
+                    m.matched_value.as_ref().unwrap()
+                )
+            }
+        }
         EvaluationOutput {
             policy_id: self.policy.policy_id().to_string(),
             time_request_start: self.time_request_start,
             time_response_start: self.time_response_start,
-            request_headers: self.request_headers,
-            response_headers: self.response_headers,
+            request_headers: self.request_header_output,
+            response_headers: self.response_header_output,
             policy_path: self
                 .path_policy
                 .as_ref()
