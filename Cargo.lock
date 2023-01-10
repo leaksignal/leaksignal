@@ -704,7 +704,7 @@ checksum = "e2abad23fbc42b3700f2f279844dc832adb2b2eb069b2df918f455c4e18cc646"
 
 [[package]]
 name = "leakfinder"
-version = "0.1.2"
+version = "0.1.4"
 dependencies = [
  "anyhow",
  "arc-swap",
@@ -713,6 +713,7 @@ dependencies = [
  "criterion",
  "flate2",
  "futures",
+ "getrandom",
  "hex",
  "indexmap",
  "leakpolicy",
@@ -728,7 +729,7 @@ dependencies = [
 
 [[package]]
 name = "leakpolicy"
-version = "0.1.2"
+version = "0.1.4"
 dependencies = [
  "anyhow",
  "indexmap",
@@ -742,7 +743,7 @@ dependencies = [
 
 [[package]]
 name = "leaksignal"
-version = "0.1.2"
+version = "0.1.4"
 dependencies = [
  "anyhow",
  "arc-swap",
