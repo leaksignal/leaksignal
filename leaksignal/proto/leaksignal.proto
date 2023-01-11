@@ -43,12 +43,22 @@ message MatchDataRequest {
     Component response = 23;
 }
 
+message HeaderComponent {
+    string name = 1;
+    uint64 time_header_start = 3;
+    uint64 time_header_end = 4;
+    repeated Match matches = 5;
+    uint64  header_size = 6;
+    optional bytes header = 7;
+    map<string, uint64> category_performance_us = 8;
+}
+
 message Component {
     uint64 time_header_start = 1;
     uint64 time_body_start = 2;
     uint64 time_body_end = 3;
-    repeated Header headers = 4;
-    repeated Match matches = 5;
+    repeated HeaderComponent header_matches = 4;
+    repeated Match body_matches = 5;
     uint64 body_size = 6;
     optional bytes body = 7;
     map<string, uint64> category_performance_us = 8;

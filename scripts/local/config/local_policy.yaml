@@ -25,6 +25,10 @@ categories:
     Matchers:
       regexes:
         - "(?i)[0-9]+[a-zà-ú.,-]* ((highway)|(autoroute)|(north)|(nord)|(south)|(sud)|(east)|(est)|(west)|(ouest)|(avenue)|(lane)|(voie)|(ruelle)|(road)|(rue)|(route)|(drive)|(boulevard)|(circle)|(cercle)|(street)|(cer\\.?)|(cir\\.?)|(blvd\\.?)|(hway\\.?)|(st\\.?)|(aut\\.?)|(ave\\.?)|(ln\\.?)|(rd\\.?)|(hw\\.?)|(dr\\.?))([ .,-]*[a-zà-ú0-9]*)*"
+  request-id:
+    Matchers:
+      regexes:
+        - "[A-Za-z0-9]+-[A-Za-z0-9]+-[A-Za-z0-9]+-[A-Za-z0-9]+-[A-Za-z0-9]+"
   phone_number_correlate:
     Correlate:
       group1:
@@ -73,11 +77,11 @@ endpoints:
       ssn: {}
       email: {}
       address: {}
-      phone_number_correlate:
+      request-id:
         contexts:
-          - keys
-          - values
-          - header: "bees"
+          - header: "x-request-id"
+        search: all_header
+      phone_number_correlate: {}
   - matches: "*/product/*"
   - matches: "*/cart"
   - matches: "*/cart/checkout"

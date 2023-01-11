@@ -148,146 +148,156 @@ impl<'a> HttpParser<'a> {
 
     pub fn with_request_headers(
         &mut self,
-        headers: impl IntoIterator<Item = FullHeader> + 'a,
-    ) -> impl Iterator<Item = Header> + '_ {
+        headers: impl IntoIterator<Item = FullHeader>,
+    ) -> Vec<Header> {
         if self.time_request_start == 0 {
             self.time_request_start = self.config.timestamp_source.epoch_ns();
         }
 
-        headers.into_iter().map(|FullHeader { name, value }| {
-            match name.as_str() {
-                ":path" => self.path = Some(value.clone()),
-                ":authority" => self.hostname = Some(value.clone()),
-                "content-type" => {
-                    self.request_description.content_type = value
-                        .parse()
-                        .expect("content-type parse failed (impossible)")
-                }
-                "content-encoding" => {
-                    self.request_description.content_encoding = value
-                        .parse()
-                        .expect("content-encoding parse failed (impossible)")
-                }
-                _ => {}
-            }
-
-            if self.path_policy.is_none() {
-                if let (Some(path), Some(hostname)) = (&self.path, &self.hostname) {
-                    let full_path = format!("{}{}", hostname, path);
-                    self.path_policy = Some(Arc::new(self.policy.get_path_config(&full_path)));
-                }
-            }
-            // token extraction on request body
-            if let Some(token_extractor) = self
-                .path_policy
-                .as_ref()
-                .and_then(|x| x.token_extractor.as_deref())
-            {
-                match token_extractor {
-                    TokenExtractionConfig {
-                        location: TokenExtractionSite::Request,
-                        header,
-                        regex,
-                        hash,
-                    } if &name == header => {
-                        self.token = extract_token_regex(&value, regex.as_ref(), *hash);
+        headers
+            .into_iter()
+            .map(|FullHeader { name, value }| {
+                match name.as_str() {
+                    ":path" => self.path = Some(value.clone()),
+                    ":authority" => self.hostname = Some(value.clone()),
+                    "content-type" => {
+                        self.request_description.content_type = value
+                            .parse()
+                            .expect("content-type parse failed (impossible)")
                     }
-                    TokenExtractionConfig {
-                        location: TokenExtractionSite::RequestCookie,
-                        header,
-                        regex,
-                        hash,
-                    } if name == "cookie" => {
-                        for value in value.split("; ") {
-                            if let Some((name, value)) = value.split_once('=') {
-                                if name == header {
-                                    self.token = extract_token_regex(value, regex.as_ref(), *hash);
-                                    break;
-                                }
-                            };
-                        }
+                    "content-encoding" => {
+                        self.request_description.content_encoding = value
+                            .parse()
+                            .expect("content-encoding parse failed (impossible)")
                     }
                     _ => {}
                 }
-            }
 
-            // record request headers
-            let value = self
-                .policy
-                .collected_request_headers
-                .contains(&name)
-                .then_some(value);
+                if self.path_policy.is_none() {
+                    if let (Some(path), Some(hostname)) = (&self.path, &self.hostname) {
+                        let full_path = format!("{}{}", hostname, path);
+                        self.path_policy = Some(Arc::new(self.policy.get_path_config(&full_path)));
+                    }
+                }
+                // token extraction on request body
+                if let Some(token_extractor) = self
+                    .path_policy
+                    .as_ref()
+                    .and_then(|x| x.token_extractor.as_deref())
+                {
+                    match token_extractor {
+                        TokenExtractionConfig {
+                            location: TokenExtractionSite::Request,
+                            header,
+                            regex,
+                            hash,
+                        } if &name == header => {
+                            self.token = extract_token_regex(&value, regex.as_ref(), *hash);
+                        }
+                        TokenExtractionConfig {
+                            location: TokenExtractionSite::RequestCookie,
+                            header,
+                            regex,
+                            hash,
+                        } if name == "cookie" => {
+                            for value in value.split("; ") {
+                                if let Some((name, value)) = value.split_once('=') {
+                                    if name == header {
+                                        self.token =
+                                            extract_token_regex(value, regex.as_ref(), *hash);
+                                        break;
+                                    }
+                                };
+                            }
+                        }
+                        _ => {}
+                    }
+                }
 
-            Header { name, value }
-        })
+                // record request headers
+                let value = self
+                    .policy
+                    .collected_request_headers
+                    .contains(&name)
+                    .then_some(value);
+
+                Header { name, value }
+            })
+            .collect()
     }
 
     pub fn with_response_headers(
         &mut self,
-        headers: impl IntoIterator<Item = FullHeader> + 'a,
-    ) -> impl Iterator<Item = Header> + '_ {
+        headers: impl IntoIterator<Item = FullHeader>,
+    ) -> Vec<Header> {
         if self.time_response_start == 0 {
             self.time_response_start = self.config.timestamp_source.epoch_ns();
         }
 
-        headers.into_iter().map(|FullHeader { name, value }| {
-            // token extraction on response body
-            match self
-                .path_policy
-                .as_ref()
-                .and_then(|x| x.token_extractor.as_deref())
-            {
-                Some(TokenExtractionConfig {
-                    location: TokenExtractionSite::Response,
-                    header,
-                    regex,
-                    hash,
-                }) if &name == header => {
-                    self.token = extract_token_regex(&value, regex.as_ref(), *hash);
+        headers
+            .into_iter()
+            .map(|FullHeader { name, value }| {
+                // token extraction on response body
+                match self
+                    .path_policy
+                    .as_ref()
+                    .and_then(|x| x.token_extractor.as_deref())
+                {
+                    Some(TokenExtractionConfig {
+                        location: TokenExtractionSite::Response,
+                        header,
+                        regex,
+                        hash,
+                    }) if &name == header => {
+                        self.token = extract_token_regex(&value, regex.as_ref(), *hash);
+                    }
+                    _ => {}
                 }
-                _ => {}
-            }
 
-            match name.as_str() {
-                "content-type" => {
-                    self.response_description.content_type = value
-                        .parse()
-                        .expect("content-type parse failed (impossible)")
+                match name.as_str() {
+                    "content-type" => {
+                        self.response_description.content_type = value
+                            .parse()
+                            .expect("content-type parse failed (impossible)")
+                    }
+                    "content-encoding" => {
+                        self.response_description.content_encoding = value
+                            .parse()
+                            .expect("content-encoding parse failed (impossible)")
+                    }
+                    _ => {}
                 }
-                "content-encoding" => {
-                    self.response_description.content_encoding = value
-                        .parse()
-                        .expect("content-encoding parse failed (impossible)")
-                }
-                _ => {}
-            }
 
-            // record response headers
-            let value = self
-                .policy
-                .collected_response_headers
-                .contains(&name)
-                .then_some(value);
+                // record response headers
+                let value = self
+                    .policy
+                    .collected_response_headers
+                    .contains(&name)
+                    .then_some(value);
 
-            Header { name, value }
-        })
+                Header { name, value }
+            })
+            .collect()
     }
 
     pub fn with_response_trailers(
         &mut self,
-        headers: impl IntoIterator<Item = FullHeader> + 'a,
-    ) -> impl Iterator<Item = Header> + '_ {
-        headers.into_iter().map(|h| {
-            // record response trailers
-            Header {
-                value: self
-                    .policy
-                    .collected_response_headers
-                    .contains(&h.name)
-                    .then_some(h.value),
-                name: h.name,
-            }
-        })
+        headers: impl IntoIterator<Item = FullHeader>,
+    ) -> Vec<Header> {
+        headers
+            .into_iter()
+            .map(|h| {
+                // record response trailers
+                Header {
+                    value: self
+                        .policy
+                        .collected_response_headers
+                        .contains(&h.name)
+                        .then_some(h.value),
+                    name: h.name,
+                }
+            })
+            .collect()
     }
 
     pub fn with_request_stream(&mut self) -> Option<BodyContext> {

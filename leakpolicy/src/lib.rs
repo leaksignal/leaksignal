@@ -630,6 +630,7 @@ pub struct PathPolicy {
     pub token_extractor: Option<Arc<TokenExtractionConfig>>,
 }
 
+#[derive(Debug)]
 pub struct PathConfiguration {
     pub matcher_path: String,
     pub category_config: Arc<ConfiguredPolicyAction>,

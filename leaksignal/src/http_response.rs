@@ -2,8 +2,8 @@ use std::{collections::HashMap, time::Duration};
 
 use anyhow::{anyhow, Result};
 use leakfinder::{
-    BlockReason, BodyContext, FullHeader, Header, HttpParser, Match, ParseResponse, ParsedMatches,
-    TimestampProvider,
+    BlockReason, BodyContext, FullHeader, Header, HttpParser, Match, ParseResponse,
+    ParsedHeaderMatches, ParsedMatches, TimestampProvider,
 };
 use log::{error, warn};
 use prost::Message;
@@ -15,7 +15,9 @@ use proxy_wasm::{
 use crate::{
     config::{upstream, LEAKSIGNAL_SERVICE_NAME},
     metric::Metric,
-    proto::{Component, Header as ProtoHeader, Match as ProtoMatch, MatchDataRequest},
+    proto::{
+        Component, Header as ProtoHeader, HeaderComponent, Match as ProtoMatch, MatchDataRequest,
+    },
     root::{block_state, DYN_ENVIRONMENT, LEAKFINDER_CONFIG},
     time::TIMESTAMP_PROVIDER,
     GIT_COMMIT,
@@ -40,6 +42,20 @@ impl From<Match> for ProtoMatch {
             global_length: val.global_length,
             matcher_path: val.matcher_path,
             matched_value: val.matched_value,
+        }
+    }
+}
+
+impl From<ParsedHeaderMatches> for HeaderComponent {
+    fn from(value: ParsedHeaderMatches) -> Self {
+        HeaderComponent {
+            name: value.name,
+            time_header_start: value.matches.time_parse_start,
+            time_header_end: value.matches.time_parse_end,
+            matches: value.matches.matches.into_iter().map(Into::into).collect(),
+            header_size: value.matches.body_size,
+            header: value.matches.body,
+            category_performance_us: value.matches.category_performance_us,
         }
     }
 }
@@ -192,8 +208,8 @@ impl HttpResponseContext {
                     time_header_start: output.time_request_start,
                     time_body_start: output.request.time_parse_start,
                     time_body_end: output.request.time_parse_end,
-                    headers: output.request_headers.into_iter().map(Into::into).collect(),
-                    matches: output.request.matches.into_iter().map(Into::into).collect(),
+                    header_matches: output.request_headers.into_iter().map(Into::into).collect(),
+                    body_matches: output.request.matches.into_iter().map(Into::into).collect(),
                     body_size: output.request.body_size,
                     body: output.request.body,
                     category_performance_us: output.request.category_performance_us,
@@ -202,12 +218,12 @@ impl HttpResponseContext {
                     time_header_start: output.time_response_start,
                     time_body_start: output.response.time_parse_start,
                     time_body_end: output.response.time_parse_end,
-                    headers: output
+                    header_matches: output
                         .response_headers
                         .into_iter()
                         .map(Into::into)
                         .collect(),
-                    matches: output
+                    body_matches: output
                         .response
                         .matches
                         .into_iter()
@@ -438,7 +454,7 @@ impl HttpContext for HttpResponseContext {
             }
         }
 
-        match self.parser().parse_request_headers(headers) {
+        match self.parser().parse_request_headers(headers.into_iter()) {
             Some(ParseResponse::Block) => {
                 warn!("blocking request");
                 self.early_response(403, vec![], None, Some("blocked_match"));
@@ -531,7 +547,7 @@ impl HttpContext for HttpResponseContext {
             }
         }
 
-        match self.parser().parse_response_headers(headers) {
+        match self.parser().parse_response_headers(headers.into_iter()) {
             Some(ParseResponse::Block) => {
                 warn!("blocking response");
                 self.early_response(403, vec![], None, Some("blocked_match"));
@@ -556,7 +572,7 @@ impl HttpContext for HttpResponseContext {
             .map(Into::into);
         let headers = self.parser().with_response_trailers(full_headers);
 
-        match self.parser().parse_response_headers(headers) {
+        match self.parser().parse_response_headers(headers.into_iter()) {
             Some(ParseResponse::Block) => {
                 warn!("blocking response");
                 self.early_response(403, vec![], None, Some("blocked_match"));

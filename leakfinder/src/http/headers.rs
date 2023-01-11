@@ -7,7 +7,6 @@ use crate::{
     Header, HttpParser, ParseResponse, ParsedHeaderMatches, ParsedMatches,
 };
 
-// todo: three versions of this function currently exist
 pub fn prepare_match_state<'a>(
     policy: &'a Policy,
     configuration: &ParserConfiguration<'a>,
@@ -120,13 +119,7 @@ impl<'a> HttpParser<'a> {
                 self.request_description.content_type,
                 &header.name,
             );
-            let resp = matcher.do_matching(
-                0,
-                header_value.len(),
-                &header_value,
-                &mut matches,
-                &performance,
-            );
+            let resp = matcher.do_matching(0, 0, &header_value, &mut matches, &performance);
 
             let response_header_end = self.config.timestamp_source.epoch_ns();
             output.matches.push(ParsedHeaderMatches {
