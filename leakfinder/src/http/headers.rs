@@ -117,7 +117,7 @@ impl<'a> HttpParser<'a> {
                 &self.policy,
                 config,
                 self.request_description.content_type,
-                &header.name,
+                &header.name.to_lowercase(),
             );
             let resp = matcher.do_matching(0, 0, &header_value, &mut matches, &performance);
 
