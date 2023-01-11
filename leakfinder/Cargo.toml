@@ -1,6 +1,6 @@
 [package]
 name = "leakfinder"
-version = "0.1.2"
+version = "0.1.4"
 edition = "2021"
 authors = ["Protryon <max.bruce12@gmail.com>"]
 license = "Apache-2.0"
@@ -23,6 +23,7 @@ serde_yaml = { workspace = true }
 regex = { workspace = true }
 indexmap = { workspace = true, features = ["serde", "std"] }
 rand = { workspace = true }
+getrandom = { workspace = true, features = ["custom"] }
 futures = { workspace = true }
 flate2 = { workspace = true }
 leakpolicy = { workspace = true }

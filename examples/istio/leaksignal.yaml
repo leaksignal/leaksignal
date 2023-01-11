@@ -9,7 +9,7 @@ spec:
   configPatches:
   - applyTo: EXTENSION_CONFIG
     match:
-      context: SIDECAR_INBOUND
+      context: ANY
     patch:
       operation: ADD
       value:
@@ -25,10 +25,10 @@ spec:
               code:
                 remote:
                   http_uri:
-                    uri: https://ingestion.app.leaksignal.com/s3/leakproxy/2022_12_12_19_59_59_3808c82/leaksignal.wasm
+                    uri: https://ingestion.app.leaksignal.com/s3/leakproxy/2023_01_10_15_57_30_ad09498/leaksignal.wasm
                     timeout: 10s
                     cluster: leaksignal_infra
-                  sha256: 06236c621ca78580287604a6e570cbd23e59f2c167d5c22110ecd6bd191acc93
+                  sha256: 73ef8485730561ef6786c301f28daf7c123d7546772b0b2477bc2b39d47a7de9
                   retry_policy:
                     num_retries: 10
   - applyTo: HTTP_FILTER
@@ -56,6 +56,8 @@ metadata:
 spec:
   configPatches:
   - applyTo: BOOTSTRAP
+    match:
+      context: ANY
     patch:
       operation: MERGE
       value:
@@ -88,10 +90,10 @@ spec:
                 code:
                   remote:
                     http_uri:
-                      uri: https://ingestion.app.leaksignal.com/s3/leakproxy/2022_12_12_19_59_59_3808c82/leaksignal.wasm
+                      uri: https://ingestion.app.leaksignal.com/s3/leakproxy/2023_01_10_15_57_30_ad09498/leaksignal.wasm
                       timeout: 10s
                       cluster: leaksignal_infra
-                    sha256: 06236c621ca78580287604a6e570cbd23e59f2c167d5c22110ecd6bd191acc93
+                    sha256: 73ef8485730561ef6786c301f28daf7c123d7546772b0b2477bc2b39d47a7de9
                     retry_policy:
                       num_retries: 10
 ---
@@ -103,6 +105,8 @@ metadata:
 spec:
   configPatches:
   - applyTo: CLUSTER
+    match:
+      context: ANY
     patch:
       operation: ADD
       value:

@@ -42,5 +42,5 @@ build-data = "0.1"
 prost-build = "0.10"
 ipnetwork = "0.20"
 
-leakfinder = { path = "leakfinder" }
-leakpolicy = { path = "leakpolicy" }
+leakfinder = { path = "leakfinder", version = "0.1.4" }
+leakpolicy = { path = "leakpolicy", version = "0.1.4" }
