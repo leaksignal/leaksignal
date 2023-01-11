@@ -26,6 +26,7 @@ pub struct CategoryPreparedMatch<'a> {
     pub length: usize,
 }
 
+#[derive(Debug)]
 pub struct MatchRegex<'a> {
     metadata: MatcherMetadata,
     regex: &'a Regex,
@@ -33,6 +34,7 @@ pub struct MatchRegex<'a> {
     ignore: SmallVec<[&'a HashSet<String>; 2]>,
 }
 
+#[derive(Debug)]
 pub struct MatchRaw<'a> {
     metadata: MatcherMetadata,
     raw: &'a str,
@@ -56,7 +58,7 @@ pub struct CorrelationState {
     pub interest: CorrelateInterest,
 }
 
-#[derive(Default)]
+#[derive(Default, Debug)]
 pub struct MatcherState<'a> {
     correlation_index: usize,
     regexes: Vec<MatchRegex<'a>>,

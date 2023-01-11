@@ -11,7 +11,7 @@ use anyhow::Result;
 use indexmap::{IndexMap, IndexSet};
 use ipnetwork::IpNetwork;
 use regex::{Regex, RegexBuilder};
-use serde::{de::Unexpected, Deserialize, Serialize};
+use serde::{de::Unexpected, Deserialize, Deserializer, Serialize, Serializer};
 
 mod match_rule;
 mod path_glob;
@@ -134,6 +134,29 @@ impl FromStr for ContentType {
 pub enum MatchContext {
     Keys,
     Values,
+    #[serde(
+        deserialize_with = "header_from_string",
+        serialize_with = "header_to_string"
+    )]
+    Header(String),
+}
+
+impl MatchContext {
+    pub fn header(&self) -> Option<&str> {
+        if let Self::Header(s) = self {
+            Some(s)
+        } else {
+            None
+        }
+    }
+}
+
+fn header_from_string<'de, D: Deserializer<'de>>(deserializer: D) -> Result<String, D::Error> {
+    String::deserialize(deserializer).map(|s| s.to_lowercase())
+}
+
+fn header_to_string<S: Serializer>(v: &str, s: S) -> Result<S::Ok, S::Error> {
+    s.serialize_str(&v.to_lowercase())
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, Default, PartialEq)]
@@ -607,6 +630,7 @@ pub struct PathPolicy {
     pub token_extractor: Option<Arc<TokenExtractionConfig>>,
 }
 
+#[derive(Debug)]
 pub struct PathConfiguration {
     pub matcher_path: String,
     pub category_config: Arc<ConfiguredPolicyAction>,

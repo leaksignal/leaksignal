@@ -41,26 +41,17 @@ fn prepare_match_state<'a>(
             continue;
         }
 
-        let mut do_key = true;
-        let mut do_value = true;
-        if !action.category_config.contexts.is_empty() {
-            if !action
-                .category_config
-                .contexts
-                .contains(&MatchContext::Keys)
-            {
-                do_key = false;
-            }
-            if !action
-                .category_config
-                .contexts
-                .contains(&MatchContext::Values)
-            {
-                do_value = false;
-            }
-        }
+        let mut do_key = action
+            .category_config
+            .contexts
+            .contains(&MatchContext::Keys);
+        let mut do_value = action
+            .category_config
+            .contexts
+            .contains(&MatchContext::Values);
         if !do_key && !do_value {
-            continue;
+            do_key = true;
+            do_value = true;
         }
 
         if matches!(

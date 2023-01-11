@@ -16,15 +16,21 @@ pub struct Header {
 }
 
 #[derive(Debug)]
+pub struct ParsedHeaderMatches {
+    pub name: String,
+    pub matches: ParsedMatches,
+}
+
+#[derive(Debug)]
 pub struct EvaluationOutput {
     pub policy_id: String,
     pub time_request_start: u64,
     pub time_response_start: u64,
-    pub request_headers: Vec<Header>,
-    pub response_headers: Vec<Header>,
     pub policy_path: String,
     pub token: String,
     pub ip: String,
+    pub request_headers: Vec<ParsedHeaderMatches>,
+    pub response_headers: Vec<ParsedHeaderMatches>,
     pub response: ParsedMatches,
     pub request: ParsedMatches,
 }
