@@ -38,10 +38,6 @@ LeakSignal provides observability metrics and redaction capabilities for sensiti
 * Cloud dashboard with policy editor, monitoring, and alerting.
 * Analysis metrics can be exposed via Envoy and thus reflected wherever Envoy metrics are configured to land (OpenTelemetry, Prometheus, etc.)
 
-
-## Community / How to Contribute
-* [Code contribution guidelines](/CONTRIBUTIONS.md)
-
 ## Commercial support
 - Leaksignal, Inc offers [enterprise support](https://leaksignal.com) and self-hosted versions of the cloud dashboard. Contact sales@leaksignal.com.
 
