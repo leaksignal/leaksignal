@@ -1,0 +1,9 @@
+apiVersion: v2
+name: leakagent
+description: A helm chart to install LeakAgent
+
+type: application
+
+version: 0.1.2
+
+appVersion: "v0.1.2"

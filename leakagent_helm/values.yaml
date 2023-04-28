@@ -1,0 +1,7 @@
+fullnameOverride: ""
+nameOverride: ""
+
+prometheus_operator:
+  scrape_interval: 1s
+replicas: 2
+config_name: ""
