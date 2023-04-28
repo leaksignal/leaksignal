@@ -1,0 +1,89 @@
+categories:
+  ssn:
+    Matchers:
+      regexes:
+        - "(?!(\\d){3}(-| |)\\1{2}\\2\\1{4})(?!666|000|9\\d{2})(\\b\\d{3}(-| |)(?!00)\\d{2}\\4(?!0{4})\\d{4}\\b)"
+  credit_card:
+    Matchers:
+      regexes:
+        - "\\d{16}"
+        - "\\d{4}[\\s.-]\\d{4}[\\s.-]\\d{4}[\\s.-]\\d{4}"
+        - "(?:4[0-9]{12}(?:[0-9]{3})?|[25][1-7][0-9]{14}|6(?:011|5[0-9][0-9])[0-9]{12}|3[47][0-9]{13}|3(?:0[0-5]|[68][0-9])[0-9]{11}|(?:2131|1800|35\\d{3})\\d{11})"
+      ignore:
+        - 0000-0000-0000-0000
+  email:
+    Matchers:
+      regexes:
+        - "[a-zA-Z0-9_.+-]{2,}@[a-zA-Z0-9-]{3,}\\.[a-zA-Z0-9-.]{2,}"
+      ignore:
+        - someone@example.com
+  phone_number:
+    Matchers:
+      regexes:
+        - "[^0-9](?:\\+1[\\s.-])?(?:\\d{3}|\\(\\d{3}\\))[\\s.-]\\d{3}[\\s.-]\\d{4}[^0-9]"
+  address:
+    Matchers:
+      regexes:
+        - "(?i)[0-9]+[a-zà-ú.,-]* ((highway)|(autoroute)|(north)|(nord)|(south)|(sud)|(east)|(est)|(west)|(ouest)|(avenue)|(lane)|(voie)|(ruelle)|(road)|(rue)|(route)|(drive)|(boulevard)|(circle)|(cercle)|(street)|(cer\\.?)|(cir\\.?)|(blvd\\.?)|(hway\\.?)|(st\\.?)|(aut\\.?)|(ave\\.?)|(ln\\.?)|(rd\\.?)|(hw\\.?)|(dr\\.?))([ .,-]*[a-zà-ú0-9]*)*"
+  phone_number_correlate:
+    Correlate:
+      group1:
+        regexes:
+          - "[^0-9][0-9]{10}[^0-9]"
+        regex_strip: 1
+      group2:
+        raw:
+          - phone
+      interest: group1
+      max_distance: 64
+  date_of_birth:
+    Correlate:
+      group1:
+        regexes:
+          - "[^0-9][0-9]{1,2}[/-][0-9]{1,2}[/-][0-9]{2,4}[^0-9]"
+        regex_strip: 1
+      group2:
+        raw:
+          - dob
+          - date_of_birth
+          - birth_date
+      interest: group1
+      max_distance: 24
+  name_key:
+    Matchers:
+      raw:
+        - first_name
+        - last_name
+        - full_name
+  access_token_key:
+    Matchers:
+      raw:
+        - access_token
+endpoints:
+  - matches: "**"
+    config:
+      # json keys
+      name_key:
+        contexts: keys
+        content_types: json
+      access_token_key:
+        contexts: keys
+        content_types: json
+      # end json keys
+      credit_card:
+        report_style: partial_sha256
+        report_bits: 32
+      ssn:
+        report_style: partial_sha256
+        report_bits: 24
+      email: {}
+      phone_number: {}
+      address: {}
+      date_of_birth: {}
+      phone_number_correlate: {}
+  - matches: "*/product/*"
+  - matches: "*/cart"
+  - matches: "*/cart/checkout"
+body_collection_rate: 0.0
+report_style:
+  report_style: raw

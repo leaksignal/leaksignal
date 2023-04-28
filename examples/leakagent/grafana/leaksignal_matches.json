@@ -1,0 +1,324 @@
+{
+    "annotations": {
+      "list": [
+        {
+          "builtIn": 1,
+          "datasource": {
+            "type": "grafana",
+            "uid": "-- Grafana --"
+          },
+          "enable": true,
+          "hide": true,
+          "iconColor": "rgba(0, 211, 255, 1)",
+          "name": "Annotations & Alerts",
+          "target": {
+            "limit": 100,
+            "matchAny": false,
+            "tags": [],
+            "type": "dashboard"
+          },
+          "type": "dashboard"
+        }
+      ]
+    },
+    "editable": true,
+    "fiscalYearStartMonth": 0,
+    "graphTooltip": 0,
+    "id": 29,
+    "links": [],
+    "liveNow": false,
+    "panels": [
+      {
+        "datasource": {
+          "type": "prometheus",
+          "uid": "P1809F7CD0C75ACF3"
+        },
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "palette-classic"
+            },
+            "custom": {
+              "axisCenteredZero": false,
+              "axisColorMode": "text",
+              "axisLabel": "",
+              "axisPlacement": "auto",
+              "barAlignment": 0,
+              "drawStyle": "line",
+              "fillOpacity": 0,
+              "gradientMode": "none",
+              "hideFrom": {
+                "legend": false,
+                "tooltip": false,
+                "viz": false
+              },
+              "lineInterpolation": "linear",
+              "lineWidth": 1,
+              "pointSize": 5,
+              "scaleDistribution": {
+                "type": "linear"
+              },
+              "showPoints": "auto",
+              "spanNulls": false,
+              "stacking": {
+                "group": "A",
+                "mode": "none"
+              },
+              "thresholdsStyle": {
+                "mode": "off"
+              }
+            },
+            "mappings": [],
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "green",
+                  "value": null
+                },
+                {
+                  "color": "red",
+                  "value": 80
+                }
+              ]
+            },
+            "unit": "matches"
+          },
+          "overrides": []
+        },
+        "gridPos": {
+          "h": 9,
+          "w": 12,
+          "x": 0,
+          "y": 0
+        },
+        "id": 2,
+        "options": {
+          "legend": {
+            "calcs": [],
+            "displayMode": "list",
+            "placement": "bottom",
+            "showLegend": true
+          },
+          "tooltip": {
+            "mode": "single",
+            "sort": "none"
+          }
+        },
+        "targets": [
+          {
+            "datasource": {
+              "type": "prometheus",
+              "uid": "P1809F7CD0C75ACF3"
+            },
+            "editorMode": "code",
+            "expr": "histogram_quantile(0.5, sum by (local_service, policy_path, category, le)(irate(leaksignal_match_count_bucket{deployment=\"$deployment\", local_service=~\"$service\", in_header=~\"${in_header:regex}\", in_response=~\"${in_response:regex}\", category=~\"$category\"}[$__rate_interval])))",
+            "legendFormat": "__auto",
+            "range": true,
+            "refId": "A"
+          }
+        ],
+        "title": "Matches per Request",
+        "type": "timeseries"
+      }
+    ],
+    "refresh": "",
+    "revision": 1,
+    "schemaVersion": 38,
+    "style": "dark",
+    "tags": [],
+    "templating": {
+      "list": [
+        {
+          "current": {
+            "selected": false,
+            "text": "example",
+            "value": "example"
+          },
+          "datasource": {
+            "type": "prometheus",
+            "uid": "P1809F7CD0C75ACF3"
+          },
+          "definition": "label_values(leaksignal_match_count_bucket, deployment)",
+          "error": {},
+          "hide": 0,
+          "includeAll": false,
+          "label": "Deployment",
+          "multi": false,
+          "name": "deployment",
+          "options": [],
+          "query": {
+            "query": "label_values(leaksignal_match_count_bucket, deployment)",
+            "refId": "StandardVariableQuery"
+          },
+          "refresh": 1,
+          "regex": "",
+          "skipUrlSync": false,
+          "sort": 0,
+          "type": "query"
+        },
+        {
+          "current": {
+            "selected": true,
+            "text": [
+              "cluster.local/default/loadgenerator",
+              "cluster.local/default/frontend",
+              "cluster.local/default/checkoutservice",
+              "cluster.local/default/recommendationservice",
+              "cluster.local/default/currencyservice",
+              "cluster.local/default/productcatalogservice",
+              "cluster.local/default/adservice",
+              "cluster.local/default/cartservice"
+            ],
+            "value": [
+              "cluster.local/default/loadgenerator",
+              "cluster.local/default/frontend",
+              "cluster.local/default/checkoutservice",
+              "cluster.local/default/recommendationservice",
+              "cluster.local/default/currencyservice",
+              "cluster.local/default/productcatalogservice",
+              "cluster.local/default/adservice",
+              "cluster.local/default/cartservice"
+            ]
+          },
+          "datasource": {
+            "type": "prometheus",
+            "uid": "P1809F7CD0C75ACF3"
+          },
+          "definition": "label_values(leaksignal_match_count_bucket{deployment=\"$deployment\"}, local_service)",
+          "error": {},
+          "hide": 0,
+          "includeAll": false,
+          "label": "Service",
+          "multi": true,
+          "name": "service",
+          "options": [],
+          "query": {
+            "query": "label_values(leaksignal_match_count_bucket{deployment=\"$deployment\"}, local_service)",
+            "refId": "StandardVariableQuery"
+          },
+          "refresh": 2,
+          "regex": "",
+          "skipUrlSync": false,
+          "sort": 0,
+          "type": "query"
+        },
+        {
+          "current": {
+            "selected": true,
+            "text": [
+              "True",
+              "False"
+            ],
+            "value": [
+              "true",
+              "false"
+            ]
+          },
+          "hide": 0,
+          "includeAll": false,
+          "label": "In Header",
+          "multi": true,
+          "name": "in_header",
+          "options": [
+            {
+              "selected": true,
+              "text": "True",
+              "value": "true"
+            },
+            {
+              "selected": true,
+              "text": "False",
+              "value": "false"
+            }
+          ],
+          "query": "True : true,False : false",
+          "queryValue": "",
+          "skipUrlSync": false,
+          "type": "custom"
+        },
+        {
+          "current": {
+            "selected": true,
+            "text": [
+              "True",
+              "False"
+            ],
+            "value": [
+              "true",
+              "false"
+            ]
+          },
+          "hide": 0,
+          "includeAll": false,
+          "label": "In Response",
+          "multi": true,
+          "name": "in_response",
+          "options": [
+            {
+              "selected": true,
+              "text": "True",
+              "value": "true"
+            },
+            {
+              "selected": true,
+              "text": "False",
+              "value": "false"
+            }
+          ],
+          "query": "True : true,False : false",
+          "queryValue": "",
+          "skipUrlSync": false,
+          "type": "custom"
+        },
+        {
+          "current": {
+            "selected": true,
+            "text": [
+              "address",
+              "credit_card",
+              "currency",
+              "request-id"
+            ],
+            "value": [
+              "address",
+              "credit_card",
+              "currency",
+              "request-id"
+            ]
+          },
+          "datasource": {
+            "type": "prometheus",
+            "uid": "P1809F7CD0C75ACF3"
+          },
+          "definition": "label_values(leaksignal_match_count_bucket{deployment=\"$deployment\"}, category)",
+          "error": {},
+          "hide": 0,
+          "includeAll": false,
+          "label": "Category",
+          "multi": true,
+          "name": "category",
+          "options": [],
+          "query": {
+            "query": "label_values(leaksignal_match_count_bucket{deployment=\"$deployment\"}, category)",
+            "refId": "StandardVariableQuery"
+          },
+          "refresh": 2,
+          "regex": "",
+          "skipUrlSync": false,
+          "sort": 0,
+          "type": "query"
+        }
+      ]
+    },
+    "time": {
+      "from": "now-15m",
+      "to": "now"
+    },
+    "timepicker": {},
+    "timezone": "",
+    "title": "LeakSignal Matches",
+    "uid": "Q2-muqB4k",
+    "version": 9,
+    "weekStart": ""
+  }

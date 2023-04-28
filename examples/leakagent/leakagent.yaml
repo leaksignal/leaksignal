@@ -1,0 +1,89 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: leakagent
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: leakagent
+  namespace: leakagent
+  labels:
+    app: leakagent
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: leakagent
+  template:
+    metadata:
+      labels:
+        app: leakagent
+    spec:
+      volumes:
+      - name: leakagent-config
+        configMap:
+          name: leakagent-config
+      containers:
+      - name: leakagent
+        image: leaksignal/leakagent:v0.1.12
+        env:
+        - name: LS_CONFIG_PATH
+          value: /config/config.yaml
+        imagePullPolicy: Always
+        ports:
+        - name: ingestion
+          containerPort: 8121
+        - name: prometheus
+          containerPort: 9176
+        volumeMounts:
+        - name: leakagent-config
+          mountPath: /config/
+      nodeSelector:
+        kubernetes.io/os: linux
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ingestion
+  namespace: leakagent
+  labels:
+    app: leakagent
+spec:
+  selector:
+    app: leakagent
+  ports:
+    - protocol: TCP
+      port: 8121
+      targetPort: 8121
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: leakagent-prom
+  namespace: leakagent
+  labels:
+    app: leakagent
+spec:
+  selector:
+    app: leakagent
+  ports:
+    - name: prometheus
+      protocol: TCP
+      port: 9176
+      targetPort: 9176
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: leakagent
+  namespace: leakagent
+  labels:
+    app: leakagent
+spec:
+  selector:
+    matchLabels:
+      app: leakagent
+  endpoints:
+  - port: prometheus
+    interval: 1s

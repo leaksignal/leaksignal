@@ -1,0 +1,78 @@
+categories:
+  ssn:
+    Matchers:
+      - regex: "\\b\\d{3}[ .-]\\d{2}[ .-]\\d{4}\\b"
+  credit_card:
+    Matchers:
+      - regex: "(?:4[0-9]{12}(?:[0-9]{3})?|[25][1-7][0-9]{14}|6(?:011|5[0-9][0-9])[0-9]{12}|3[47][0-9]{13}|3(?:0[0-5]|[68][0-9])[0-9]{11}|(?:2131|1800|35\\d{3})\\d{11})"
+      - except: 0000-0000-0000-0000
+  email:
+    Matchers:
+      - regex: "\\b[a-zA-Z0-9][a-zA-Z0-9_.+-]{0,}@[a-zA-Z0-9][a-zA-Z0-9-.]{0,}\\.[a-zA-Z]{2,}\\b"
+      - except: someone@example.com
+  phone_number:
+    Matchers:
+      - regex: "\\b(1[ .-]?)?[2-9]\\d{2}[ .-]?\\d{3}[ .-]?\\d{4}\\b|(\\b1[ .-]?)?\\([2-9]\\d{2}\\)[ .-]?\\d{3}[ .-]?\\d{4}\\b"
+  address:
+    Matchers:
+      - regex: "(?i)\\b\\d{1,5} ([a-zA-Z0-9]+ ){0,5}(street|st|avenue|ave|boulevard|blvd|road|rd|route|rt|rte|sr|way|wy|highway|hwy|camino|broadway|parkway|pkwy|expressway|expy?|drive|dr|lane|ln|trail|alley|loop|court|circle|park|plaza|place|square|terrace|row|walk|cove|cv|run|path|pass|hollow|bend),?( [a-zA-Z0-9#,\\.]+){0,3}\\b"
+  request-id:
+    Matchers:
+      - regex: "[A-Za-z0-9]+-[A-Za-z0-9]+-[A-Za-z0-9]+-[A-Za-z0-9]+-[A-Za-z0-9]+"
+  phone_number_correlate:
+    Correlate:
+      group1:
+        - regex: "\\b[0-9]{10}\\b"
+      group2:
+        - raw_insensitive: phone
+      interest: group1
+      max_distance: 64
+ratelimits:
+  - grouping: per_service
+    by: service
+    filter:
+      any:
+        - peer_service: "cluster.local/default/cartservice"
+        - peer_service: "cluster.local/default/checkoutservice"
+    action: block
+    timespan_secs: 30
+    limit: 3000
+  - grouping: per_endpoint
+    by: ip
+    filter:
+      all:
+        - endpoint: "**/api/**"
+        - exclude_endpoint: "**/api/v1/health"
+    action: alert
+    timespan_secs: 60
+    limit: 750
+  - grouping: per_endpoint
+    by: ip
+    filter:
+      all:
+        - endpoint: "**/api/**"
+        - exclude_endpoint: "**/api/v1/health"
+        - exclude_token: exampleToken123
+    action: block
+    timespan_secs: 60
+    limit: 1500
+endpoints:
+  - matches: "**"
+    config:
+      ssn:
+        redact: "REDACTED"
+      credit_card: {}
+      email: {}
+      phone_number: {}
+      address: {}
+      request-id:
+        contexts:
+          - header: x-request-id
+        search: all_header
+      phone_number_correlate: {}
+  - matches: "*/product/*"
+  - matches: "*/cart"
+  - matches: "*/cart/checkout"
+body_collection_rate: 0.0
+report_style:
+  report_style: raw

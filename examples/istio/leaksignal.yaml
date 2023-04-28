@@ -1,0 +1,104 @@
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: leaksignal
+  namespace: istio-system
+spec:
+  configPatches:
+  - applyTo: EXTENSION_CONFIG
+    match:
+      context: ANY
+    patch:
+      operation: ADD
+      value:
+        name: leaksignal-proxy
+        typed_config:
+          "@type": type.googleapis.com/envoy.extensions.filters.http.wasm.v3.Wasm
+          config:
+            name: "leaksignal"
+            root_id: "leaksignal"
+            configuration:
+              "@type": type.googleapis.com/google.protobuf.StringValue
+              value: |
+                upstream_cluster: leaksignal_infra
+                api_key: $API_KEY
+            vm_config:
+              runtime: "envoy.wasm.runtime.v8"
+              vm_id: "leaksignal_proxy"
+              environment_variables:
+                host_env_keys:
+                - HOSTNAME
+                - POD_NAME
+                - INSTANCE_IP
+                - ISTIO_META_WORKLOAD_NAME
+                - ISTIO_META_MESH_ID
+                - TRUST_DOMAIN
+                - POD_NAMESPACE
+                - SERVICE_ACCOUNT
+              code:
+                remote:
+                  http_uri:
+                    uri: https://ingestion.app.leaksignal.com/s3/leakproxy/2023_04_03_17_40_30_ad99dba/leaksignal.wasm
+                    timeout: 10s
+                    cluster: leaksignal_infra
+                  sha256: 6cf3335acebc1cbb9b04594077e2bab8224dfa21ff5809b2123d661533333083
+                  retry_policy:
+                    num_retries: 10
+  - applyTo: HTTP_FILTER
+    match:
+      listener:
+        filterChain:
+          filter:
+            name: envoy.filters.network.http_connection_manager
+            subFilter:
+              name: envoy.filters.http.router
+    patch:
+      operation: INSERT_BEFORE
+      value:
+        name: leaksignal-proxy
+        config_discovery:
+          config_source:
+            ads: {}
+          type_urls: ["type.googleapis.com/envoy.extensions.filters.http.wasm.v3.Wasm"]
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: leaksignal-upstream
+  namespace: istio-system
+spec:
+  configPatches:
+  - applyTo: CLUSTER
+    match:
+      context: ANY
+    patch:
+      operation: ADD
+      value:
+        name: leaksignal_infra
+        type: STRICT_DNS
+        http2_protocol_options: {}
+        dns_lookup_family: V4_PREFERRED
+        lb_policy: ROUND_ROBIN
+        load_assignment:
+          cluster_name: leaksignal_infra0
+          endpoints:
+          - lb_endpoints:
+            - endpoint:
+                address:
+                  socket_address:
+                    address: ingestion.app.leaksignal.com
+                    port_value: 443
+        transport_socket:
+          name: envoy.transport_sockets.tls
+          typed_config:
+            "@type": type.googleapis.com/envoy.extensions.transport_sockets.tls.v3.UpstreamTlsContext
+            sni: ingestion.app.leaksignal.com
+            common_tls_context:
+              validation_context:
+                match_typed_subject_alt_names:
+                - san_type: DNS
+                  matcher:
+                    exact: ingestion.app.leaksignal.com
+                trusted_ca:
+                  filename: /etc/ssl/certs/ca-certificates.crt

@@ -1,0 +1,8 @@
+{
+  "label": "Endpoints",
+  "position": 2,
+  "link": {
+    "type": "generated-index",
+    "description": "LeakSignal Policies (LS policies or policies) are YAML configuration files that drive how LeakSignal scans for sensitive data."
+  }
+}
