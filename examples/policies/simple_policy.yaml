@@ -85,5 +85,4 @@ endpoints:
   - matches: "*/cart"
   - matches: "*/cart/checkout"
 body_collection_rate: 0.0
-report_style:
-  report_style: raw
+report_style: raw

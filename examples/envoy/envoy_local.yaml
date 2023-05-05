@@ -126,8 +126,7 @@ static_resources:
                         - matches: "*/cart"
                         - matches: "*/cart/checkout"
                       body_collection_rate: 0.0
-                      report_style:
-                        report_style: raw
+                      report_style: raw
                 vm_config:
                   runtime: "envoy.wasm.runtime.v8"
                   vm_id: "leaksignal_proxy"

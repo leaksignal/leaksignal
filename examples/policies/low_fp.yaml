@@ -128,5 +128,3 @@ rules:
     action: alert
     timespan_secs: 300
     limit: 10
-report_style:
-  report_style: raw
