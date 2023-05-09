@@ -8,6 +8,8 @@ LeakAgent deploys as a stateless, horizontally scalable Kubernetes deployment. E
 
 LeakAgent makes no outgoing connections, and only serves to distribute policies to LeakSignal proxies, receive telemetry, and emit serve that telemetry to Prometheus. LeakAgent requires no special permissions, roles, or access.
 
+<img src="https://github.com/leaksignal/leaksignal/raw/master/assets/leakagent-architecture.png" />
+
 ## Requirements
 * Prometheus setup to fetch metrics from LeakAgent
 * Kubernetes
