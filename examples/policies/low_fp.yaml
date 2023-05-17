@@ -1,72 +1,53 @@
 categories:
   pii_dob_correlate:
-    Correlate:
-      group1:
-        - regex: "(?-u:\\b)(19[2-9]\\d|20[0-1]\\d)(([-/.](0?[1-9]|1[0-2])[-/.](0?[1-9]|1\\d|2\\d|3[0-1]))|((0[1-9]|1[0-2])(0[1-9]|1\\d|2\\d|3[0-1])))(?-u:\\b)|(?-u:\\b)(((0?[1-9]|1\\d|2\\d|3[0-1])[-/.](0?[1-9]|1[0-2])[-/.])|((0[1-9]|1\\d|2\\d|3[0-1])(0[1-9]|1[0-2]))|((0?[1-9]|1[0-2])[-/.](0?[1-9]|1\\d|2\\d|3[0-1])[-/.])|((0[1-9]|1[0-2])(0[1-9]|1\\d|2\\d|3[0-1])))(19[2-9]\\d|20[0-1]\\d)(?-u:\\b)"
-      group2:
-        - raw_insensitive: dob
-        - raw_insensitive: date_of_birth
-        - raw_insensitive: "date of birth"
-        - raw_insensitive: birthday
-      interest: group1
-      max_distance: 32
+    - regex: "(?-u:\\b)(19[2-9]\\d|20[0-1]\\d)(([-/.](0?[1-9]|1[0-2])[-/.](0?[1-9]|1\\d|2\\d|3[0-1]))|((0[1-9]|1[0-2])(0[1-9]|1\\d|2\\d|3[0-1])))(?-u:\\b)|(?-u:\\b)(((0?[1-9]|1\\d|2\\d|3[0-1])[-/.](0?[1-9]|1[0-2])[-/.])|((0[1-9]|1\\d|2\\d|3[0-1])(0[1-9]|1[0-2]))|((0?[1-9]|1[0-2])[-/.](0?[1-9]|1\\d|2\\d|3[0-1])[-/.])|((0[1-9]|1[0-2])(0[1-9]|1\\d|2\\d|3[0-1])))(19[2-9]\\d|20[0-1]\\d)(?-u:\\b)"
+    - correlate:
+        interest: primary
+        max_distance: 32
+        matches:
+          - raw_insensitive: dob
+          - raw_insensitive: date_of_birth
+          - raw_insensitive: "date of birth"
+          - raw_insensitive: birthday
   pii_email:
-    Matchers:
-      - regex: "(?-u:\\b)[a-zA-Z0-9][a-zA-Z0-9_.+-]{0,}@[a-zA-Z0-9][a-zA-Z0-9-.]{0,}\\.[a-zA-Z]{2,}(?-u:\\b)"
-      - except: someone@example.com
+    - regex: "(?-u:\\b)[a-zA-Z0-9][a-zA-Z0-9_.+-]{0,}@[a-zA-Z0-9][a-zA-Z0-9-.]{0,}\\.[a-zA-Z]{2,}(?-u:\\b)"
+    - except: someone@example.com
   pii_ssn_us:
-    Matchers:
-      - regex: "(?-u:\\b)\\d{3}[ .-]\\d{2}[ .-]\\d{4}(?-u:\\b)"
+    - regex: "(?-u:\\b)\\d{3}[ .-]\\d{2}[ .-]\\d{4}(?-u:\\b)"
   pii_phone_us:
-    Matchers:
-      - regex: "(?-u:\\b)(1[ .-]?)?[2-9]\\d{2}[ .-]?\\d{3}[ .-]?\\d{4}(?-u:\\b)|((?-u:\\b)1[ .-]?)?\\([2-9]\\d{2}\\)[ .-]?\\d{3}[ .-]?\\d{4}(?-u:\\b)"
+    - regex: "(?-u:\\b)(1[ .-]?)?[2-9]\\d{2}[ .-]?\\d{3}[ .-]?\\d{4}(?-u:\\b)|((?-u:\\b)1[ .-]?)?\\([2-9]\\d{2}\\)[ .-]?\\d{3}[ .-]?\\d{4}(?-u:\\b)"
   pii_phone_us_correlate:
-    Correlate:
-      group1:
-        - regex: "(?-u:\\b)1[2-9]\\d{9}(?-u:\\b)"
-      group2:
-        - raw_insensitive: phone
-      interest: group1
-      max_distance: 64
+    - regex: "(?-u:\\b)1[2-9]\\d{9}(?-u:\\b)"
+    - correlate:
+        interest: primary
+        max_distance: 64
+        matches:
+          - raw_insensitive: phone
   pii_imei:
-    Matchers:
-      - regex: "(?-u:\\b)\\d{2}((-\\d{6}-\\d{6}-)|( \\d{6} \\d{6} ))\\d(?-u:\\b)"
+    - regex: "(?-u:\\b)\\d{2}((-\\d{6}-\\d{6}-)|( \\d{6} \\d{6} ))\\d(?-u:\\b)"
   pii_imsi_us:
-    Matchers:
-      - regex: "(?-u:\\b)310\\d{12}(?-u:\\b)"
-      - regex: "(?-u:\\b)31026(20|05|04|00)\\d{8}(?-u:\\b)"
+    - regex: "(?-u:\\b)310\\d{12}(?-u:\\b)"
+    - regex: "(?-u:\\b)31026(20|05|04|00)\\d{8}(?-u:\\b)"
   pii_address_us_narrow:
-    Matchers:
-      - regex: "(?i)(?-u:\\b)\\d{1,5} ([a-zA-Z0-9]+ ){0,5}(street|st|avenue|ave|boulevard|blvd|road|rd|route|way|highway|hwy|drive|lane|loop|court|circle|cove|place|terrace),?( [a-zA-Z0-9#,\\.]+){0,3}(?-u:\\b)"
+    - regex: "(?i)(?-u:\\b)\\d{1,5} ([a-zA-Z0-9]+ ){0,5}(street|st|avenue|ave|boulevard|blvd|road|rd|route|way|highway|hwy|drive|lane|loop|court|circle|cove|place|terrace),?( [a-zA-Z0-9#,\\.]+){0,3}(?-u:\\b)"
   rce_ls:
-    Matchers:
-      regexes:
-        - "(?-u:\\b)drwx"
+    - regex: "(?-u:\\b)drwx"
   rce_ifconfig:
-    Matchers:
-      regexes:
-        - "(?-u:\\b)ether "
+    - regex: "(?-u:\\b)ether "
   rce_root:
-    Matchers:
-      regexes:
-        - "(?-u:\\b)root(?-u:\\b)"
+    - regex: "(?-u:\\b)root(?-u:\\b)"
   rce_privatekey:
-    Matchers:
-      regexes:
-        - PRIVATE KEY
+    - regex: PRIVATE KEY
   aws_access_token:
-    Matchers:
-      - regex: "(?-u:\\b)((A3T[A-Z0-9]|ABIA|ACCA|AGPA|AIDA|AIPA|AKIA|ANPA|ANVA|APKA|AROA|ASCA|ASIA)[A-Z0-9]{16,18})(?-u:\\b)"
+    - regex: "(?-u:\\b)((A3T[A-Z0-9]|ABIA|ACCA|AGPA|AIDA|AIPA|AKIA|ANPA|ANVA|APKA|AROA|ASCA|ASIA)[A-Z0-9]{16,18})(?-u:\\b)"
   bank_credit_card_data:
-    Matchers:
-      - regex: "(?-u:\\b)(?:4[0-9]{12}(?:[0-9]{3})?|[25][1-7][0-9]{14}|6(?:011|5[0-9][0-9])[0-9]{12}|3[47][0-9]{13}|3(?:0[0-5]|[68][0-9])[0-9]{11}|(?:2131|1800|35\\d{3})\\d{11})(?-u:\\b)"
-      # - regex: "(?-u:\\b)\\d{4}[ -]\\d{4}[ -]\\d{4}[ -]\\d{4}(?-u:\\b)"
-      - except: 0000-0000-0000-0000
+    - regex: "(?-u:\\b)(?:4[0-9]{12}(?:[0-9]{3})?|[25][1-7][0-9]{14}|6(?:011|5[0-9][0-9])[0-9]{12}|3[47][0-9]{13}|3(?:0[0-5]|[68][0-9])[0-9]{11}|(?:2131|1800|35\\d{3})\\d{11})(?-u:\\b)"
+    # - regex: "(?-u:\\b)\\d{4}[ -]\\d{4}[ -]\\d{4}[ -]\\d{4}(?-u:\\b)"
+    - except: 0000-0000-0000-0000
   bank_routing_us:
-    Matchers:
-      - regex: "(?-u:\\b)(0[0-9]|11|12|2[1-9]|30|31|32|6[1-9]|70|71|72|80)\\d{7}(?-u:\\b)"
-      - and:
-        - internal: routing_number
+    - regex: "(?-u:\\b)(0[0-9]|11|12|2[1-9]|30|31|32|6[1-9]|70|71|72|80)\\d{7}(?-u:\\b)"
+    - and:
+      - internal: routing_number
 endpoints:
   - matches: "**"
     config:

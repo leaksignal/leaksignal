@@ -1,32 +1,25 @@
 categories:
   ssn:
-    Matchers:
-      - regex: "\\b\\d{3}[ .-]\\d{2}[ .-]\\d{4}\\b"
+    - regex: "\\b\\d{3}[ .-]\\d{2}[ .-]\\d{4}\\b"
   credit_card:
-    Matchers:
-      - regex: "(?:4[0-9]{12}(?:[0-9]{3})?|[25][1-7][0-9]{14}|6(?:011|5[0-9][0-9])[0-9]{12}|3[47][0-9]{13}|3(?:0[0-5]|[68][0-9])[0-9]{11}|(?:2131|1800|35\\d{3})\\d{11})"
-      - except: 0000-0000-0000-0000
+    - regex: "(?:4[0-9]{12}(?:[0-9]{3})?|[25][1-7][0-9]{14}|6(?:011|5[0-9][0-9])[0-9]{12}|3[47][0-9]{13}|3(?:0[0-5]|[68][0-9])[0-9]{11}|(?:2131|1800|35\\d{3})\\d{11})"
+    - except: 0000-0000-0000-0000
   email:
-    Matchers:
-      - regex: "\\b[a-zA-Z0-9][a-zA-Z0-9_.+-]{0,}@[a-zA-Z0-9][a-zA-Z0-9-.]{0,}\\.[a-zA-Z]{2,}\\b"
-      - except: someone@example.com
+    - regex: "\\b[a-zA-Z0-9][a-zA-Z0-9_.+-]{0,}@[a-zA-Z0-9][a-zA-Z0-9-.]{0,}\\.[a-zA-Z]{2,}\\b"
+    - except: someone@example.com
   phone_number:
-    Matchers:
-      - regex: "\\b(1[ .-]?)?[2-9]\\d{2}[ .-]?\\d{3}[ .-]?\\d{4}\\b|(\\b1[ .-]?)?\\([2-9]\\d{2}\\)[ .-]?\\d{3}[ .-]?\\d{4}\\b"
+    - regex: "\\b(1[ .-]?)?[2-9]\\d{2}[ .-]?\\d{3}[ .-]?\\d{4}\\b|(\\b1[ .-]?)?\\([2-9]\\d{2}\\)[ .-]?\\d{3}[ .-]?\\d{4}\\b"
   address:
-    Matchers:
-      - regex: "(?i)\\b\\d{1,5} ([a-zA-Z0-9]+ ){0,5}(street|st|avenue|ave|boulevard|blvd|road|rd|route|rt|rte|sr|way|wy|highway|hwy|camino|broadway|parkway|pkwy|expressway|expy?|drive|dr|lane|ln|trail|alley|loop|court|circle|park|plaza|place|square|terrace|row|walk|cove|cv|run|path|pass|hollow|bend),?( [a-zA-Z0-9#,\\.]+){0,3}\\b"
+    - regex: "(?i)\\b\\d{1,5} ([a-zA-Z0-9]+ ){0,5}(street|st|avenue|ave|boulevard|blvd|road|rd|route|rt|rte|sr|way|wy|highway|hwy|camino|broadway|parkway|pkwy|expressway|expy?|drive|dr|lane|ln|trail|alley|loop|court|circle|park|plaza|place|square|terrace|row|walk|cove|cv|run|path|pass|hollow|bend),?( [a-zA-Z0-9#,\\.]+){0,3}\\b"
   request-id:
-    Matchers:
-      - regex: "[A-Za-z0-9]+-[A-Za-z0-9]+-[A-Za-z0-9]+-[A-Za-z0-9]+-[A-Za-z0-9]+"
+    - regex: "[A-Za-z0-9]+-[A-Za-z0-9]+-[A-Za-z0-9]+-[A-Za-z0-9]+-[A-Za-z0-9]+"
   phone_number_correlate:
-    Correlate:
-      group1:
-        - regex: "\\b[0-9]{10}\\b"
-      group2:
-        - raw_insensitive: phone
-      interest: group1
-      max_distance: 64
+    - regex: "\\b[0-9]{10}\\b"
+    - correlate:
+        interest: primary
+        max_distance: 64
+        matches:
+          - raw_insensitive: phone
 ratelimits:
   - grouping: per_service
     by: service
@@ -60,7 +53,7 @@ endpoints:
   - matches: "**"
     config:
       ssn:
-        redact: "REDACTED"
+        action: !redact "REDACTED"
       credit_card: {}
       email: {}
       phone_number: {}
@@ -73,5 +66,4 @@ endpoints:
   - matches: "*/product/*"
   - matches: "*/cart"
   - matches: "*/cart/checkout"
-body_collection_rate: 0.0
 report_style: raw
