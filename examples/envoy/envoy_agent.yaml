@@ -53,7 +53,7 @@ static_resources:
                         uri: http://ingestion.leakagent.svc.cluster.local:8121/proxy/2023_03_21_22_03_24_9dca52d/leaksignal.wasm
                         timeout: 10s
                         cluster: leaksignal_infra
-                      sha256: 6cf3335acebc1cbb9b04594077e2bab8224dfa21ff5809b2123d661533333083
+                      sha256: ccbbb021fc6efabaa05ad755542e4813db5418eacfb532277f583e2f44b735e3
                       retry_policy:
                         num_retries: 10
           - name: envoy.filters.http.router
