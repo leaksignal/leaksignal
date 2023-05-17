@@ -85,7 +85,7 @@ categories:
 
 A Correlate rule contains a secondary rule group, and only signals a match if the parent group and secondary group match within a certain distance of one another. This effects the behavior of the entire category.
 
-## Unformatted phone numbers near "phone"
+### Unformatted phone numbers near "phone"
 
 This example matches 10 digit unformatted phone numbers within 64 bytes of the "phone" string. The `interest` field denotes which of the two groups should be reported as interesting: `primary` (default), `secondary`, or `all` for all characters between both matches.
 
@@ -113,6 +113,8 @@ categories:
         max_distance: 16
         match_group: phone_number
 ```
+
+### Multiple Correlates
 
 You can specify multiple correlates within the same category, which will be evaluated separately from each-other. Nesting correlate rules inside other correlate rules is not supported and will throw an error during policy deserialization.
 
