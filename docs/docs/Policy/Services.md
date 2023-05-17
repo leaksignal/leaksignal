@@ -1,6 +1,9 @@
 ---
 sidebar_position: 4
 ---
+
+# Services
+
 Service configuration allows matching a group of services and applying specific policy to them.
 
 ## Format
@@ -14,7 +17,7 @@ Each service policy block has the following fields:
 
 ## Example
 
-```
+```yaml
 services:
   - services:
       - cluster.local/default/adservice

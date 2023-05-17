@@ -1,6 +1,9 @@
 ---
 sidebar_position: 3
 ---
+
+# Rules
+
 Rules allow specific endpoints, services, and clusters to ratelimit (timed block) or alert on individual ips, tokens, or service names.
 
 ## Format
@@ -8,6 +11,7 @@ Rules allow specific endpoints, services, and clusters to ratelimit (timed block
 Rules are specified in the top-level `rules` field of the policy.
 
 Fields:
+
 * `grouping`: `per_service`, `per_endpoint`, or `global` -- specifies the grouping of inbound data for rule execution. I.e. a `per_service` rule by `ip` looks at the rate of traffic of each ip for each service, and evaluates the rule.
 * `by`: `ip` (default), `token`, `service` -- the unique ID to be used for the rule. Note that response-derived tokens will still let the initial request through.
 * `action`: `block` (default), `alert`, or `nothing` -- the action to take upon the rule conditions being met.
@@ -18,6 +22,7 @@ Fields:
 ### Filters
 
 Each filter has exactly one of the following keys:
+
 * `endpoint`: Takes one of more [Path Globs](Endpoints/Path%20Globs) and requires that **any** of them match the policy path
 * `exclude_endpoint`: Takes one of more [Path Globs](Endpoints/Path%20Globs) and requires that **all** of them **do not** match the policy path
 * `peer_service`: Takes one or more [Match Rule](Match%20Rule) and requires that **any** of them match the peer_service
@@ -37,7 +42,7 @@ Each filter has exactly one of the following keys:
 
 ## Examples
 
-```
+```yaml
 rules:
   - grouping: per_service
     by: service
