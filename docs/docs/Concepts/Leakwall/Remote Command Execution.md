@@ -38,7 +38,7 @@ See [Policy](/Policy) documentation for more information on how policies work.
 
 Additionally, response signatures can be customized to match the output of specific systems like Microsoft Exchange. The following example shows how exploitation of ProxyLogin and ProxyNotShell could be detected in the outgoing HTTP response.
 
-![exchange proxylogin](../../../../assets/proxylogin-output.png)
+![exchange proxylogin](https://github.com/leaksignal/leaksignal/raw/master/assets/proxylogin-output.png)
 
 ```
 categories:
