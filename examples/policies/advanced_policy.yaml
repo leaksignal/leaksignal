@@ -21,7 +21,7 @@ categories:
         matches:
           - raw_insensitive: phone
 ratelimits:
-  - grouping: per_service
+  - grouping: per_inbound_service
     by: service
     filter:
       any:
