@@ -17,7 +17,7 @@ A Match Rule is optionally prefixed with one of the following:
 * `except:`: can be used to negate previous rules, requires exact match like `raw`
 * `except_regex:`: same as `regex`, but also negates previous rules like `except`
 * `internal:`: Use a natively implemented matching function.
-* `and`: group multiple rules into one rule
+* `and`: a list of rules. overrides the behavior of the group so that a match is only emitted if a rule in the group matches AND every rule in the `and` rule matches
 * `correlate`: Allows you to specify a sub-group of rules. Matches from the parent group will only be emitted when a match from the sub-group is found nearby.
 
 ## Examples
