@@ -36,7 +36,7 @@ categories:
 services:
   - services: "regex: .*"
 ratelimits:
-  - grouping: per_service
+  - grouping: per_inbound_service
     by: service
     filter:
       any:
@@ -111,7 +111,7 @@ rules:
     action: alert
     timespan_secs: 30
     limit: 1
-  - grouping: per_service
+  - grouping: per_inbound_service
     by: outbound_service
     filter:
       all:

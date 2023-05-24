@@ -12,7 +12,7 @@ Rules are specified in the top-level `rules` field of the policy.
 
 Fields:
 
-* `grouping`: `per_service`, `per_endpoint`, or `global` -- specifies the grouping of inbound data for rule execution. I.e. a `per_service` rule by `ip` looks at the rate of traffic of each ip for each service, and evaluates the rule.
+* `grouping`: `per_inbound_service`, `per_outbound_service`, `per_endpoint`, or `global` -- specifies the grouping of inbound data for rule execution. I.e. a `per_inbound_service` rule by `ip` looks at the rate of traffic of each ip for each service, and evaluates the rule.
 * `by`: `ip` (default), `token`, `service` -- the unique ID to be used for the rule. Note that response-derived tokens will still let the initial request through.
 * `action`: `block` (default), `alert`, or `nothing` -- the action to take upon the rule conditions being met.
 * `timespan_secs`: The timespan over which requests/responses are counted for rule evaluation. This effectively means that a client is limited to `limit`/`timespan_secs` requests per second.
@@ -44,7 +44,7 @@ Each filter has exactly one of the following keys:
 
 ```yaml
 rules:
-  - grouping: per_service
+  - grouping: per_inbound_service
     by: service
     filter:
       any:
