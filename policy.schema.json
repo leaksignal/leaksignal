@@ -1,0 +1,459 @@
+{
+    "$id": "https://raw.githubusercontent.com/leaksignal/leaksignal/master/policy.schema.json",
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "type": "object",
+    "$defs": {
+        "match_item": {
+            "oneOf": [
+                { "$ref": "#/$defs/service_rule" },
+                {
+                    "type": "object",
+                    "properties": {
+                        "correlate": {
+                            "type": "object",
+                            "properties": {
+                                "interest": {
+                                    "enum": ["primary", "secondary", "all"]
+                                },
+                                "max_distance": {
+                                    "type": "integer"
+                                },
+                                "matches": {
+                                    "anyOf": [
+                                        { "$ref": "#/$defs/matches" },
+                                        { "type": "string" }
+                                    ]
+                                }
+                            },
+                            "required": ["max_distance", "matches"]
+                        }
+                    }
+                }
+            ],
+            "unevaluatedProperties": false
+        },
+        "service_rule": {
+            "oneOf": [
+                {
+                    "type": "object",
+                    "properties": {
+                        "raw": {
+                            "type": "string"
+                        }
+                    },
+                    "required": ["raw"]
+                },
+                {
+                    "type": "object",
+                    "properties": {
+                        "raw_insensitive": {
+                            "type": "string"
+                        }
+                    },
+                    "required": ["raw_insensitive"]
+                },
+                {
+                    "type": "object",
+                    "properties": {
+                        "regex": {
+                            "type": "string"
+                        }
+                    },
+                    "required": ["regex"]
+                },
+                {
+                    "type": "object",
+                    "properties": {
+                        "except_regex": {
+                            "type": "string"
+                        }
+                    },
+                    "required": ["except_regex"]
+                },
+                {
+                    "type": "object",
+                    "properties": {
+                        "except": {
+                            "type": "string"
+                        }
+                    },
+                    "required": ["except"]
+                },
+                {
+                    "type": "object",
+                    "properties": {
+                        "except_insensitive": {
+                            "type": "string"
+                        }
+                    },
+                    "required": ["except_insensitive"]
+                },
+                {
+                    "type": "object",
+                    "properties": {
+                        "internal": {
+                            "type": "string"
+                        }
+                    },
+                    "required": ["internal"]
+                },
+                {
+                    "type": "object",
+                    "properties": {
+                        "and": { "$ref": "#/$defs/matches" }
+                    },
+                    "required": ["and"]
+                },
+                { "type": "string" }
+            ],
+            "unevaluatedProperties": false
+        },
+        "matches": {
+            "anyOf": [
+                { "$ref": "#/$defs/match_item" },
+                {
+                    "type": "array",
+                    "items": { "$ref": "#/$defs/match_item" }
+                }
+            ]
+        },
+        "report_style": { "enum": ["raw", "partial_sha256", "sha256", "none"] },
+        "content_type": { "enum": ["html", "json", "grpc", "url_encoded", "jpeg", "unknown"] },
+        "match_context": { "anyOf": [
+            { "enum": ["keys", "values"] },
+            {
+                "type": "object",
+                "properties": {
+                    "header": { "type": "string" }
+                },
+                "required": ["header"],
+                "unevaluatedProperties": false
+            }
+        ] },
+        "endpoints": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "matches": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            }
+                        ]
+                    },
+                    "search": {
+                        "enum": ["request_body", "request_header", "response_body", "response_header", "all_body", "all_header", "all"]
+                    },
+                    "token_extractor": {
+                        "type": "object",
+                        "properties": {
+                            "location": { "enum": ["request", "request_cookie", "response"] },
+                            "header": { "type": "string" },
+                            "regex": { "type": "string" },
+                            "hash": { "type": "boolean" }
+                        },
+                        "required": ["location", "header"],
+                        "unevaluatedProperties": false
+                    },
+                    "report_style": { "$ref": "#/$defs/report_style" },
+                    "report_bits": { "type": "integer" },
+                    "config": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "type": "object",
+                            "properties": {
+                                "action": { "enum": ["ignore", "alert", "redact", "block"] },
+                                "content_types": { "anyOf": [
+                                    { "$ref": "#/$defs/content_type" },
+                                    {
+                                        "type": "array",
+                                        "items": { "$ref": "#/$defs/content_type" }
+                                    }
+                                ] },
+                                "contexts": { "anyOf": [
+                                    { "$ref": "#/$defs/match_context" },
+                                    {
+                                        "type": "array",
+                                        "items": { "$ref": "#/$defs/match_context" }
+                                    }
+                                ] },
+                                "search": { "enum": ["request_body", "request_header", "response_body", "response_header", "all_body", "all_header", "all"] },
+                                "ignore": { "type": "array", "items": { "type": "string" } },
+                                "report_style": { "$ref": "#/$defs/report_style" },
+                                "report_bits": { "type": "integer" }
+                            },
+                            "unevaluatedProperties": false
+                        }
+                    }
+                },
+                "required": ["matches"],
+                "unevaluatedProperties": false
+            }
+        },
+        "rule_filter": {
+            "anyOf": [
+                {
+                    "type": "object",
+                    "properties": {
+                        "endpoint": {
+                            "anyOf": [
+                                { "type": "string" },
+                                { "type": "array", "items": { "type": "string" } }
+                            ]
+                        }
+                    },
+                    "required": ["endpoint"]
+                },
+                {
+                    "type": "object",
+                    "properties": {
+                        "exclude_endpoint": {
+                            "anyOf": [
+                                { "type": "string" },
+                                { "type": "array", "items": { "type": "string" } }
+                            ]
+                        }
+                    },
+                    "required": ["exclude_endpoint"]
+                },
+                {
+                    "type": "object",
+                    "properties": {
+                        "peer_service": {
+                            "anyOf": [
+                                { "$ref": "#/$defs/service_rule" },
+                                { "type": "array", "items": { "$ref": "#/$defs/service_rule" } }
+                            ]
+                        }
+                    },
+                    "required": ["peer_service"]
+                },
+                {
+                    "type": "object",
+                    "properties": {
+                        "exclude_peer_service": {
+                            "anyOf": [
+                                { "$ref": "#/$defs/service_rule" },
+                                { "type": "array", "items": { "$ref": "#/$defs/service_rule" } }
+                            ]
+                        }
+                    },
+                    "required": ["exclude_peer_service"]
+                },
+                {
+                    "type": "object",
+                    "properties": {
+                        "local_service": {
+                            "anyOf": [
+                                { "$ref": "#/$defs/service_rule" },
+                                { "type": "array", "items": { "$ref": "#/$defs/service_rule" } }
+                            ]
+                        }
+                    },
+                    "required": ["local_service"]
+                },
+                {
+                    "type": "object",
+                    "properties": {
+                        "exclude_local_service": {
+                            "anyOf": [
+                                { "$ref": "#/$defs/service_rule" },
+                                { "type": "array", "items": { "$ref": "#/$defs/service_rule" } }
+                            ]
+                        }
+                    },
+                    "required": ["exclude_local_service"]
+                },
+                {
+                    "type": "object",
+                    "properties": {
+                        "token": {
+                            "anyOf": [
+                                { "$ref": "#/$defs/service_rule" },
+                                { "type": "array", "items": { "$ref": "#/$defs/service_rule" } }
+                            ]
+                        }
+                    },
+                    "required": ["token"]
+                },
+                {
+                    "type": "object",
+                    "properties": {
+                        "exclude_token": {
+                            "anyOf": [
+                                { "$ref": "#/$defs/service_rule" },
+                                { "type": "array", "items": { "$ref": "#/$defs/service_rule" } }
+                            ]
+                        }
+                    },
+                    "required": ["exclude_token"]
+                },
+                {
+                    "type": "object",
+                    "properties": {
+                        "ip": {
+                            "anyOf": [
+                                { "type": "string" },
+                                { "type": "array", "items": { "type": "string" } }
+                            ]
+                        }
+                    },
+                    "required": ["ip"]
+                },
+                {
+                    "type": "object",
+                    "properties": {
+                        "exclude_ip": {
+                            "anyOf": [
+                                { "type": "string" },
+                                { "type": "array", "items": { "type": "string" } }
+                            ]
+                        }
+                    },
+                    "required": ["exclude_ip"]
+                },
+                {
+                    "type": "object",
+                    "properties": {
+                        "request_matches": {
+                            "type": "object",
+                            "additionalProperties": { "type": "integer" }
+                        }
+                    },
+                    "required": ["request_matches"]
+                },
+                {
+                    "type": "object",
+                    "properties": {
+                        "response_matches": {
+                            "type": "object",
+                            "additionalProperties": { "type": "integer" }
+                        }
+                    },
+                    "required": ["response_matches"]
+                },
+                { "enum": ["response_outbound", "response_inbound"] },
+                {
+                    "type": "object",
+                    "properties": {
+                        "any": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/$defs/rule_filter"
+                            }
+                        }
+                    },
+                    "required": ["any"]
+                },
+                {
+                    "type": "object",
+                    "properties": {
+                        "all": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/$defs/rule_filter"
+                            }
+                        }
+                    },
+                    "required": ["all"]
+                }
+            ],
+            "unevaluatedProperties": false
+        }
+    },
+    "properties": {
+        "categories": {
+            "type": "object",
+            "additionalProperties": { "$ref": "#/$defs/matches" }
+        },
+        "endpoints": { "$ref": "#/$defs/endpoints" },
+        "services": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "services": { "anyOf": [
+                        { "$ref": "#/$defs/service_rule" },
+                        {
+                            "type": "array",
+                            "items": { "$ref": "#/$defs/service_rule" }
+                        }
+                    ] },
+                    "blacklist": {
+                        "type": "array",
+                        "items": { "$ref": "#/$defs/service_rule" }
+                    },
+                    "whitelist": {
+                        "type": "array",
+                        "items": { "$ref": "#/$defs/service_rule" }
+                    },
+                    "block_unknown_services": { "type": "boolean" },
+                    "endpoints": { "$ref": "#/$defs/endpoints" },
+                    "use_default_endpoints": { "type": "boolean" }
+                },
+                "required": ["services"],
+                "unevaluatedProperties": false
+            }
+        },
+        "collected_request_headers": { "type": "array", "items": { "type": "string" }},
+        "collected_response_headers": { "type": "array", "items": { "type": "string" }},
+        "body_collection": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "mode": { "enum": ["request_only", "response_only", "all"] },
+                    "sample_rate": { "type": "number" },
+                    "max_body_collection_mb": { "type": "number" },
+                    "filter": { "$ref": "#/$defs/rule_filter" }
+                },
+                "required": ["sample_rate"],
+                "unevaluatedProperties": false
+            }
+        },
+        "report_style": { "$ref": "#/$defs/report_style" },
+        "report_bits": { "type": "integer" },
+        "blocked_ips": { "type": "string" },
+        "blocked_tokens": { "type": "string" },
+        "rules": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "name": { "type": "string" },
+                    "grouping": {
+                        "enum": ["global", "per_inbound_service", "per_outbound_service", "per_endpoint"]
+                    },
+                    "by": {
+                        "enum": ["ip", "token", "outbound_service", "inbound_service"]
+                    },
+                    "action": {
+                        "enum": ["nothing", "alert", "block"]
+                    },
+                    "timespan_secs": {
+                        "type": "integer"
+                    },
+                    "limit": {
+                        "type": "integer"
+                    },
+                    "filter": { "$ref": "#/$defs/rule_filter" },
+                    "severity": {
+                        "enum": ["routine", "notable", "concern", "immediate"]
+                    },
+                    "muted": { "type": "boolean" }
+                },
+                "required": ["by", "limit"],
+                "unevaluatedProperties": false
+            }
+        }
+    },
+    "required": ["categories"],
+    "unevaluatedProperties": false
+}
