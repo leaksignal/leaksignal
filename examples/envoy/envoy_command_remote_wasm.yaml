@@ -54,11 +54,11 @@ static_resources:
                   code:
                     remote:
                       http_uri:
-                        uri: https://ingestion.app.leaksignal.com/s3/leakproxy/2023_06_01_14_35_22_fc00c72_0.2.0/leaksignal.wasm
+                        uri: https://ingestion.app.leaksignal.com/s3/leakproxy/2023_06_06_22_21_26_ee90359_0.2.1/leaksignal.wasm
                         timeout:
                           seconds: 10
                         cluster: leaksignal_infra
-                      sha256: 8e4de1d8e38abf033495512b3f85e54523fb1bdf9e3bc63a63383325458be6c6
+                      sha256: 7f7c10615beccf923507c74883e89b49f7feabe0d4f4cce7c92cc395b789aa3f
                       retry_policy:
                         num_retries: 10
           - name: envoy.filters.http.router
