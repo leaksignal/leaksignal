@@ -61,14 +61,6 @@ spec:
           config_source:
             ads: {}
           type_urls: ["type.googleapis.com/envoy.extensions.filters.http.wasm.v3.Wasm"]
----
-apiVersion: networking.istio.io/v1alpha3
-kind: EnvoyFilter
-metadata:
-  name: leaksignal-upstream
-  namespace: istio-system
-spec:
-  configPatches:
   - applyTo: CLUSTER
     match:
       context: ANY
