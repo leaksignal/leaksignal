@@ -22,6 +22,7 @@ spec:
               "@type": type.googleapis.com/google.protobuf.StringValue
               value: |
                 upstream_cluster: leaksignal_infra
+                upstream_host: ingestion.leakagent.svc.cluster.local:8121
                 api_key: example
             vm_config:
               runtime: "envoy.wasm.runtime.v8"
