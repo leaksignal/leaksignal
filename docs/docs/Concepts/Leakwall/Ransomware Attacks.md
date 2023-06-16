@@ -20,24 +20,18 @@ When attackers run one of the aforementioned tools and actually find a vulnerabl
 ![directory listing output](../../../static/img/ls-output.png)
 
 The commands will generate responses with unique signals that would never be seen in normal traffic. One sure fire way to detect this type of attack in real time is to create a matcher category for signs of ransomware. Here is an example policy that will detect the majority of ransomware feedback loops that attackers are hoping to see after running their favorite scanning tool:
-```
+
+```yaml
   rce_ls:
-    Matchers:
-      regexes:
-        - "(?-u:\\b)drwx"
+    - regex: "(?-u:\\b)drwx"
   rce_ifconfig:
-    Matchers:
-      regexes:
-        - "(?-u:\\b)ether "
+    - regex: "(?-u:\\b)ether "
   rce_root:
-    Matchers:
-      regexes:
-        - "(?-u:\\b)root(?-u:\\b)"
+    - regex: "(?-u:\\b)root(?-u:\\b)"
   rce_privatekey:
-    Matchers:
-      regexes:
-        - PRIVATE KEY
+    - regex: PRIVATE KEY
 ```
+
 :::note
 See [Policy](/Policy) documentation for more information on how policies work.
 :::

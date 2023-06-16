@@ -11,6 +11,7 @@ LeakAgent makes no outgoing connections, and only serves to distribute policies 
 <img src="https://github.com/leaksignal/leaksignal/raw/master/assets/leakagent-architecture.png" />
 
 ## Requirements
+
 * Prometheus setup to fetch metrics from LeakAgent
 * Kubernetes
 * Istio is recommended but not required
@@ -25,6 +26,7 @@ LeakAgent makes no outgoing connections, and only serves to distribute policies 
 ## Docker Images
 
 LeakAgent is available as two standard docker images:
+
 * [`leaksignal/leakagent`](https://hub.docker.com/r/leaksignal/leakagent)
 * [`leaksignal/leakagent_bundle`](https://hub.docker.com/r/leaksignal/leakagent_bundle)
 
@@ -33,6 +35,7 @@ The `_bundle` variant includes the leaksignal proxy under `ORIGIN/proxy/leaksign
 ## Configuration
 
 LeakAgent has the following environment variables:
+
 * `LS_PROMETHEUS_BIND`: A socket address to bind for exporting prometheus metrics. Default: `0.0.0.0:9176`
 * `LS_INGESTION_BIND`: A socket address to bind for LeakSignal to connect to. Default: `0.0.0.0:8121`
 * `LS_BUNDLE_DIR`: A directory (with or without trailing slash) in which to serve bundled WASM files from. No default.
@@ -47,6 +50,7 @@ Configuration is hot-reloadable without restarting the LeakAgent pods.
 LeakAgent is a lightweight and stateless and a passive receiver of telemetry, which is ultimately scraped by Prometheus. As a result, you can deploy as much as you need wherever you need, with no concern of scaling constraints. The bottleneck you will using LeakAgent is network bandwidth, and so it is advisable to have a few pods available for every region your cluster is running in.
 
 ### Configuration Format
+
 ```yaml
 policies:
   # the deployment name here is used as both a deployment name AND the api_key for proxies to connect.
@@ -60,22 +64,22 @@ proxy_source:
 ```
 
 ### Example Configuration
+
 Environment:
-```
+
+```bash
 LS_BUNDLE_DIR=/bundle
 LS_CONFIG_PATH=/config/config.yaml
 ```
 
 Configuration:
+
 ```yaml
 policies:
   example:
     categories:
       bank_routing_us:
-        Matchers:
-          - regex: "(?-u:\\b)(0[0-9]|11|12|2[1-9]|30|31|32|6[1-9]|70|71|72|80)\\d{7}(?-u:\\b)"
-          - and:
-            - internal: routing_number
+        - internal: routing_number
     endpoints:
       - matches: "**"
         config:
@@ -85,6 +89,7 @@ policies:
 ## Pointing Istio/Envoy to LeakAgent
 
 A given configuration pointing to the cloud or elsewhere will have an upstream Envoy cluster named `leaksignal_infra` (by default) similar to:
+
 ```yaml
 name: leaksignal_infra
 type: STRICT_DNS
@@ -116,6 +121,7 @@ transport_socket:
 ```
 
 To point such a cluster to a local LeakAgent deployment in the `leakagent` namespace, replace with the following:
+
 ```yaml
 name: leaksignal_infra
 type: STRICT_DNS

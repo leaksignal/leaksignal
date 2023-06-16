@@ -3,13 +3,17 @@ sidebar_position: 1
 ---
 
 Remote Command Execution (RCE) is one of the most dangerous types of vulnerabilities. It allows attackers to execute commands on a server by simply requesting a URL with a crafted payload. To execute an RCE and eventually takeover a machine, one simply sends a request to a URL similar to the following:
+
 ```
 http:/yourwebsite.com/vulnerableAPI/attack?search=<query>
 ```
+
 Using the latest Text4Shell vulnerability as an example, an attacker would send the following request to an exposed server:
+
 ```
 http:/yourwebsite.com/vulnerableAPI/attack?search=${script:javascript:java.lang.Runtime.getRuntime().exec('ls -e /bin/sh')}
 ```
+
 These types of requests trigger undetected exploits in underlying production code. In the cases of log4shell in 2021 and the Equifax breach of 2017, RCEs were found in the underlying components that were widely used across many public facing software systems worldwide - and these types of exploits are [only getting worse](https://www.cisa.gov/known-exploited-vulnerabilities-catalog).
 
 ## RCE Detection
@@ -25,13 +29,13 @@ Here's an example of the `ls` command used in a scanning attack:
 ![directory listing output](../../../static/img/ls-output.png)
 
 To detect this type of infrastructure probing, a LeakSignal category can be created in the policy to detect the signature of `ls` output.
-```
+
+```yaml
 categories:
   rce_ls_root:
-    Matchers:
-      regexes:
-        - "\\broot root\\b"
+    - regex: "\\broot root\\b"
 ```
+
 :::note
 See [Policy](/Policy) documentation for more information on how policies work.
 :::
@@ -40,12 +44,10 @@ Additionally, response signatures can be customized to match the output of speci
 
 ![exchange proxylogin](https://github.com/leaksignal/leaksignal/raw/master/assets/proxylogin-output.png)
 
-```
+```yaml
 categories:
   rce_ls_root:
-    Matchers:
-      regexes:
-        - "\\bnt authority\/system\\b"
+    - regex: "\\bnt authority\/system\\b"
 ```
-LeakSignal can detect response signatures across all mesh API, HTTP, gRPC and WebSocket traffic.
 
+LeakSignal can detect response signatures across all mesh API, HTTP, gRPC and WebSocket traffic.

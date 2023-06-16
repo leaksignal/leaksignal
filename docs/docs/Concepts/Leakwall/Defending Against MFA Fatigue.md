@@ -10,19 +10,19 @@ Lapsus$ and Yanluowang threat actors have already demonstrated the effectiveness
 
 ## How It Works
 
-When user credentials are breached and MFA is achieved, attackers are given an authentication token. This auth token is then used to access sensitive data and systems that only the employee who received the MFA fatigue attack would be able to view. 
+When user credentials are breached and MFA is achieved, attackers are given an authentication token. This auth token is then used to access sensitive data and systems that only the employee who received the MFA fatigue attack would be able to view.
 
-This is where LeakSignal monitoring starts. Post-MFA, after the MFA Fatigue attack has taken place, LeakSignal Sentry correlates the auth token to the amount of sensitive data that is accessed. 
+This is where LeakSignal monitoring starts. Post-MFA, after the MFA Fatigue attack has taken place, LeakSignal Sentry correlates the auth token to the amount of sensitive data that is accessed.
 
-## Token-based Sensitive Data Exfiltration Alerting in LeakSignal 
+## Token-based Sensitive Data Exfiltration Alerting in LeakSignal
 
-The following policy provides observability and alerting on the amount of credit card data that is accessed by a single token over a 5 minute period. 
-```
+The following policy provides observability and alerting on the amount of credit card data that is accessed by a single token over a 5 minute period.
+
+```yaml
 categories:
   bank_credit_card_data:
-    Matchers:
-      - regex: "(?-u:\\b)(?:4[0-9]{12}(?:[0-9]{3})?|[25][1-7][0-9]{14}|6(?:011|5[0-9][0-9])[0-9]{12}|3[47][0-9]{13}|3(?:0[0-5]|[68][0-9])[0-9]{11}|(?:2131|1800|35\\d{3})\\d{11})(?-u:\\b)"
-      - except: 0000-0000-0000-0000
+    - regex: "(?-u:\\b)(?:4[0-9]{12}(?:[0-9]{3})?|[25][1-7][0-9]{14}|6(?:011|5[0-9][0-9])[0-9]{12}|3[47][0-9]{13}|3(?:0[0-5]|[68][0-9])[0-9]{11}|(?:2131|1800|35\\d{3})\\d{11})(?-u:\\b)"
+    - except: 0000-0000-0000-0000
 endpoints:
   - matches: "**"
     config:
@@ -48,4 +48,5 @@ rules:
     timespan_secs: 300
     limit: 5
 ```
+
 This is a simple example to demonstrate the power of sensitive data monitoring after MFA occurrs. LeakSignal supports many other rule sets around sensitive data access and exfiltration.

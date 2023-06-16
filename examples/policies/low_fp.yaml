@@ -45,9 +45,7 @@ categories:
     # - regex: "(?-u:\\b)\\d{4}[ -]\\d{4}[ -]\\d{4}[ -]\\d{4}(?-u:\\b)"
     - except: 0000-0000-0000-0000
   bank_routing_us:
-    - regex: "(?-u:\\b)(0[0-9]|11|12|2[1-9]|30|31|32|6[1-9]|70|71|72|80)\\d{7}(?-u:\\b)"
-    - and:
-      - internal: routing_number
+    - internal: routing_number
 endpoints:
   - matches: "**"
     config:
