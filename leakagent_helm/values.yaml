@@ -1,7 +1,37 @@
 fullnameOverride: ""
 nameOverride: ""
 
-prometheus_operator:
-  scrape_interval: 1s
+autoscaling:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 10
+  cpuUtilization: 50
+  memoryUtilization: 50
+
 replicas: 2
-config_name: ""
+image:
+  repository: leaksignal/leakagent
+resources:
+  requests: 
+    memory: 256Mi
+    cpu: 500m
+  limits:
+    memory: 2Gi
+    cpu: 4.0
+metricsService:
+  enabled: true
+service:
+  enabled: true
+serviceMonitor:
+  enabled: false
+  interval: 5s
+
+policies:
+  example:
+    categories:
+      bank_routing_us:
+      - internal: routing_number
+    endpoints:
+      - matches: "**"
+        config:
+          bank_routing_us: {}

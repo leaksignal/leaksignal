@@ -1,0 +1,95 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "leaksignal.fullname" . }}
+  labels:
+    app: leakagent
+    {{- include "leaksignal.labels" . | nindent 4 }}
+spec:
+  {{- if and (not .Values.autoscaling.enabled) (.Values.replicas) }}
+  replicas: {{ .Values.replicas }}
+  {{- end }}
+  revisionHistoryLimit: {{ .Values.revisionHistoryLimit }}
+  {{- with .Values.deploymentStrategy }}
+  strategy:
+    {{- toYaml . | trim | nindent 4 }}
+  {{- end }}
+  selector:
+    matchLabels:
+      app: leakagent
+      {{- include "leaksignal.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        app: leakagent
+        {{- include "leaksignal.labels" . | nindent 8 }}
+        {{- with .Values.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+        {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      {{- with .Values.schedulerName }}
+      schedulerName: "{{ . }}"
+      {{- end }}
+      {{- with .Values.securityContext }}
+      securityContext:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.hostAliases }}
+      hostAliases:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.priorityClassName }}
+      priorityClassName: {{ . }}
+      {{- end }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.topologySpreadConstraints }}
+      topologySpreadConstraints:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      volumes:
+      - name: leakagent-config
+        configMap:
+          {{ if .Values.configName }}
+          name: {{ .Values.configName }}
+          {{ else }}
+          name: {{ include "leaksignal.fullname" . }}-config
+          {{ end }}
+      containers:
+      - name: leakagent
+        image: {{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}
+        env:
+        - name: LS_CONFIG_PATH
+          value: /config/config.yaml
+        imagePullPolicy: Always
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 8121
+          initialDelaySeconds: 30
+        {{- with .Values.resources }}
+        resources:
+          {{- toYaml . | nindent 10 }}
+        {{- end }}
+        ports:
+        - name: ingestion
+          containerPort: 8121
+        - name: prometheus
+          containerPort: 9176
+        volumeMounts:
+        - name: leakagent-config
+          mountPath: /config/

@@ -1,0 +1,242 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "LeakSignal Helm Values",
+    "type": "object",
+    "properties": {
+      "autoscaling": {
+        "description": "Enable autoscaling",
+        "type": "object",
+        "properties": {
+            "enabled": {
+                "type": "boolean"
+            },
+            "minReplicas": {
+                "type": "integer",
+                "minimum": 1
+            },
+            "maxReplicas": {
+                "type": "integer",
+                "minimum": 1
+            },
+            "cpuUtilization": {
+                "type": ["integer", "null"]
+            },
+            "memoryUtilization": {
+                "type": ["integer", "null"]
+            }
+        },
+        "required": ["enabled", "minReplicas", "maxReplicas"]
+      },
+      "replicas": {
+        "description": "Number of replicas if autoscaling is not enabled",
+        "type": "integer"
+      },
+      "revisionHistoryLimit": {
+        "description": "Limit of revision history",
+        "type": "integer"
+      },
+      "deploymentStrategy": {
+        "description": "Deployment strategy",
+        "type": "object"
+      },
+      "podLabels": {
+        "description": "Additional labels for the pod",
+        "type": "object"
+      },
+      "podAnnotations": {
+        "description": "Additional annotations for the pod",
+        "type": "object"
+      },
+      "schedulerName": {
+        "description": "Name of the scheduler",
+        "type": "string"
+      },
+      "securityContext": {
+        "description": "Security context for the pod",
+        "type": "object"
+      },
+      "hostAliases": {
+        "description": "Host aliases for the pod",
+        "type": "array",
+        "items": {
+          "type": "object"
+        }
+      },
+      "priorityClassName": {
+        "description": "Priority class name for the pod",
+        "type": "string"
+      },
+      "nodeSelector": {
+        "description": "Node selector for the pod",
+        "type": "object"
+      },
+      "affinity": {
+        "description": "Affinity rules for the pod",
+        "type": "object"
+      },
+      "topologySpreadConstraints": {
+        "description": "Topology spread constraints for the pod",
+        "type": "array",
+        "items": {
+          "type": "object"
+        }
+      },
+      "tolerations": {
+        "description": "Tolerations for the pod",
+        "type": "array",
+        "items": {
+          "type": "object"
+        }
+      },
+      "configName": {
+        "description": "Alternative config name",
+        "type": "string"
+      },
+      "image": {
+        "description": "Docker image configuration",
+        "type": "object",
+        "properties": {
+          "repository": {
+            "description": "Docker image repository, defaults to leaksignal/leakagent",
+            "type": "string"
+          },
+          "tag": {
+            "description": "Docker image tag, defaults to Chart.AppVersion",
+            "type": "string"
+          }
+        }
+      },
+      "resources": {
+        "description": "Resource requests and limits",
+        "type": "object"
+      },
+      "metricsService": {
+        "type": "object",
+        "properties": {
+          "enabled": {
+            "type": "boolean"
+          },
+          "type": {
+            "type": ["string", "null"],
+            "enum": ["ClusterIP", "LoadBalancer", "NodePort"]
+          },
+          "clusterIP": {
+            "type": ["string", "null"]
+          },
+          "loadBalancerIP": {
+            "type": ["string", "null"]
+          },
+          "loadBalancerSourceRanges": {
+            "type": ["array", "null"],
+            "items": {
+              "type": "string"
+            }
+          },
+          "externalIPs": {
+            "type": ["array", "null"],
+            "items": {
+              "type": "string"
+            }
+          },
+          "nodePort": {
+            "type": ["integer", "null"]
+          },
+          "labels": {
+            "type": ["object", "null"]
+          },
+          "annotations": {
+            "type": ["object", "null"]
+          }
+        },
+        "required": ["enabled"]
+      },
+      "service": {
+        "type": "object",
+        "properties": {
+          "enabled": {
+            "type": "boolean"
+          },
+          "type": {
+            "type": ["string", "null"],
+            "enum": ["ClusterIP", "LoadBalancer", "NodePort"]
+          },
+          "clusterIP": {
+            "type": ["string", "null"]
+          },
+          "loadBalancerIP": {
+            "type": ["string", "null"]
+          },
+          "loadBalancerSourceRanges": {
+            "type": ["array", "null"],
+            "items": {
+              "type": "string"
+            }
+          },
+          "externalIPs": {
+            "type": ["array", "null"],
+            "items": {
+              "type": "string"
+            }
+          },
+          "nodePort": {
+            "type": ["integer", "null"]
+          },
+          "labels": {
+            "type": ["object", "null"]
+          },
+          "annotations": {
+            "type": ["object", "null"]
+          }
+        },
+        "required": ["enabled"]
+      },
+      "serviceMonitor": {
+        "type": "object",
+        "properties": {
+          "enabled": {
+            "type": "boolean"
+          },
+          "labels": {
+            "type": ["object", "null"]
+          },
+          "interval": {
+            "type": ["string", "null"]
+          },
+          "scrapeTimeout": {
+            "type": ["string", "null"]
+          },
+          "path": {
+            "type": ["string", "null"]
+          },
+          "scheme": {
+            "type": ["string", "null"]
+          },
+          "tlsConfig": {
+            "type": ["object", "null"]
+          },
+          "relabelings": {
+            "type": ["array", "null"],
+            "items": {
+              "type": "object"
+            }
+          },
+          "targetLabels": {
+            "type": ["array", "null"],
+            "items": {
+              "type": "object"
+            }
+          }
+        },
+        "required": ["enabled"]
+      },
+      "policies": {
+        "type": "object"
+      },
+      "configLabels": {
+        "type": ["object", "null"]
+      },
+      "configAnnotations": {
+        "type": ["object", "null"]
+      }
+    }
+  }

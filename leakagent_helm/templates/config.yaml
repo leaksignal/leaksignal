@@ -1,0 +1,19 @@
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "leaksignal.fullname" . }}-config
+  labels:
+    app: leakagent
+    {{- include "leaksignal.labels" . | nindent 4 }}
+    {{- with .Values.configLabels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+  {{- with .Values.configAnnotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+data:
+  config.yaml: |-
+    policies:
+      {{- toYaml .Values.policies | nindent 6 }}
