@@ -1,0 +1,15 @@
+fullnameOverride: ""
+nameOverride: ""
+
+image:
+  repository: 709825985650.dkr.ecr.us-east-1.amazonaws.com/leaksignal/leakagent
+
+policies:
+  example:
+    categories:
+      bank_routing_us:
+      - internal: routing_number
+    endpoints:
+      - matches: "**"
+        config:
+          bank_routing_us: {}

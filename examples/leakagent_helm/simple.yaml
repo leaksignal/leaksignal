@@ -1,0 +1,12 @@
+fullnameOverride: ""
+nameOverride: ""
+
+policies:
+  example:
+    categories:
+      bank_routing_us:
+      - internal: routing_number
+    endpoints:
+      - matches: "**"
+        config:
+          bank_routing_us: {}
