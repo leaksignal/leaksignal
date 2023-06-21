@@ -414,6 +414,43 @@
                 }
             ],
             "unevaluatedProperties": false
+        },
+        "stage": {
+            "type": "string",
+            "enum": [
+                "pre_request_headers",
+                "on_request_header_chunk",
+                "on_request_body_chunk",
+                "on_response_header_chunk",
+                "on_response_body_chunk",
+                "on_response_trailer_chunk"
+            ]
+        },
+        "sbac_item": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": ["string", "null"]
+                },
+                "stage": {
+                    "$ref": "#/$defs/stage"
+                },
+                "filter": {
+                    "$ref": "#/$defs/rule_filter"
+                }
+            },
+            "required": ["filter"],
+            "unevaluatedProperties": false,
+            "additionalProperties": false
+        },
+        "header_collection_mode": {
+            "type": "string",
+            "enum": [
+                "all_request",
+                "all_response",
+                "all",
+                "none"
+            ]
         }
     },
     "properties": {
@@ -434,15 +471,6 @@
                             "items": { "$ref": "#/$defs/service_rule" }
                         }
                     ] },
-                    "blacklist": {
-                        "type": "array",
-                        "items": { "$ref": "#/$defs/service_rule" }
-                    },
-                    "whitelist": {
-                        "type": "array",
-                        "items": { "$ref": "#/$defs/service_rule" }
-                    },
-                    "block_unknown_services": { "type": "boolean" },
                     "endpoints": { "$ref": "#/$defs/endpoints" },
                     "use_default_endpoints": { "type": "boolean" }
                 },
@@ -450,6 +478,12 @@
                 "unevaluatedProperties": false,
                 "additionalProperties": false
             }
+        },
+        "sbac": {
+            "anyOf": [
+                { "type": "#/$defs/sbac_item" },
+                { "type": "array", "items": { "type": "#/$defs/sbac_item" } }
+            ]
         },
         "collected_request_headers": { "type": "array", "items": { "type": "string" }},
         "collected_response_headers": { "type": "array", "items": { "type": "string" }},
@@ -467,6 +501,9 @@
                 "unevaluatedProperties": false,
                 "additionalProperties": false
             }
+        },
+        "header_collection": {
+            "type":  "#/$defs/header_collection_mode"
         },
         "report_style": { "$ref": "#/$defs/report_style" },
         "report_bits": { "type": "integer" },
