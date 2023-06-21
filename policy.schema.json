@@ -439,7 +439,9 @@
                     "$ref": "#/$defs/rule_filter"
                 }
             },
-            "required": ["filter"]
+            "required": ["filter"],
+            "unevaluatedProperties": false,
+            "additionalProperties": false
         },
         "header_collection_mode": {
             "type": "string",
