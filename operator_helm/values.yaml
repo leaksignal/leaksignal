@@ -1,0 +1,12 @@
+nameOverride: ""
+
+rbacEnabled: true
+image:
+  repository: leaksignal/operator
+resources:
+  requests: 
+    memory: 256Mi
+    cpu: 500m
+  limits:
+    memory: 1Gi
+    cpu: 1.0

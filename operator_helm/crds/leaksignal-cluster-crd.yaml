@@ -1,0 +1,43 @@
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: cluster-leaksignal-istios.leaksignal.com
+spec:
+  group: leaksignal.com
+  names:
+    kind: ClusterLeaksignalIstio
+    singular: cluster-leaksignal-istio
+    plural: cluster-leaksignal-istios
+    shortNames:
+      - cluster-leaksignal-istio
+  scope: Cluster
+  versions:
+    - name: v1
+      served: true
+      storage: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          properties:
+            spec:
+              type: object
+              properties:
+                proxy_version:
+                  type: string
+                proxy_hash:
+                  type: string
+                api_key:
+                  type: string
+                upstream_location:
+                  type: string
+                proxy_prefix:
+                  type: string
+                tls:
+                  type: boolean
+                upstream_port:
+                  type: integer
+                ca_bundle:
+                  type: string
+                refresh_pods_on_update:
+                  type: boolean
+              required: ["proxy_version", "proxy_hash", "api_key"]

@@ -1,0 +1,72 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "leaksignal.name" . }}
+  labels:
+    app: {{ include "leaksignal.name" . }}
+    {{- include "leaksignal.labels" . | nindent 4 }}
+spec:
+  serviceName: {{ include "leaksignal.name" . }}
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ include "leaksignal.name" . }}
+      {{- include "leaksignal.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        app: {{ include "leaksignal.name" . }}
+        {{- include "leaksignal.labels" . | nindent 8 }}
+        {{- with .Values.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+        {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      {{- with .Values.schedulerName }}
+      schedulerName: "{{ . }}"
+      {{- end }}
+      {{- with .Values.securityContext }}
+      securityContext:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.hostAliases }}
+      hostAliases:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.priorityClassName }}
+      priorityClassName: {{ . }}
+      {{- end }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.topologySpreadConstraints }}
+      topologySpreadConstraints:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+      - name: {{ include "leaksignal.name" . }}
+        image: {{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}
+        imagePullPolicy: "Always"
+        {{- with .Values.resources }}
+        resources:
+          {{- toYaml . | nindent 10 }}
+        {{- end }}
+{{ if and .Values.imageCredentials .Values.imageCredentials.username .Values.imageCredentials.password }}
+      imagePullSecrets:
+      - name: {{ include "leaksignal.name" . }}-image-secret
+{{ end }}
+      {{ if .Values.rbacEnabled }}
+      serviceAccountName: {{ include "leaksignal.name" . }}
+      {{ end }}
