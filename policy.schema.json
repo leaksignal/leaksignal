@@ -481,8 +481,8 @@
         },
         "sbac": {
             "anyOf": [
-                { "type": "#/$defs/sbac_item" },
-                { "type": "array", "items": { "type": "#/$defs/sbac_item" } }
+                { "$ref": "#/$defs/sbac_item" },
+                { "type": "array", "items": { "$ref": "#/$defs/sbac_item" } }
             ]
         },
         "collected_request_headers": { "type": "array", "items": { "type": "string" }},
