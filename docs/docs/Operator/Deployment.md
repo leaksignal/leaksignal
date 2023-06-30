@@ -41,4 +41,4 @@ For most situations, the defaults will work right out of the box.
 
 ### Next Steps
 
-Check out [Getting Started](Getting%20Started) to get LeakSignal deployed!
+Check out [Getting Started](./Getting%20Started) to get LeakSignal deployed!
