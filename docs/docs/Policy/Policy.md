@@ -1,3 +1,7 @@
+---
+sidebar_position: 1
+---
+
 # Policy
 
 LeakSignal Policies (LS policies or policies) are YAML configuration files that drive how LeakSignal scans for sensitive data.
@@ -35,6 +39,23 @@ categories:
     - regex: ".*"
 services:
   - services: "regex: .*"
+sbac:
+  - name: test_html
+    stage: on_request_header_chunk
+    filter:
+      endpoint: /test.html
+  - name: routing_matches
+    stage: on_response_body_chunk
+    filter:
+      response_matches:
+        routing: 2
+  - name: json_matches
+    stage: on_response_body_chunk
+    filter:
+      all:
+        - endpoint: /test.json
+        - response_matches:
+            ssn: 10
 ratelimits:
   - grouping: per_inbound_service
     by: service
@@ -145,4 +166,5 @@ body_collection:
       request_matches:
           ssn: 10
           phone_number: 10
+header_collection: "all_request"
 ```

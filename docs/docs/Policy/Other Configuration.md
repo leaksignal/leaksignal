@@ -12,15 +12,24 @@ The `collected_request_headers` field specifies request headers that are not red
 
 The `collected_response_headers` field specifies request headers that are not redacted. Default list is available at [`leakpolicy/src/lib.rs`](https://github.com/leaksignal/leaksignal/blob/master/leakpolicy/src/lib.rs#L299).
 
+## header_collection
+
+When to collect headers. Possible values are:
+
+* `all_request`
+* `all_response`
+* `all`
+* `none` (default)
+
 ## body_collection
 
 The `body_collection` field contains a list of rules for when to emit the body of a request/response to command. bodies are recorded in their entirety __without redaction__. Submitted bodies are able to be retrieved in the dashboard via a "Download Body" button.
 Each entry has the following internal fields:
 
-- mode: `request_only`, `response_only`, `all`. Defaults to `all`
-- sample_rate: a floating point ratio between 0.0 and 1.0 denoting how often matching bodies are to be recorded
-- max_body_collection_mb: a floating point determining the maximum size a collected body can be. defaults to 16.0 and will error during deserialization if below 0.0
-- filter: an optional list of RuleFilters that the request/response must match to warrant body collection
+* `mode`: `request_only`, `response_only`, `all`. Defaults to `all`
+* `sample_rate`: a floating point ratio between 0.0 and 1.0 denoting how often matching bodies are to be recorded
+* `max_body_collection_mb`: a floating point determining the maximum size a collected body can be. defaults to 16.0 and will error during deserialization if below 0.0
+* `filter`: an optional list of RuleFilters that the request/response must match to warrant body collection
 
 example:
 
