@@ -13,13 +13,6 @@ The Operator is stateless and performs no network activity beyond communication 
 * Kubernetes
 * Istio or OpenShift Service Mesh
 
-## Examples
-
-* [Deployment Example with Prometheus Operator integration](https://github.com/leaksignal/leaksignal/tree/master/examples/leakagent)
-* [Sample Grafana Dashboards](https://github.com/leaksignal/leaksignal/tree/master/examples/leakagent/grafana)
-* [Istio Integration](https://github.com/leaksignal/leaksignal/blob/master/examples/istio/leaksignal_agent.yaml)
-* [Envoy Direct Integration](https://github.com/leaksignal/leaksignal/blob/master/examples/envoy/envoy_agent.yaml)
-
 ## Docker Images
 
 There is a public image available:
@@ -45,3 +38,7 @@ The namespace can be changed if preferred.
 Check out our [GitHub Repository](https://github.com/leaksignal/leaksignal/tree/master/operator_helm) for details on Helm configurable values.
 
 For most situations, the defaults will work right out of the box.
+
+### Next Steps
+
+Check out [Getting Started](Getting%20Started) to get LeakSignal deployed!
