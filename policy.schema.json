@@ -188,7 +188,18 @@
                         "additionalProperties": {
                             "type": "object",
                             "properties": {
-                                "action": { "enum": ["ignore", "alert", "redact", "block"] },
+                                "action": {
+                                    "oneOf": [
+                                        {"enum": ["ignore", "alert", "block"]},
+                                        {
+                                            "type": "object",
+                                            "properties": {"redact": {"type": "string"}},
+                                            "required": ["redact"],
+                                            "unevaluatedProperties": false,
+                                            "additionalProperties": false
+                                        }
+                                    ]
+                                },
                                 "content_types": { "anyOf": [
                                     { "$ref": "#/$defs/content_type" },
                                     {
