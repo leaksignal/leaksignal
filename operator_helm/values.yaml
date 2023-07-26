@@ -2,7 +2,7 @@ nameOverride: ""
 
 rbacEnabled: true
 image:
-  repository: leaksignal/operator
+  repository: leaksignal/leaksignal-operator
 resources:
   requests: 
     memory: 256Mi
