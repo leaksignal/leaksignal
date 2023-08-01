@@ -13,27 +13,27 @@ If your function is in one of the supported regions, installing LeakLambda is as
 
 | Region | ARN |
 | --- | --- |
-| us-east-1 | arn:aws:lambda:us-east-1:829300478952:layer:leaklambda:3 |
-| us-east-2 | arn:aws:lambda:us-east-2:829300478952:layer:leaklambda:2 |
-| us-west-1 | arn:aws:lambda:us-west-1:829300478952:layer:leaklambda:42 |
-| us-west-2 | arn:aws:lambda:us-west-2:829300478952:layer:leaklambda:3 |
-| ap-south-1 | arn:aws:lambda:ap-south-1:829300478952:layer:leaklambda:1 |
-| ap-northeast-3 | arn:aws:lambda:ap-northeast-3:829300478952:layer:leaklambda:1 |
-| ap-northeast-2 | arn:aws:lambda:ap-northeast-2:829300478952:layer:leaklambda:1 |
-| ap-southeast-1 | arn:aws:lambda:ap-southeast-1:829300478952:layer:leaklambda:1 |
-| ap-southeast-2 | arn:aws:lambda:ap-southeast-2:829300478952:layer:leaklambda:1 |
-| ap-northeast-1 | arn:aws:lambda:ap-northeast-1:829300478952:layer:leaklambda:1 |
-| ca-central-1 | arn:aws:lambda:ca-central-1:829300478952:layer:leaklambda:1 |
-| eu-central-1 | arn:aws:lambda:eu-central-1:829300478952:layer:leaklambda:1 |
-| eu-west-1 | arn:aws:lambda:eu-west-1:829300478952:layer:leaklambda:1 |
-| eu-west-2 | arn:aws:lambda:eu-west-2:829300478952:layer:leaklambda:1 |
-| eu-west-3 | arn:aws:lambda:eu-west-3:829300478952:layer:leaklambda:1 |
-| eu-north-1 | arn:aws:lambda:eu-north-1:829300478952:layer:leaklambda:1 |
-| sa-east-1 | arn:aws:lambda:sa-east-1:829300478952:layer:leaklambda:1 |
+| us-east-1 | arn:aws:lambda:us-east-1:829300478952:layer:leaklambda:4 |
+| us-east-2 | arn:aws:lambda:us-east-2:829300478952:layer:leaklambda:3 |
+| us-west-1 | arn:aws:lambda:us-west-1:829300478952:layer:leaklambda:43 |
+| us-west-2 | arn:aws:lambda:us-west-2:829300478952:layer:leaklambda:4 |
+| ap-south-1 | arn:aws:lambda:ap-south-1:829300478952:layer:leaklambda:2 |
+| ap-northeast-3 | arn:aws:lambda:ap-northeast-3:829300478952:layer:leaklambda:2 |
+| ap-northeast-2 | arn:aws:lambda:ap-northeast-2:829300478952:layer:leaklambda:2 |
+| ap-southeast-1 | arn:aws:lambda:ap-southeast-1:829300478952:layer:leaklambda:2 |
+| ap-southeast-2 | arn:aws:lambda:ap-southeast-2:829300478952:layer:leaklambda:2 |
+| ap-northeast-1 | arn:aws:lambda:ap-northeast-1:829300478952:layer:leaklambda:2 |
+| ca-central-1 | arn:aws:lambda:ca-central-1:829300478952:layer:leaklambda:2 |
+| eu-central-1 | arn:aws:lambda:eu-central-1:829300478952:layer:leaklambda:2 |
+| eu-west-1 | arn:aws:lambda:eu-west-1:829300478952:layer:leaklambda:2 |
+| eu-west-2 | arn:aws:lambda:eu-west-2:829300478952:layer:leaklambda:2 |
+| eu-west-3 | arn:aws:lambda:eu-west-3:829300478952:layer:leaklambda:2 |
+| eu-north-1 | arn:aws:lambda:eu-north-1:829300478952:layer:leaklambda:2 |
+| sa-east-1 | arn:aws:lambda:sa-east-1:829300478952:layer:leaklambda:2 |
 
 ### Creating your own custom layer
 
-If you are outside the supported regions then you can create your own layer using our LeakLambda zip file hosted on S3. Simply [download the zip file](https://leakproxy.s3.us-west-2.amazonaws.com/leaklambda.zip), go to `Lambda` > `Layers`, click `Create Layer`, and upload the zip file. From there all you have to do is add the layer to your function.
+If you are outside the supported regions then you can create your own layer using our LeakLambda zip file hosted on S3. Simply [download the zip file](https://leakproxy.s3.us-west-2.amazonaws.com/leaklambda-0.3.0.zip), go to `Lambda` > `Layers`, click `Create Layer`, and upload the zip file. From there all you have to do is add the layer to your function.
 
 ## Setup
 
