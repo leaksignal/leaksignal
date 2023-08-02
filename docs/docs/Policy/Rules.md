@@ -39,6 +39,8 @@ Each filter has exactly one of the following keys:
 * `exclude_request_headers`: Takes a map of header names and one or more [Match Rule](Match%20Rule) and, for each header listed, requires that the header key either doesn't exist or that **none of** of the rules match the header value
 * `response_headers`: Takes a map of header names and one or more [Match Rule](Match%20Rule) and, for each header listed, requires that the header key exist and **any** of the rules match the header value
 * `exclude_response_headers`: Takes a map of header names and one or more [Match Rule](Match%20Rule) and, for each header listed, requires that the header key either doesn't exist or that **none of** of the rules match the header value
+* `response_trailers`: Takes a map of trailer names and one or more [Match Rule](Match%20Rule) and, for each trailer listed, requires that the trailer key exist and **any** of the rules match the trailer value
+* `exclude_response_trailers`: Takes a map of trailer names and one or more [Match Rule](Match%20Rule) and, for each trailer listed, requires that the trailer key either doesn't exist or that **none of** of the rules match the trailer value
 * `request_cookie`: Takes a map of names and one or more [Match Rule](Match%20Rule) and, for each key listed, requires that the request cookie header contains the key and **any** of the rules match the header value
 * `exclude_request_cookie`: Takes a map of names and one or more [Match Rule](Match%20Rule) and, for each key listed, requires that the request cookie either doesn't contain the key or that **none of** of the rules match the key's value
 * `response_outbound`: Matches request/response pairs for which the request is inbound and the response is outbound

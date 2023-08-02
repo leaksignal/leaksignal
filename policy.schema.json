@@ -465,6 +465,40 @@
                 {
                     "type": "object",
                     "properties": {
+                        "response_trailers": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "anyOf": [
+                                    { "$ref": "#/$defs/service_rule" },
+                                    { "type": "array", "items": { "$ref": "#/$defs/service_rule" } }
+                                ]
+                            }
+                        }
+                    },
+                    "required": ["response_trailers"],
+                    "unevaluatedProperties": false,
+                    "additionalProperties": false
+                },
+                {
+                    "type": "object",
+                    "properties": {
+                        "exclude_response_trailers": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "anyOf": [
+                                    { "$ref": "#/$defs/service_rule" },
+                                    { "type": "array", "items": { "$ref": "#/$defs/service_rule" } }
+                                ]
+                            }
+                        }
+                    },
+                    "required": ["exclude_response_trailers"],
+                    "unevaluatedProperties": false,
+                    "additionalProperties": false
+                },
+                {
+                    "type": "object",
+                    "properties": {
                         "request_cookie": {
                             "type": "object",
                             "additionalProperties": {

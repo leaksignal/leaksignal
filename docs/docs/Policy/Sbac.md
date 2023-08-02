@@ -54,9 +54,7 @@ sbac:
   - name: header_matches_false
     stage: on_request_header_chunk
     filter:
-      all:
-        - not:
-            request_headers:
-              hi: mars
-              hello: world
+      exclude_request_headers:
+        hi: mars
+        hello: world
 ```
