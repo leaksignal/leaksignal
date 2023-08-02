@@ -414,6 +414,23 @@
                 {
                     "type": "object",
                     "properties": {
+                        "exclude_request_headers": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "anyOf": [
+                                    { "$ref": "#/$defs/service_rule" },
+                                    { "type": "array", "items": { "$ref": "#/$defs/service_rule" } }
+                                ]
+                            }
+                        }
+                    },
+                    "required": ["exclude_request_headers"],
+                    "unevaluatedProperties": false,
+                    "additionalProperties": false
+                },
+                {
+                    "type": "object",
+                    "properties": {
                         "response_headers": {
                             "type": "object",
                             "additionalProperties": {
@@ -431,6 +448,23 @@
                 {
                     "type": "object",
                     "properties": {
+                        "exclude_response_headers": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "anyOf": [
+                                    { "$ref": "#/$defs/service_rule" },
+                                    { "type": "array", "items": { "$ref": "#/$defs/service_rule" } }
+                                ]
+                            }
+                        }
+                    },
+                    "required": ["exclude_response_headers"],
+                    "unevaluatedProperties": false,
+                    "additionalProperties": false
+                },
+                {
+                    "type": "object",
+                    "properties": {
                         "request_cookie": {
                             "type": "object",
                             "additionalProperties": {
@@ -442,6 +476,23 @@
                         }
                     },
                     "required": ["request_cookie"],
+                    "unevaluatedProperties": false,
+                    "additionalProperties": false
+                },
+                {
+                    "type": "object",
+                    "properties": {
+                        "exclude_request_cookie": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "anyOf": [
+                                    { "$ref": "#/$defs/service_rule" },
+                                    { "type": "array", "items": { "$ref": "#/$defs/service_rule" } }
+                                ]
+                            }
+                        }
+                    },
+                    "required": ["exclude_request_cookie"],
                     "unevaluatedProperties": false,
                     "additionalProperties": false
                 },
@@ -471,17 +522,6 @@
                         }
                     },
                     "required": ["all"],
-                    "unevaluatedProperties": false,
-                    "additionalProperties": false
-                },
-                {
-                    "type": "object",
-                    "properties": {
-                        "not": {
-                            "type": "#/$defs/rule_filter"
-                        }
-                    },
-                    "required": ["not"],
                     "unevaluatedProperties": false,
                     "additionalProperties": false
                 }
