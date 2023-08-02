@@ -35,6 +35,14 @@ Each filter has exactly one of the following keys:
 * `exclude_ip`: Takes one or more IP address or CIDR and requires that **all** of them **do not** match the ip
 * `request_matches`: Takes a map of category names to minimum match counts per request body & headers
 * `response_matches`: Takes a map of category names to minimum match counts per response body & headers
+* `request_headers`: Takes a map of header names and one or more [Match Rule](Match%20Rule) and, for each header listed, requires that the header key exist and **any** of the rules match the header value
+* `exclude_request_headers`: Takes a map of header names and one or more [Match Rule](Match%20Rule) and, for each header listed, requires that the header key either doesn't exist or that **none of** of the rules match the header value
+* `response_headers`: Takes a map of header names and one or more [Match Rule](Match%20Rule) and, for each header listed, requires that the header key exist and **any** of the rules match the header value
+* `exclude_response_headers`: Takes a map of header names and one or more [Match Rule](Match%20Rule) and, for each header listed, requires that the header key either doesn't exist or that **none of** of the rules match the header value
+* `response_trailers`: Takes a map of trailer names and one or more [Match Rule](Match%20Rule) and, for each trailer listed, requires that the trailer key exist and **any** of the rules match the trailer value
+* `exclude_response_trailers`: Takes a map of trailer names and one or more [Match Rule](Match%20Rule) and, for each trailer listed, requires that the trailer key either doesn't exist or that **none of** of the rules match the trailer value
+* `request_cookie`: Takes a map of names and one or more [Match Rule](Match%20Rule) and, for each key listed, requires that the request cookie header contains the key and **any** of the rules match the header value
+* `exclude_request_cookie`: Takes a map of names and one or more [Match Rule](Match%20Rule) and, for each key listed, requires that the request cookie either doesn't contain the key or that **none of** of the rules match the key's value
 * `response_outbound`: Matches request/response pairs for which the request is inbound and the response is outbound
 * `response_inbound`: Matches request/response pairs for which the request is outbound and the response is inbound
 * `any`: Takes one or more Filters and requires that **any** of them match the request/response
