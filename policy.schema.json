@@ -493,10 +493,15 @@
             "enum": [
                 "pre_request_headers",
                 "on_request_header_chunk",
+                "post_request_headers",
                 "on_request_body_chunk",
+                "post_request_body",
                 "on_response_header_chunk",
+                "post_response_headers",
                 "on_response_body_chunk",
-                "on_response_trailer_chunk"
+                "post_response_body",
+                "on_response_trailer_chunk",
+                "post_response_trailers"
             ]
         },
         "sbac_item": {
