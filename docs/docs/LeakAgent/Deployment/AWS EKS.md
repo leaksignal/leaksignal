@@ -39,7 +39,7 @@ It can be installed via:
 ```
 helm upgrade --install leakagent oci://709825985650.dkr.ecr.us-east-1.amazonaws.com/leaksignal/leakagent \
   --set image.repository=709825985650.dkr.ecr.us-east-1.amazonaws.com/leaksignal/leakagent
-  --version 0.3.0-helm \
+  --version 0.4.0-helm \
   --namespace leakagent --create-namespace
 ```
 
