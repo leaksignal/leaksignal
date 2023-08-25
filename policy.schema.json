@@ -126,6 +126,152 @@
                 { "type": "string" }
             ]
         },
+        "service_filter": {
+            "anyOf": [
+                {
+                    "type": "object",
+                    "properties": {
+                        "cluster": {
+                            "anyOf": [
+                                { "$ref": "#/$defs/service_rule" },
+                                { "type": "array", "items": { "$ref": "#/$defs/service_rule" } }
+                            ]
+                        }
+                    },
+                    "required": ["cluster"],
+                    "unevaluatedProperties": false,
+                    "additionalProperties": false
+                },
+                {
+                    "type": "object",
+                    "properties": {
+                        "exclude_cluster": {
+                            "anyOf": [
+                                { "$ref": "#/$defs/service_rule" },
+                                { "type": "array", "items": { "$ref": "#/$defs/service_rule" } }
+                            ]
+                        }
+                    },
+                    "required": ["exclude_cluster"],
+                    "unevaluatedProperties": false,
+                    "additionalProperties": false
+                },
+                {
+                    "type": "object",
+                    "properties": {
+                        "ns": {
+                            "anyOf": [
+                                { "$ref": "#/$defs/service_rule" },
+                                { "type": "array", "items": { "$ref": "#/$defs/service_rule" } }
+                            ]
+                        }
+                    },
+                    "required": ["ns"],
+                    "unevaluatedProperties": false,
+                    "additionalProperties": false
+                },
+                {
+                    "type": "object",
+                    "properties": {
+                        "exclude_ns": {
+                            "anyOf": [
+                                { "$ref": "#/$defs/service_rule" },
+                                { "type": "array", "items": { "$ref": "#/$defs/service_rule" } }
+                            ]
+                        }
+                    },
+                    "required": ["exclude_ns"],
+                    "unevaluatedProperties": false,
+                    "additionalProperties": false
+                },
+                {
+                    "type": "object",
+                    "properties": {
+                        "sa": {
+                            "anyOf": [
+                                { "$ref": "#/$defs/service_rule" },
+                                { "type": "array", "items": { "$ref": "#/$defs/service_rule" } }
+                            ]
+                        }
+                    },
+                    "required": ["sa"],
+                    "unevaluatedProperties": false,
+                    "additionalProperties": false
+                },
+                {
+                    "type": "object",
+                    "properties": {
+                        "exclude_sa": {
+                            "anyOf": [
+                                { "$ref": "#/$defs/service_rule" },
+                                { "type": "array", "items": { "$ref": "#/$defs/service_rule" } }
+                            ]
+                        }
+                    },
+                    "required": ["exclude_sa"],
+                    "unevaluatedProperties": false,
+                    "additionalProperties": false
+                },
+                {
+                    "type": "object",
+                    "properties": {
+                        "workload": {
+                            "anyOf": [
+                                { "$ref": "#/$defs/service_rule" },
+                                { "type": "array", "items": { "$ref": "#/$defs/service_rule" } }
+                            ]
+                        }
+                    },
+                    "required": ["workload"],
+                    "unevaluatedProperties": false,
+                    "additionalProperties": false
+                },
+                {
+                    "type": "object",
+                    "properties": {
+                        "exclude_workload": {
+                            "anyOf": [
+                                { "$ref": "#/$defs/service_rule" },
+                                { "type": "array", "items": { "$ref": "#/$defs/service_rule" } }
+                            ]
+                        }
+                    },
+                    "required": ["exclude_workload"],
+                    "unevaluatedProperties": false,
+                    "additionalProperties": false
+                },
+                { "enum": ["response_outbound", "response_inbound"] },
+                {
+                    "type": "object",
+                    "properties": {
+                        "any": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/$defs/rule_filter"
+                            }
+                        }
+                    },
+                    "required": ["any"],
+                    "unevaluatedProperties": false,
+                    "additionalProperties": false
+                },
+                {
+                    "type": "object",
+                    "properties": {
+                        "all": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/$defs/rule_filter"
+                            }
+                        }
+                    },
+                    "required": ["all"],
+                    "unevaluatedProperties": false,
+                    "additionalProperties": false
+                }
+            ],
+            "unevaluatedProperties": false
+        },
         "matches": {
             "anyOf": [
                 { "$ref": "#/$defs/match_item" },
@@ -261,12 +407,7 @@
                 {
                     "type": "object",
                     "properties": {
-                        "peer_service": {
-                            "anyOf": [
-                                { "$ref": "#/$defs/service_rule" },
-                                { "type": "array", "items": { "$ref": "#/$defs/service_rule" } }
-                            ]
-                        }
+                        "peer_service": { "$ref": "#/$defs/service_filter" }
                     },
                     "required": ["peer_service"],
                     "unevaluatedProperties": false,
@@ -275,12 +416,7 @@
                 {
                     "type": "object",
                     "properties": {
-                        "exclude_peer_service": {
-                            "anyOf": [
-                                { "$ref": "#/$defs/service_rule" },
-                                { "type": "array", "items": { "$ref": "#/$defs/service_rule" } }
-                            ]
-                        }
+                        "exclude_peer_service": { "$ref": "#/$defs/service_filter" }
                     },
                     "required": ["exclude_peer_service"],
                     "unevaluatedProperties": false,
@@ -289,12 +425,7 @@
                 {
                     "type": "object",
                     "properties": {
-                        "local_service": {
-                            "anyOf": [
-                                { "$ref": "#/$defs/service_rule" },
-                                { "type": "array", "items": { "$ref": "#/$defs/service_rule" } }
-                            ]
-                        }
+                        "local_service": { "$ref": "#/$defs/service_filter" }
                     },
                     "required": ["local_service"],
                     "unevaluatedProperties": false,
@@ -303,12 +434,7 @@
                 {
                     "type": "object",
                     "properties": {
-                        "exclude_local_service": {
-                            "anyOf": [
-                                { "$ref": "#/$defs/service_rule" },
-                                { "type": "array", "items": { "$ref": "#/$defs/service_rule" } }
-                            ]
-                        }
+                        "exclude_local_service": { "$ref": "#/$defs/service_filter" }
                     },
                     "required": ["exclude_local_service"],
                     "unevaluatedProperties": false,
@@ -611,26 +737,7 @@
             "additionalProperties": { "$ref": "#/$defs/matches" }
         },
         "endpoints": { "$ref": "#/$defs/endpoints" },
-        "services": {
-            "type": "array",
-            "items": {
-                "type": "object",
-                "properties": {
-                    "services": { "anyOf": [
-                        { "$ref": "#/$defs/service_rule" },
-                        {
-                            "type": "array",
-                            "items": { "$ref": "#/$defs/service_rule" }
-                        }
-                    ] },
-                    "endpoints": { "$ref": "#/$defs/endpoints" },
-                    "use_default_endpoints": { "type": "boolean" }
-                },
-                "required": ["services"],
-                "unevaluatedProperties": false,
-                "additionalProperties": false
-            }
-        },
+        "filter": { "$ref": "#/$defs/service_filter" },
         "sbac": {
             "anyOf": [
                 { "$ref": "#/$defs/sbac_item" },
