@@ -40,10 +40,10 @@ spec:
               code:
                 remote:
                   http_uri:
-                    uri: http://ingestion.leakagent.svc.cluster.local:8121/proxy/2023_08_15_15_06_31_cec8584_0.4.0/leaksignal.wasm
+                    uri: http://ingestion.leakagent.svc.cluster.local:8121/proxy/2023_08_28_21_35_20_9a74061_0.5.0/leaksignal.wasm
                     timeout: 10s
                     cluster: leaksignal_infra
-                  sha256: 01550775d2f45f8358dc53d660a274555eae6bf3525dfad95b306537791c8f82
+                  sha256: c753f8371de113070b1133e003f6e840107f44bcb3af3ff686457af716313540
                   retry_policy:
                     num_retries: 10
   - applyTo: HTTP_FILTER
