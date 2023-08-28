@@ -26,7 +26,7 @@ leakngx $API_KEY https://ingestion.app.leaksignal.com;
 
 LeakSignal publishes alternative container images for [NGINX Ingress Controller](https://github.com/kubernetes/ingress-nginx) at [leaksignal/ingress-nginx](https://hub.docker.com/r/leaksignal/ingress-nginx)
 
-Tags are of the form: `$INGRESS_VERSION-$LEAKSIGNAL_VERSION`, i.e. `v1.8.1-0.5.0`.
+Tags are of the form: `$INGRESS_VERSION-$LEAKSIGNAL_VERSION`, i.e. `v1.8.1-0.5.0`. Supported versions are 1.6.4 through 1.8.1.
 
 Example helm configuration:
 ```yaml
