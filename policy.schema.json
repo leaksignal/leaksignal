@@ -107,7 +107,7 @@
                     "type": "object",
                     "properties": {
                         "internal": {
-                            "type": "string"
+                            "enum": ["routing_number", "credit_card"]
                         }
                     },
                     "required": ["internal"],
@@ -284,7 +284,7 @@
         "report_style": { "enum": ["raw", "partial_sha256", "sha256", "none"] },
         "content_type": { "enum": ["html", "json", "grpc", "url_encoded", "jpeg", "unknown"] },
         "match_context": { "anyOf": [
-            { "enum": ["keys", "values"] },
+            { "enum": ["keys", "values", "values_key"] },
             {
                 "type": "object",
                 "properties": {
@@ -334,6 +334,8 @@
                         "additionalProperties": {
                             "type": "object",
                             "properties": {
+                                "name": { "type": "string" },
+                                "matcher": { "type": "string" },
                                 "action": {
                                     "oneOf": [
                                         {"enum": ["ignore", "alert", "block"]},

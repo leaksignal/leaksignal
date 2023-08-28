@@ -8,6 +8,40 @@ sidebar_position: 3
 
 All fields in a Match Config are optional and have defaults. For straightforward matching uses, an empty object (`{}`) can often suffice.
 
+### matcher
+
+By default the Match Config will use the matcher corresponding to the category name. This field allows you to override that and instead use a matcher of your choosing
+
+```yaml
+any_1:
+  matcher: any
+  action: !redact ""
+  content_types: json
+  contexts: !header "content-type"
+  search: response_header
+any_2:
+  matcher: any
+  contexts: !header "hello"
+  search: request_header
+```
+
+### name
+
+By default the Match Config will emit matches with the name of the category. This field allows you to override that and instead use a name of your choosing
+
+```yaml
+any:
+  action: !redact ""
+  content_types: json
+  contexts: !header "content-type"
+  search: response_header
+any_2:
+  name: any
+  matcher: any
+  contexts: !header "hello"
+  search: request_header
+```
+
 ### action
 
 The `action` field specifies how a match is to be reacted to. The main use of this is to disable a rule temporarily or halt a response body for some particularly sensitive data.
@@ -44,6 +78,7 @@ Can be one or more of the following values, as a string or array of strings.
 
 * `keys`: Matches on keys only
 * `values`: Matches on values only
+* `values_key`: Matches on the keys of each value and emits the value if the key matches
 
 ### report_style
 

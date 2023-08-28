@@ -13,6 +13,11 @@ The following matching strategies are considered individually, and a match by an
 - regex (Regex),
 - internal (native matcher),
 
+The possible values for `internal` are:
+
+- routing_number
+- credit_card
+
 The following have special properties that will override the behavior of other rules in the category:
 
 - and (list of other match rules),
