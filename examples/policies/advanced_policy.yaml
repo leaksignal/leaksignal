@@ -24,9 +24,10 @@ ratelimits:
   - grouping: per_inbound_service
     by: service
     filter:
-      any:
-        - peer_service: "cluster.local/default/cartservice"
-        - peer_service: "cluster.local/default/checkoutservice"
+      peer_service:
+        any:
+        - sa: cartservice
+        - sa: checkoutservice
     action: block
     timespan_secs: 30
     limit: 3000
