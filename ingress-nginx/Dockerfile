@@ -1,5 +1,5 @@
 ARG CONTROLLER_TAG=v1.8.1
-ARG LEAKNGX_VERSION=0.5.0-1.21.6
+ARG LEAKNGX_VERSION=0.5.1-1.21.6
 
 FROM registry.k8s.io/ingress-nginx/controller:$CONTROLLER_TAG
 
