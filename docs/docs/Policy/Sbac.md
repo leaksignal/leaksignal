@@ -57,4 +57,12 @@ sbac:
       exclude_request_headers:
         hi: mars
         hello: world
+  - name: json_path
+    stage: on_response_body_chunk
+    filter:
+      response_matches:
+        "*":
+          - path: test.*[*]
+          - exclude_path: test.my_ssn3.[*]
+          - count: 2
 ```

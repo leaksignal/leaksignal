@@ -64,3 +64,39 @@ Same as [report_style in Endpoint Config](Endpoints/Endpoint%20Config#report_sty
 ## report_bits
 
 Same as [report_bits in Endpoint Config](Endpoints/Endpoint%20Config#report_bits)
+
+## content_types
+
+Defines which parsers to use on which content types.
+
+The possible parsers are:
+
+* `text`: parse as plaintext
+* `json`: parse as json keys/values
+* `grpc`: parse as a GRPC stream
+* `none`: do not parse this content type (default)
+
+The default types are:
+
+* `text/html`: text
+* `text/plain`: text
+* `text/xml`: text
+* `application/soap+xml`: text
+* `application/atom+xml`: text
+* `application/xhtml+xml`: text
+* `application/vnd.mozilla.xul+xml`: text
+* `application/xml`: text
+* `application/vnd.openxmlformats-officedocument.spreadsheetml.sheet`: text
+* `application/vnd.openxmlformats-officedocument.presentationml.presentation`: text
+* `application/grpc`: grpc
+* `application/grpc+proto`: grpc
+* `application/json`: json
+* `application/ld+json`: json
+
+Associations for custom content types or overriding of the defaults would look like the following:
+
+```yaml
+content_types:
+  "application/imaginary": text
+  "text/plain": none
+```

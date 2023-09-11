@@ -35,6 +35,43 @@
             ],
             "unevaluatedProperties": false
         },
+        "match_filter_rule": {
+            "oneOf": [
+                { "type": "integer" },
+                { "type": "string" },
+                {
+                    "type": "array",
+                    "items": {
+                        "anyOf": [
+                            {
+                                "type": "object",
+                                "properties": {
+                                    "path": {
+                                        "type": "string"
+                                    }
+                                }
+                            },
+                            {
+                                "type": "object",
+                                "properties": {
+                                    "exclude_path": {
+                                        "type": "string"
+                                    }
+                                }
+                            },
+                            {
+                                "type": "object",
+                                "properties": {
+                                    "count": {
+                                        "type": "integer"
+                                    }
+                                }
+                            }
+                        ]
+                    }
+                }
+            ]
+        },
         "service_rule": {
             "oneOf": [
                 {
@@ -282,7 +319,7 @@
             ]
         },
         "report_style": { "enum": ["raw", "partial_sha256", "sha256", "none"] },
-        "content_type": { "enum": ["html", "json", "grpc", "url_encoded", "jpeg", "unknown"] },
+        "content_type": { "enum": ["text", "json", "grpc", "none"] },
         "match_context": { "anyOf": [
             { "enum": ["keys", "values", "values_key"] },
             {
@@ -503,7 +540,12 @@
                     "properties": {
                         "request_matches": {
                             "type": "object",
-                            "additionalProperties": { "type": "integer" }
+                            "additionalProperties": {
+                                "anyOf": [
+                                    { "$ref": "#/$defs/match_filter_rule" },
+                                    { "type": "array", "items": { "$ref": "#/$defs/match_filter_rule" } }
+                                ]
+                            }
                         }
                     },
                     "required": ["request_matches"],
@@ -515,7 +557,12 @@
                     "properties": {
                         "response_matches": {
                             "type": "object",
-                            "additionalProperties": { "type": "integer" }
+                            "additionalProperties": {
+                                "anyOf": [
+                                    { "$ref": "#/$defs/match_filter_rule" },
+                                    { "type": "array", "items": { "$ref": "#/$defs/match_filter_rule" } }
+                                ]
+                            }
                         }
                     },
                     "required": ["response_matches"],
@@ -800,6 +847,12 @@
                 "required": ["by", "limit"],
                 "unevaluatedProperties": false,
                 "additionalProperties": false
+            }
+        },
+        "content_types": {
+            "type": "object",
+            "additionalProperties": {
+                "$ref": "#/$defs/content_type"
             }
         }
     },
