@@ -50,9 +50,9 @@ Each filter has exactly one of the following keys:
 
 #### MatchRuleFilters
 
-* `Path`: A json path that the match belongs to. Can use wildcards like `test.my_ssn.*.ssn[*]`.
-* `ExcludePath`: A json path that the match must not belong to. Can use wildcards like `test.my_ssn.*.ssn[*]`.
-* `Count`: The minimum amount of matches to qualify. Defaults to `1` if not specified
+* `path`: A json path that the match belongs to. Can use wildcards like `test.my_ssn.*.ssn[*]`.
+* `exclude_path`: A json path that the match must not belong to. Can use wildcards like `test.my_ssn.*.ssn[*]`.
+* `count`: The minimum amount of matches to qualify. Defaults to `1` if not specified
 
 ## Examples
 
