@@ -56,6 +56,21 @@ sbac:
         - endpoint: /test.json
         - response_matches:
             ssn: 10
+  - name: json_path_false
+    stage: on_response_body_chunk
+    filter:
+      response_matches:
+        "*":
+          - path: test.*[*]
+          - exclude_path: test.my_ssn3.[*]
+          - count: 2
+  - name: json_path_true
+    stage: on_response_body_chunk
+    filter:
+      response_matches:
+        ssn:
+          - path: test.*[*]
+          - count: 2
 ratelimits:
   - grouping: per_inbound_service
     by: service
@@ -168,4 +183,7 @@ body_collection:
           ssn: 10
           phone_number: 10
 header_collection: "all_request"
+content_types:
+  "application/imaginary": text
+  "text/plain": none
 ```

@@ -33,8 +33,8 @@ Each filter has exactly one of the following keys:
 * `exclude_token`: Takes one or more [Match Rule](Match%20Rule) and requires that **all** of them **do not** match the token. A missing token is an empty string
 * `ip`: Takes one or more IP address or CIDR and requires that **any** of them match the ip
 * `exclude_ip`: Takes one or more IP address or CIDR and requires that **all** of them **do not** match the ip
-* `request_matches`: Takes a map of category names to minimum match counts per request body & headers
-* `response_matches`: Takes a map of category names to minimum match counts per response body & headers
+* `request_matches`: Takes a map of category names and one or more [Match Rule Filters](Match%20Rule%20Filters) that the category must satisfy. Use "*" to match any category.
+* `response_matches`:  Takes a map of category names and one or more [Match Rule Filters](Match%20Rule%20Filters) that the category must satisfy. Use "*" to match any category.
 * `request_headers`: Takes a map of header names and one or more [Match Rule](Match%20Rule) and, for each header listed, requires that the header key exist and **any** of the rules match the header value
 * `exclude_request_headers`: Takes a map of header names and one or more [Match Rule](Match%20Rule) and, for each header listed, requires that the header key either doesn't exist or that **none of** of the rules match the header value
 * `response_headers`: Takes a map of header names and one or more [Match Rule](Match%20Rule) and, for each header listed, requires that the header key exist and **any** of the rules match the header value
@@ -47,6 +47,12 @@ Each filter has exactly one of the following keys:
 * `response_inbound`: Matches request/response pairs for which the request is outbound and the response is inbound
 * `any`: Takes one or more Filters and requires that **any** of them match the request/response
 * `all`: Takes one or more Filters and requires that **all** of them match the request/response
+
+#### MatchRuleFilters
+
+* `path`: A json path that the match belongs to. Can use wildcards like `test.my_ssn.*.ssn[*]`.
+* `exclude_path`: A json path that the match must not belong to. Can use wildcards like `test.my_ssn.*.ssn[*]`.
+* `count`: The minimum amount of matches to qualify. Defaults to `1` if not specified
 
 ## Examples
 
