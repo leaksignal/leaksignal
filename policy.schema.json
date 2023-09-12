@@ -337,19 +337,7 @@
             "items": {
                 "type": "object",
                 "properties": {
-                    "matches": {
-                        "anyOf": [
-                            {
-                                "type": "string"
-                            },
-                            {
-                                "type": "array",
-                                "items": {
-                                    "type": "string"
-                                }
-                            }
-                        ]
-                    },
+                    "matches": { "$ref": "#/$defs/rule_filter" },
                     "search": {
                         "enum": ["request_body", "request_header", "response_body", "response_header", "all_body", "all_header", "all"]
                     },

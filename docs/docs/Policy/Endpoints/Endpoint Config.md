@@ -10,11 +10,9 @@ An individual endpoint block is composed of one or more of path globs for matchi
 
 ### matches
 
-Each endpoint definition takes one or more [PathGlobs](Path%20Globs) in the `matches` field that define the request URLs that this endpoint applies for.
+Each endpoint definition takes one or more [Rule Filters](Rule%20Filter) in the `matches` field that define the targets that this endpoint applies for.
 
-The `matches` field can be a string or an array or strings, each of with are a PathGlob.
-
-If a given request URL matches multiple endpoints, the PathGlobs of those endpoints are ordered most general to least general. Any configurations of those more specific PathGlobs selectively override the more general configurations.
+If a given request target matches multiple endpoints, the rules of those endpoints are ordered most general to least general. Any configurations of those more specific rules selectively override the more general configurations.
 
 ### config
 
