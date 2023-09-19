@@ -815,7 +815,23 @@
                         "enum": ["global", "per_inbound_service", "per_outbound_service", "per_endpoint"]
                     },
                     "by": {
-                        "enum": ["ip", "token", "outbound_service", "inbound_service"]
+                        "oneOf": [
+                            {
+                                "enum": ["ip", "token", "outbound_service", "inbound_service"]
+                            },
+                            {
+                                "type": "object",
+                                "properties": {
+                                    "header": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": ["header"],
+                                "unevaluatedProperties": false,
+                                "additionalProperties": false
+                            }
+                        ],
+                        "unevaluatedProperties": false
                     },
                     "action": {
                         "enum": ["nothing", "alert", "block"]
