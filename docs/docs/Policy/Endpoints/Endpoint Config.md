@@ -10,7 +10,7 @@ An individual endpoint block is composed of one or more of path globs for matchi
 
 ### matches
 
-Each endpoint definition takes one or more [Rule Filters](Rule%20Filter) in the `matches` field that define the targets that this endpoint applies for.
+Each endpoint definition takes one or more [Rule Filters](../Rules#Filters) in the `matches` field that define the targets that this endpoint applies for.
 
 If a given request target matches multiple endpoints, the rules of those endpoints are ordered most general to least general. Any configurations of those more specific rules selectively override the more general configurations.
 
