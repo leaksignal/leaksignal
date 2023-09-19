@@ -25,10 +25,10 @@ They are cluster-scoped objects, and have the same format as LeaksignalIstio obj
 The following fields are defined by LeaksignalIstio and ClusterLeaksignalIstio objects:
 ```
 # Required, Proxy Version String, can see all versions at https://github.com/leaksignal/leaksignal/releases
-proxy_version: 2023_08_29_18_37_23_615830a_0.5.1
+proxy_version: 2023_09_19_19_40_04_c2765bb_0.6.0
 
 # Required, SHA256 Hash of the WASM proxy module
-proxy_hash: 416a8a398842dcc34bec8c182176aab49ac73b512cc049539f93010a3a35c52e
+proxy_hash: 2fb390c509bcabc456bada20cc70511e1c840ace9202a650e7d59d7e9748b7b0
 
 # Required, API Key from Leaksignal Command dashboard or the deployment name from LeakAgent
 api_key: MY_API_KEY
@@ -67,8 +67,8 @@ kind: LeaksignalIstio
 metadata:
   name: leaksignal-istio
 spec:
-  proxy_version: 2023_08_29_18_37_23_615830a_0.5.1
-  proxy_hash: 416a8a398842dcc34bec8c182176aab49ac73b512cc049539f93010a3a35c52e
+  proxy_version: 2023_09_19_19_40_04_c2765bb_0.6.0
+  proxy_hash: 2fb390c509bcabc456bada20cc70511e1c840ace9202a650e7d59d7e9748b7b0
   api_key: MY_API_KEY
 ```
 
@@ -81,8 +81,8 @@ kind: LeaksignalIstio
 metadata:
   name: leaksignal-istio
 spec:
-  proxy_version: 2023_08_29_18_37_23_615830a_0.5.1
-  proxy_hash: 416a8a398842dcc34bec8c182176aab49ac73b512cc049539f93010a3a35c52e
+  proxy_version: 2023_09_19_19_40_04_c2765bb_0.6.0
+  proxy_hash: 2fb390c509bcabc456bada20cc70511e1c840ace9202a650e7d59d7e9748b7b0
   api_key: MY_API_KEY
   upstream_location: ingestion.leaksignal.mydomain.com
 ```
@@ -95,8 +95,8 @@ kind: LeaksignalIstio
 metadata:
   name: leaksignal-istio
 spec:
-  proxy_version: 2023_08_29_18_37_23_615830a_0.5.1
-  proxy_hash: 416a8a398842dcc34bec8c182176aab49ac73b512cc049539f93010a3a35c52e
+  proxy_version: 2023_09_19_19_40_04_c2765bb_0.6.0
+  proxy_hash: 2fb390c509bcabc456bada20cc70511e1c840ace9202a650e7d59d7e9748b7b0
   api_key: MY_API_KEY
   upstream_location: ingestion.leaksignal.mydomain.com
   ca_bundle: /etc/ssl/certs/ca-bundle.crt
@@ -111,8 +111,8 @@ kind: LeaksignalIstio
 metadata:
   name: leaksignal-istio
 spec:
-  proxy_version: 2023_08_29_18_37_23_615830a_0.5.1
-  proxy_hash: 416a8a398842dcc34bec8c182176aab49ac73b512cc049539f93010a3a35c52e
+  proxy_version: 2023_09_19_19_40_04_c2765bb_0.6.0
+  proxy_hash: 2fb390c509bcabc456bada20cc70511e1c840ace9202a650e7d59d7e9748b7b0
   api_key: my_policy_name
 
   upstream_location: leakagent.leakagent.svc.cluster.local
@@ -130,8 +130,8 @@ kind: LeaksignalIstio
 metadata:
   name: leaksignal-istio
 spec:
-  proxy_version: 2023_08_29_18_37_23_615830a_0.5.1
-  proxy_hash: 416a8a398842dcc34bec8c182176aab49ac73b512cc049539f93010a3a35c52e
+  proxy_version: 2023_09_19_19_40_04_c2765bb_0.6.0
+  proxy_hash: 2fb390c509bcabc456bada20cc70511e1c840ace9202a650e7d59d7e9748b7b0
   api_key: my_policy_name
 
   upstream_location: leakagent.mydomain.com
