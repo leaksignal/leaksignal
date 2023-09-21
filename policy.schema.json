@@ -3,6 +3,25 @@
     "$schema": "https://json-schema.org/draft/2020-12/schema",
     "type": "object",
     "$defs": {
+        "rule_by": {
+            "oneOf": [
+                {
+                    "enum": ["ip", "token", "outbound_service", "inbound_service"]
+                },
+                {
+                    "type": "object",
+                    "properties": {
+                        "header": {
+                            "type": "string"
+                        }
+                    },
+                    "required": ["header"],
+                    "unevaluatedProperties": false,
+                    "additionalProperties": false
+                }
+            ],
+            "unevaluatedProperties": false
+        },
         "match_item": {
             "oneOf": [
                 { "$ref": "#/$defs/service_rule" },
@@ -814,27 +833,10 @@
                     "grouping": {
                         "enum": ["global", "per_inbound_service", "per_outbound_service", "per_endpoint"]
                     },
-                    "by": {
-                        "oneOf": [
-                            {
-                                "enum": ["ip", "token", "outbound_service", "inbound_service"]
-                            },
-                            {
-                                "type": "object",
-                                "properties": {
-                                    "header": {
-                                        "type": "string"
-                                    }
-                                },
-                                "required": ["header"],
-                                "unevaluatedProperties": false,
-                                "additionalProperties": false
-                            }
-                        ],
-                        "unevaluatedProperties": false
-                    },
+                    "by": { "$ref": "#/$defs/rule_by" },
+                    "count_by": { "$ref": "#/$defs/rule_by" },
                     "action": {
-                        "enum": ["nothing", "alert", "block"]
+                        "enum": ["nothing", "alert", "block", "alert_block"]
                     },
                     "timespan_secs": {
                         "type": "integer"

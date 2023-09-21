@@ -13,7 +13,8 @@ Rules are specified in the top-level `rules` field of the policy.
 Fields:
 
 * `grouping`: `per_inbound_service`, `per_outbound_service`, `per_endpoint`, or `global` -- specifies the grouping of inbound data for rule execution. I.e. a `per_inbound_service` rule by `ip` looks at the rate of traffic of each ip for each service, and evaluates the rule.
-* `by`: `ip` (default), `token`, `service` -- the unique ID to be used for the rule. Note that response-derived tokens will still let the initial request through.
+* `by`: `ip` (default), `token`, `service`, or an object with a single field `header` signifying a header name -- the unique ID to be used for the rule. Note that response-derived tokens will still let the initial request through.
+* `count_by`: Same as `by`, optional. If set, only unique values for this field will increment the counter in a given timespan.
 * `action`: `block` (default), `alert`, or `nothing` -- the action to take upon the rule conditions being met.
 * `timespan_secs`: The timespan over which requests/responses are counted for rule evaluation. This effectively means that a client is limited to `limit`/`timespan_secs` requests per second.
 * `limit`: The maximum number of requests within `timespan_secs` before the rule is triggered
