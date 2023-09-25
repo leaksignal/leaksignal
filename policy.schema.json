@@ -351,6 +351,31 @@
                 "additionalProperties": false
             }
         ] },
+        "token_extractor": {
+            "anyOf": [
+                {
+                    "type": "object",
+                    "properties": {
+                        "regex": { "type": "string" }
+                    },
+                    "required": ["regex"],
+                    "unevaluatedProperties": false,
+                    "additionalProperties": false
+                },
+                {
+                    "enum": ["jwt_decode"]
+                },
+                {
+                    "type": "object",
+                    "properties": {
+                        "json_path": { "type": "string" }
+                    },
+                    "required": ["json_path"],
+                    "unevaluatedProperties": false,
+                    "additionalProperties": false
+                }
+            ]
+        },
         "endpoints": {
             "type": "array",
             "items": {
@@ -365,7 +390,12 @@
                         "properties": {
                             "location": { "enum": ["request", "request_cookie", "response"] },
                             "header": { "type": "string" },
-                            "regex": { "type": "string" },
+                            "extractor": { 
+                                "anyOf": [
+                                    { "$ref": "#/$defs/rule_filter" },
+                                    { "type": "array", "items": { "$ref": "#/$defs/rule_filter" }}
+                                ]
+                             },
                             "hash": { "type": "boolean" }
                         },
                         "required": ["location", "header"],
