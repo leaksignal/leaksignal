@@ -20,7 +20,7 @@ The `config` field is a mapping from category name to a specific [Match Config](
 
 ### token_extractor
 
-The `token_extractor` field is an object that specifies how request/response tokens are captured and processed.
+The `token_extractor` field is a [Token Extraction](Token%20Extraction) object that specifies how request/response tokens are captured and processed.
 
 #### location
 
