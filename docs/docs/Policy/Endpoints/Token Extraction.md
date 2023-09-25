@@ -20,7 +20,7 @@ sidebar_position: 4
 
 An extraction instruction that takes in a string, performs an extraction on it, and outputs a string. Meant to be chained together.
 
-- `regex`: performs a given regex on a string and outputs the first match
+- `regex`: performs a given regex on a string and outputs the First capture group of first match, or entire first match if no capture group
 - `jwt_decode`: extracts the payload of a jwt token
 - `json_path`: extracts a value from a json body using the given [JsonPath](https://goessner.net/articles/JsonPath/)
 
