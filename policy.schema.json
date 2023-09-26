@@ -390,7 +390,7 @@
                         "properties": {
                             "location": { "enum": ["request", "request_cookie", "response"] },
                             "header": { "type": "string" },
-                            "extractor": { 
+                            "extractor": {
                                 "anyOf": [
                                     { "$ref": "#/$defs/rule_filter" },
                                     { "type": "array", "items": { "$ref": "#/$defs/rule_filter" }}
@@ -890,6 +890,12 @@
             "additionalProperties": {
                 "$ref": "#/$defs/content_type"
             }
+        },
+        "path_groups": {
+            "oneOf": [
+                { "type": "string" },
+                { "type": "array", "items": { "type": "string" } }
+            ]
         }
     },
     "required": ["categories"],

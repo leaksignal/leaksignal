@@ -135,3 +135,9 @@ content_types:
   "application/imaginary": text
   "text/plain": none
 ```
+
+## path_groups
+
+An optional set of [Path Globs](Endpoints/Path%20Globs) that can be used to group similar policy paths together.
+Useful for preventing "path explosions".
+If an endpoint doesnt match any of the provided globs, then the policy path will be set to the endpoint path with any numerical sections removed.
