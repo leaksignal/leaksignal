@@ -19,6 +19,8 @@ Fields:
 * `timespan_secs`: The timespan over which requests/responses are counted for rule evaluation. This effectively means that a client is limited to `limit`/`timespan_secs` requests per second.
 * `limit`: The maximum number of requests within `timespan_secs` before the rule is triggered
 * `filter`: The evaluation filter of the rule, see below.
+* `severity`: The [Rule Severity](#Rule%20Severity).
+* `muted`: boolean for if the rule has been muted or not
 
 ### Filters
 
@@ -94,3 +96,10 @@ rules:
     filter:
       peer_service: external
 ```
+
+#### Rule Severity
+
+- `Routine`
+- `Notable`
+- `Concern` (default)
+- `Immediate`
