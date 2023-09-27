@@ -43,3 +43,19 @@ controller:
         leakngx $API_KEY https://ingestion.app.leaksignal.com;
 
 ```
+
+### Getting Service Names from NGINX
+
+In your LeakSignal Policy, include the following snippet:
+
+```yaml
+local_service_name:
+  ns:
+    attrs:
+      ngx_namespace
+  sa:
+    attrs:
+      ngx_service_name
+```
+
+This will extract the namespace and service name of upstreams as the service name for traffic from NGINX.
