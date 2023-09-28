@@ -4,6 +4,6 @@ description: A helm chart to install LeakSignal Operator
 
 type: application
 
-version: 0.7.1-helm
+version: 1.0.0-helm
 
-appVersion: "0.7.1"
+appVersion: "1.0.0"
