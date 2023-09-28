@@ -25,7 +25,7 @@ They are cluster-scoped objects, and have the same format as LeaksignalIstio obj
 The following fields are defined by LeaksignalIstio and ClusterLeaksignalIstio objects:
 ```
 # Required, Proxy Version String, can see all versions at https://github.com/leaksignal/leaksignal/releases
-proxy_version: 2023_09_27_22_03_00_d18e31c_0.7.0
+proxy_version: 2023_09_28_20_39_42_346bda6_0.7.1
 
 # Required, SHA256 Hash of the WASM proxy module
 proxy_hash: f652f70eaef519979a9b8f557754feb03f495210f2d10a2e62ace16cea694065
@@ -67,7 +67,7 @@ kind: LeaksignalIstio
 metadata:
   name: leaksignal-istio
 spec:
-  proxy_version: 2023_09_27_22_03_00_d18e31c_0.7.0
+  proxy_version: 2023_09_28_20_39_42_346bda6_0.7.1
   proxy_hash: f652f70eaef519979a9b8f557754feb03f495210f2d10a2e62ace16cea694065
   api_key: MY_API_KEY
 ```
@@ -81,7 +81,7 @@ kind: LeaksignalIstio
 metadata:
   name: leaksignal-istio
 spec:
-  proxy_version: 2023_09_27_22_03_00_d18e31c_0.7.0
+  proxy_version: 2023_09_28_20_39_42_346bda6_0.7.1
   proxy_hash: f652f70eaef519979a9b8f557754feb03f495210f2d10a2e62ace16cea694065
   api_key: MY_API_KEY
   upstream_location: ingestion.leaksignal.mydomain.com
@@ -95,7 +95,7 @@ kind: LeaksignalIstio
 metadata:
   name: leaksignal-istio
 spec:
-  proxy_version: 2023_09_27_22_03_00_d18e31c_0.7.0
+  proxy_version: 2023_09_28_20_39_42_346bda6_0.7.1
   proxy_hash: f652f70eaef519979a9b8f557754feb03f495210f2d10a2e62ace16cea694065
   api_key: MY_API_KEY
   upstream_location: ingestion.leaksignal.mydomain.com
@@ -111,7 +111,7 @@ kind: LeaksignalIstio
 metadata:
   name: leaksignal-istio
 spec:
-  proxy_version: 2023_09_27_22_03_00_d18e31c_0.7.0
+  proxy_version: 2023_09_28_20_39_42_346bda6_0.7.1
   proxy_hash: f652f70eaef519979a9b8f557754feb03f495210f2d10a2e62ace16cea694065
   api_key: my_policy_name
 
@@ -130,7 +130,7 @@ kind: LeaksignalIstio
 metadata:
   name: leaksignal-istio
 spec:
-  proxy_version: 2023_09_27_22_03_00_d18e31c_0.7.0
+  proxy_version: 2023_09_28_20_39_42_346bda6_0.7.1
   proxy_hash: f652f70eaef519979a9b8f557754feb03f495210f2d10a2e62ace16cea694065
   api_key: my_policy_name
 
