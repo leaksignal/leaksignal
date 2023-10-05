@@ -53,9 +53,12 @@ Each filter has exactly one of the following keys:
 
 #### Match Rule Filter
 
-* `path`: A json path that the match belongs to. Can use wildcards like `test.my_ssn.*.ssn[*]`.
-* `exclude_path`: A json path that the match must not belong to. Can use wildcards like `test.my_ssn.*.ssn[*]`.
+* `path`: One or more json paths that the match belongs to. Can use wildcards like `test.my_ssn.*.ssn[*]`.
+* `exclude_path`: One or more json paths that the match must not belong to. Can use wildcards like `test.my_ssn.*.ssn[*]`.
 * `count`: The minimum amount of matches to qualify. Defaults to `1` if not specified
+* `value`: One or more [Match Rule](Match%20Rule)s that the matches value must match
+* `any`: A list of Match Rule Filters where at least one should be satisfied
+* `any`: A list of Match Rule Filters where all need to be be satisfied
 
 ## Examples
 

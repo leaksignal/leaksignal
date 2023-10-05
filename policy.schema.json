@@ -129,7 +129,10 @@
                                 "type": "object",
                                 "properties": {
                                     "path": {
-                                        "type": "string"
+                                        "anyOf": [
+                                            { "type": "string" },
+                                            { "type": "array", "items": { "type": "string" } }
+                                        ]
                                     }
                                 }
                             },
@@ -137,7 +140,10 @@
                                 "type": "object",
                                 "properties": {
                                     "exclude_path": {
-                                        "type": "string"
+                                        "anyOf": [
+                                            { "type": "string" },
+                                            { "type": "array", "items": { "type": "string" } }
+                                        ]
                                     }
                                 }
                             },
@@ -146,6 +152,33 @@
                                 "properties": {
                                     "count": {
                                         "type": "integer"
+                                    }
+                                }
+                            },
+                            {
+                                "type": "object",
+                                "properties": {
+                                    "value": {
+                                        "anyOf": [
+                                            { "$ref": "#/$defs/rule_filter" },
+                                            { "type": "array", "items": { "$ref": "#/$defs/rule_filter" } }
+                                        ]
+                                    }
+                                }
+                            },
+                            {
+                                "type": "object",
+                                "properties": {
+                                    "any": {
+                                        "type": "array", "items": { "$ref": "#/$defs/match_filter_rule" }
+                                    }
+                                }
+                            },
+                            {
+                                "type": "object",
+                                "properties": {
+                                    "all": {
+                                        "type": "array", "items": { "$ref": "#/$defs/match_filter_rule" }
                                     }
                                 }
                             }
