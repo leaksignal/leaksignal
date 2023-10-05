@@ -3,6 +3,69 @@
     "$schema": "https://json-schema.org/draft/2020-12/schema",
     "type": "object",
     "$defs": {
+        "service_name_source": {
+            "oneOf": [
+                { "enum": ["none", "istio"] },
+                {
+                    "type": "object",
+                    "properties": {
+                        "env": { "type": "string" }
+                    },
+                    "required": ["env"],
+                    "unevaluatedProperties": false,
+                    "additionalProperties": false
+                },
+                {
+                    "type": "object",
+                    "properties": {
+                        "attrs": { "type": "string" }
+                    },
+                    "required": ["attrs"],
+                    "unevaluatedProperties": false,
+                    "additionalProperties": false
+                },
+                {
+                    "type": "object",
+                    "properties": {
+                        "raw": { "type": "string" }
+                    },
+                    "required": ["raw"],
+                    "unevaluatedProperties": false,
+                    "additionalProperties": false
+                },
+                {
+                    "type": "object",
+                    "properties": {
+                        "default": {
+                            "type": "object",
+                            "properties": {
+                                "from": { "$ref": "#/$defs/service_name_source" },
+                                "to": { "$ref": "#/$defs/service_name_source" }
+                            },
+                            "required": ["from", "to"],
+                            "unevaluatedProperties": false,
+                            "additionalProperties": false
+                        }
+                    },
+                    "required": ["default"],
+                    "unevaluatedProperties": false,
+                    "additionalProperties": false
+                }
+            ],
+            "unevaluatedProperties": false
+        },
+        "service_name_extractor": {
+            "type": "object",
+            "properties": {
+                "cluster": { "$ref": "#/$defs/service_name_source" },
+                "ns": { "$ref": "#/$defs/service_name_source" },
+                "sa": { "$ref": "#/$defs/service_name_source" },
+                "workload": { "$ref": "#/$defs/service_name_source" }
+            },
+            "required": [],
+            "unevaluatedProperties": false,
+            "additionalProperties": false
+        },
         "rule_by": {
             "oneOf": [
                 {
@@ -923,6 +986,12 @@
             "additionalProperties": {
                 "$ref": "#/$defs/content_type"
             }
+        },
+        "local_service_name": {
+            "$ref": "#/$defs/service_name_extractor"
+        },
+        "peer_service_name": {
+            "$ref": "#/$defs/service_name_extractor"
         },
         "path_groups": {
             "oneOf": [

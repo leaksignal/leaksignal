@@ -1,6 +1,8 @@
 ARG CONTROLLER_TAG=v1.8.1
-ARG LEAKNGX_VERSION=0.6.0-1.21.6
+ARG LEAKNGX_VERSION=0.7.2-1.21.6-musl
 
 FROM registry.k8s.io/ingress-nginx/controller:$CONTROLLER_TAG
+ARG LEAKNGX_VERSION
 
-RUN curl -v https://leakproxy.s3.us-west-2.amazonaws.com/leakngx-$LEAKNGX_VERSION/libleakngx.so > /etc/nginx/modules/libleakngx.so
+RUN mkdir -p /usr/local/nginx/modules/
+RUN curl -v https://leakproxy.s3.us-west-2.amazonaws.com/leakngx-$LEAKNGX_VERSION/libleakngx.so > /usr/local/nginx/modules/libleakngx.so
