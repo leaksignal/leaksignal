@@ -20,6 +20,10 @@ Each component can be one of the following:
 * `*within*`: Matches if the component contains the text
 * `text`: Matches if the component equals the text.
 
+Additionally, components can use `!` beforehand to specify that the path should be preserved in leaksignal's output.
+i.e. given the path `hello/world/test`; the PathGlob `hello/*/test.html` would display as `hello/*/test.html`
+but `hello/!*/test.html` would display as `hello/world/test.html`
+
 ## Ordering
 
 PathGlobs are sorted for evaluation on specificity. This means that a PathGlob like `**` can be superseded by a PathGlob like `*/test.html`
