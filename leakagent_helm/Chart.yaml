@@ -4,6 +4,6 @@ description: A helm chart to install LeakAgent
 
 type: application
 
-version: 0.7.2-helm
+version: 0.7.3-helm
 
-appVersion: "0.7.2"
+appVersion: "0.7.3"
