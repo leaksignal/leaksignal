@@ -21,7 +21,7 @@ Each component can be one of the following:
 * `text`: Matches if the component equals the text.
 
 Additionally, components can use `!` beforehand to specify that the path should be preserved in leaksignal's output.
-i.e. given the path `hello/world/test`; the PathGlob `hello/*/test.html` would display as `hello/*/test.html`
+i.e. given the path `hello/world/test.html`; the PathGlob `hello/*/test.html` would display as `hello/*/test.html`
 but `hello/!*/test.html` would display as `hello/world/test.html`
 
 ## Ordering
