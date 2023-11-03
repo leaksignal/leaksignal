@@ -25,6 +25,7 @@ Each SBAC item has the following fields:
   * `post_response_body`
   * `on_response_trailer_chunk`
   * `post_response_trailers`
+  * `any` (default)
 * `filter`: the `RuleFilter` to check
 
 ## Example

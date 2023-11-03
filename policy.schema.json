@@ -911,6 +911,38 @@
                 "all",
                 "none"
             ]
+        },
+        "stream_upload_interval": {
+            "oneOf": [
+                {
+                    "type": "object",
+                    "properties": {
+                        "frames": { "type": "integer" }
+                    },
+                    "required": ["frames"],
+                    "unevaluatedProperties": false,
+                    "additionalProperties": false
+                },
+                {
+                    "type": "object",
+                    "properties": {
+                        "matches": { "type": "integer" }
+                    },
+                    "required": ["matches"],
+                    "unevaluatedProperties": false,
+                    "additionalProperties": false
+                },
+                {
+                    "type": "object",
+                    "properties": {
+                        "time": { "type": "integer" }
+                    },
+                    "required": ["time"],
+                    "unevaluatedProperties": false,
+                    "additionalProperties": false
+                }
+            ]
+
         }
     },
     "properties": {
@@ -1002,5 +1034,8 @@
     },
     "required": ["categories"],
     "unevaluatedProperties": false,
-    "additionalProperties": false
+    "additionalProperties": false,
+    "stream_upload_interval": {
+        "$ref": "#/$defs/stream_upload_interval"
+    }
 }
