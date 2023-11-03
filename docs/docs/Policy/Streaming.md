@@ -11,7 +11,7 @@ the options are:
 - `matches`: upload matches when the amount of matches exceeds `n`
 - `time` upload matches every `n` ms. requires at least one match to be found.
 
-the default is `matches: 250` and `time: 5000`.
+the default is `matches: 250` and `time: 5000`. no matter what, matches will always get sent when the connection closes.
 
 this example will upload match data when either: 50 matches have been found, 10 seconds has passed and at least one match has been found, or 50 frames have passed and at least one match has been found:
 
