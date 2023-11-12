@@ -21,3 +21,16 @@ stream_upload_interval:
     - time: 10000
     - frames: 50
 ```
+
+# Stream types
+
+similar to `content_types`, `stream_types` can be used to specify what parsers to use with what ports. the (overwriteable) defaults are:
+
+```yaml
+stream_types:
+    5044: filebeat
+    80: text
+    8080: text
+    8000: text
+```
+

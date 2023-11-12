@@ -434,7 +434,7 @@
             ]
         },
         "report_style": { "enum": ["raw", "partial_sha256", "sha256", "none"] },
-        "content_type": { "enum": ["text", "json", "grpc", "none"] },
+        "content_type": { "enum": ["text", "json", "grpc", "filebeat", "none"] },
         "match_context": { "anyOf": [
             { "enum": ["keys", "values", "values_key"] },
             {
@@ -1014,6 +1014,12 @@
             }
         },
         "content_types": {
+            "type": "object",
+            "additionalProperties": {
+                "$ref": "#/$defs/content_type"
+            }
+        },
+        "stream_types": {
             "type": "object",
             "additionalProperties": {
                 "$ref": "#/$defs/content_type"
