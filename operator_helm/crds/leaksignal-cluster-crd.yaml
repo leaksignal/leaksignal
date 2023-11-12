@@ -24,20 +24,48 @@ spec:
               properties:
                 proxy_version:
                   type: string
+                proxyVersion:
+                  type: string
                 proxy_hash:
+                  type: string
+                proxyHash:
                   type: string
                 api_key:
                   type: string
+                apiKey:
+                  type: string
                 upstream_location:
                   type: string
+                upstreamLocation:
+                  type: string
                 proxy_prefix:
+                  type: string
+                proxyPrefix:
                   type: string
                 tls:
                   type: boolean
                 upstream_port:
                   type: integer
+                upstreamPort:
+                  type: integer
                 ca_bundle:
+                  type: string
+                caBundle:
                   type: string
                 refresh_pods_on_update:
                   type: boolean
-              required: ["proxy_version", "proxy_hash", "api_key"]
+                refreshPodsOnUpdate:
+                  type: boolean
+                grpcMode:
+                  type: string
+                  enum: ["default", "envoy"]
+                enableStreaming:
+                  type: boolean
+                workloadSelector:
+                  type: object
+                  properties:
+                    labels:
+                      type: object
+                      additionalProperties:
+                        type: string
+              # required: ["proxy_version", "proxy_hash", "api_key", "upstream_location"]
