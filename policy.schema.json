@@ -579,6 +579,34 @@
                 {
                     "type": "object",
                     "properties": {
+                        "policy_path": {
+                            "anyOf": [
+                                { "type": "string" },
+                                { "type": "array", "items": { "type": "string" } }
+                            ]
+                        }
+                    },
+                    "required": ["policy_path"],
+                    "unevaluatedProperties": false,
+                    "additionalProperties": false
+                },
+                {
+                    "type": "object",
+                    "properties": {
+                        "exclude_policy_path": {
+                            "anyOf": [
+                                { "type": "string" },
+                                { "type": "array", "items": { "type": "string" } }
+                            ]
+                        }
+                    },
+                    "required": ["exclude_policy_path"],
+                    "unevaluatedProperties": false,
+                    "additionalProperties": false
+                },
+                {
+                    "type": "object",
+                    "properties": {
                         "peer_service": { "$ref": "#/$defs/service_filter" }
                     },
                     "required": ["peer_service"],

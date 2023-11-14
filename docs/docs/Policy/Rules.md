@@ -26,8 +26,10 @@ Fields:
 
 Each filter has exactly one of the following keys:
 
-* `endpoint`: Takes one of more [Path Globs](Endpoints/Path%20Globs) and requires that **any** of them match the policy path
-* `exclude_endpoint`: Takes one of more [Path Globs](Endpoints/Path%20Globs) and requires that **all** of them **do not** match the policy path
+* `endpoint`: Takes one of more [Path Globs](Endpoints/Path%20Globs) and requires that **any** of them match the endpoint
+* `exclude_endpoint`: Takes one of more [Path Globs](Endpoints/Path%20Globs) and requires that **all** of them **do not** match the endpoint
+* `policy_path`: Takes one of more [Path Globs](Endpoints/Path%20Globs) and requires that **any** of them match the policy path
+* `exclude_policy_path`: Takes one of more [Path Globs](Endpoints/Path%20Globs) and requires that **all** of them **do not** match the policy path
 * `peer_service`: Takes one or more [Match Rule](Match%20Rule) and requires that **any** of them match the peer_service
 * `exclude_peer_service`: Takes one or more [Match Rule](Match%20Rule) and requires that **all** of them **do not** match the peer_service
 * `local_service`: Takes one or more [Match Rule](Match%20Rule) and requires that **any** of them match the local_service
