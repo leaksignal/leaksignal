@@ -940,7 +940,35 @@
                     "required": ["time"],
                     "unevaluatedProperties": false,
                     "additionalProperties": false
-                }
+                },
+                {
+                    "type": "object",
+                    "properties": {
+                        "all": { "type": "#/$defs/stream_upload_interval" }
+                    },
+                    "required": ["all"],
+                    "unevaluatedProperties": false,
+                    "additionalProperties": false
+                },
+                {
+                    "type": "object",
+                    "properties": {
+                        "any": { "type": "#/$defs/stream_upload_interval" }
+                    },
+                    "required": ["any"],
+                    "unevaluatedProperties": false,
+                    "additionalProperties": false
+                },
+                {
+                    "type": "object",
+                    "properties": {
+                        "all": { "type": "#/$defs/stream_upload_interval" }
+                    },
+                    "required": ["all"],
+                    "unevaluatedProperties": false,
+                    "additionalProperties": false
+                },
+                { "enum": ["none"] }
             ]
 
         },
@@ -1026,7 +1054,8 @@
                     "required": ["not"],
                     "unevaluatedProperties": false,
                     "additionalProperties": false
-                }
+                },
+                { "enum": ["always", "never"] }
             ]
         }
     },
