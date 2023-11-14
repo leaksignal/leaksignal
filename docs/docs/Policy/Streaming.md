@@ -52,7 +52,7 @@ stream_types:
       - port: 8000
 ```
 
-this means the `filebeat` parser will be used if the destination port is 5044, and the `text` parser will be used if either the source or destination port are 80, 8080, or 8000.
+this means the `filebeat` parser will be used if the destination port is 5044, and the `text` parser will be used if either the source or destination port are 80, 8080, or 8000. the filters are checked in the order that they are defined with the default filters checked last.
 
 if you wanted to disable text parsing you could add the following to your policy to overwrite the default:
 
