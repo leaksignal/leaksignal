@@ -24,13 +24,39 @@ stream_upload_interval:
 
 # Stream types
 
-similar to `content_types`, `stream_types` can be used to specify what parsers to use with what ports. the (overwriteable) defaults are:
+similar to `content_types`, `stream_types` can be used to specify what parsers to use with what ports when in streaming mode. it is a mapping of content types to port filters. unless `src`, or `dest` are specified, the filter will check both the source and destination ports. the possible filters are:
+
+- `src`: takes another filter that the source port must match
+- `dest`: takes another filter that the destination port must match
+- `port`: takes an int that one of the ports must match
+- `range`: has `start` and `end` fields that one of the ports must fall between
+- `any`: takes an array of filters of which at least one should match
+- `all`: takes an array of filters of which all should match
+- `not`: takes an array of filters of which none should match
+- `always`: always will always match. this exists for cases where you want all traffic to go through a specific parser
+- `never`: never will never match. this exists for cases where you want to fully disable one of the default parsers.
+
+
+
+the (overwriteable) defaults are:
 
 ```yaml
 stream_types:
-    5044: filebeat
-    80: text
-    8080: text
-    8000: text
+  filebeat:
+    dest:
+      port: 5044
+  text:
+    any:
+      - port: 80
+      - port: 8080
+      - port: 8000
 ```
 
+this means the `filebeat` parser will be used if the destination port is 5044, and the `text` parser will be used if either the source or destination port are 80, 8080, or 8000.
+
+if you wanted to disable text parsing you could add the following to your policy to overwrite the default:
+
+```yaml
+stream_types:
+    text: never
+```

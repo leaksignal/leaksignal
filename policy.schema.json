@@ -943,6 +943,91 @@
                 }
             ]
 
+        },
+        "stream_port_filter": {
+            "oneOf": [
+                {
+                    "type": "object",
+                    "properties": {
+                        "src": { "type": "#/$defs/stream_port_filter" }
+                    },
+                    "required": ["src"],
+                    "unevaluatedProperties": false,
+                    "additionalProperties": false
+                },
+                {
+                    "type": "object",
+                    "properties": {
+                        "dest": { "type": "#/$defs/stream_port_filter" }
+                    },
+                    "required": ["dest"],
+                    "unevaluatedProperties": false,
+                    "additionalProperties": false
+                },
+                {
+                    "type": "object",
+                    "properties": {
+                        "port": { "type": "integer" }
+                    },
+                    "required": ["port"],
+                    "unevaluatedProperties": false,
+                    "additionalProperties": false
+                },
+                {
+                    "type": "object",
+                    "properties": {
+                        "range": {
+                            "type": "object",
+                            "properties": {
+                                "start": "integer",
+                                "end": "integer"
+                            },
+                            "required": ["start", "end"],
+                            "unevaluatedProperties": false,
+                            "additionalProperties": false
+                        }
+                    },
+                    "required": ["range"],
+                    "unevaluatedProperties": false,
+                    "additionalProperties": false
+                },
+                {
+                    "type": "object",
+                    "properties": {
+                        "any": {
+                            "type": "array",
+                            "items": { "type": "#/$defs/stream_port_filter" }
+                        }
+                    },
+                    "required": ["any"],
+                    "unevaluatedProperties": false,
+                    "additionalProperties": false
+                },
+                {
+                    "type": "object",
+                    "properties": {
+                        "all": {
+                            "type": "array",
+                            "items": { "type": "#/$defs/stream_port_filter" }
+                        }
+                    },
+                    "required": ["all"],
+                    "unevaluatedProperties": false,
+                    "additionalProperties": false
+                },
+                {
+                    "type": "object",
+                    "properties": {
+                        "not": {
+                            "type": "array",
+                            "items": { "type": "#/$defs/stream_port_filter" }
+                        }
+                    },
+                    "required": ["not"],
+                    "unevaluatedProperties": false,
+                    "additionalProperties": false
+                }
+            ]
         }
     },
     "properties": {
@@ -1022,7 +1107,7 @@
         "stream_types": {
             "type": "object",
             "additionalProperties": {
-                "$ref": "#/$defs/content_type"
+                "$ref": "#/$defs/stream_port_filter"
             }
         },
         "local_service_name": {
