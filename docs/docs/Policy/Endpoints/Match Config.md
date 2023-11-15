@@ -72,6 +72,20 @@ The default is no whitelist at all (all contexts are allowed).
 
 Interpretation of `contexts` depends on the content type of the document.
 
+### search
+
+The `search` field can be used to set where the matcher should be run. Possible values are:
+
+* `request_body`: only match on values within the request body
+* `downstream`: only match on values within the downstream body (streaming only)
+* `request_header`: only match on values within the request headers
+* `upstream`: only match on values within the upstream body (streaming only)
+* `response_body`: only match on values within the response body
+* `response_header`: only match on values within the response headers
+* `all_body`: only match on values within the request or response body (default)
+* `all_header`: only match on values within the request or response headers
+* `all`: match on values regardless of location
+
 #### `json` Valid Values
 
 Can be one or more of the following values, as a string or array of strings.
