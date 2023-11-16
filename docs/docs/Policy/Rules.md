@@ -40,6 +40,8 @@ Each filter has exactly one of the following keys:
 * `exclude_ip`: Takes one or more IP address or CIDR and requires that **all** of them **do not** match the ip
 * `request_matches`: Takes a map of category names and one or more [Match Rule Filters](#Match%20Rule%20Filter) that the category must satisfy. Use "*" to match any category.
 * `response_matches`:  Takes a map of category names and one or more [Match Rule Filters](#Match%20Rule%20Filter) that the category must satisfy. Use "*" to match any category.
+* `downstream_matches`: same as `request_matches`, but for streaming mode
+* `upstream_matches`: same as `response_matches`, but for streaming mode
 * `request_headers`: Takes a map of header names and one or more [Match Rule](Match%20Rule) and, for each header listed, requires that the header key exist and **any** of the rules match the header value
 * `exclude_request_headers`: Takes a map of header names and one or more [Match Rule](Match%20Rule) and, for each header listed, requires that the header key either doesn't exist or that **none of** of the rules match the header value
 * `response_headers`: Takes a map of header names and one or more [Match Rule](Match%20Rule) and, for each header listed, requires that the header key exist and **any** of the rules match the header value

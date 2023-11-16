@@ -479,7 +479,7 @@
                 "properties": {
                     "matches": { "$ref": "#/$defs/rule_filter" },
                     "search": {
-                        "enum": ["request_body", "request_header", "response_body", "response_header", "all_body", "all_header", "all"]
+                        "enum": ["request_body", "downstream", "request_header", "response_body", "upstream", "response_header", "all_body", "all_header", "all"]
                     },
                     "token_extractor": {
                         "type": "object",
@@ -727,6 +727,40 @@
                         }
                     },
                     "required": ["response_matches"],
+                    "unevaluatedProperties": false,
+                    "additionalProperties": false
+                },
+                {
+                    "type": "object",
+                    "properties": {
+                        "upstream_matches": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "anyOf": [
+                                    { "$ref": "#/$defs/match_filter_rule" },
+                                    { "type": "array", "items": { "$ref": "#/$defs/match_filter_rule" } }
+                                ]
+                            }
+                        }
+                    },
+                    "required": ["upstream_matches"],
+                    "unevaluatedProperties": false,
+                    "additionalProperties": false
+                },
+                {
+                    "type": "object",
+                    "properties": {
+                        "downstream_matches": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "anyOf": [
+                                    { "$ref": "#/$defs/match_filter_rule" },
+                                    { "type": "array", "items": { "$ref": "#/$defs/match_filter_rule" } }
+                                ]
+                            }
+                        }
+                    },
+                    "required": ["downstream_matches"],
                     "unevaluatedProperties": false,
                     "additionalProperties": false
                 },
@@ -1107,7 +1141,7 @@
             "items": {
                 "type": "object",
                 "properties": {
-                    "mode": { "enum": ["request_only", "response_only", "all"] },
+                    "mode": { "enum": ["request_only", "upstream_only", "response_only", "downstream_only", "all"] },
                     "sample_rate": { "type": "number" },
                     "max_body_collection_mb": { "type": "number" },
                     "filter": { "$ref": "#/$defs/rule_filter" }
