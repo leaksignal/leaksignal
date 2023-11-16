@@ -434,7 +434,7 @@
             ]
         },
         "report_style": { "enum": ["raw", "partial_sha256", "sha256", "none"] },
-        "content_type": { "enum": ["text", "json", "grpc", "filebeat", "none"] },
+        "content_type": { "enum": ["text", "json", "grpc", "filebeat", "tls", "none"] },
         "match_context": { "anyOf": [
             { "enum": ["keys", "values", "values_key"] },
             {
@@ -1109,8 +1109,15 @@
                     "type": "object",
                     "properties": {
                         "not": {
-                            "type": "array",
-                            "items": { "type": "#/$defs/stream_port_filter" }
+                            "oneOf": [
+                                {
+                                    "type": "#/$defs/stream_port_filter"
+                                },
+                                {
+                                    "type": "array",
+                                    "items": { "type": "#/$defs/stream_port_filter" }
+                                }
+                            ]
                         }
                     },
                     "required": ["not"],
