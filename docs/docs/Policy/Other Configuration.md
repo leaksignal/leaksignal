@@ -109,6 +109,8 @@ The possible parsers are:
 - `text`: parse as plaintext
 - `json`: parse as json keys/values
 - `grpc`: parse as a GRPC stream
+- `filebeat`: parse as a filebeat stream (streaming mode only)
+- `tls`: parse as a TLS stream (streaming mode only). this doesn't perform any actual matching, and instead adds the field `ls_tls` to the connection info with a boolean for if it is a TLS stream or not. If the parser hasn't seen enough bytes to determine if the stream is TLS or not, then `ls_tls` will contain `unknown`, although this should basically never happen as it only takes a handful of bytes to determine this
 - `none`: do not parse this content type (default)
 
 The default types are:
