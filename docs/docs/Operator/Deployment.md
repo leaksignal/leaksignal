@@ -27,11 +27,20 @@ The easiest way to deploy the Operator is with the Helm Chart:
 
 ```
 helm upgrade --install leaksignal-operator oci://registry-1.docker.io/leaksignal/leaksignal-operator \
-  --version 1.1.0-helm \
+  --version 1.2.0-helm \
   --namespace kube-system
 ```
 
 The namespace can be changed if preferred.
+
+### Upgrading Helm Chart
+
+When upgrading the helm chart, the `helm upgrade --install` command above should still be used with the desired version.
+
+You should also update the CRDs:
+```
+kubectl apply -f https://raw.githubusercontent.com/leaksignal/leaksignal/master/operator_helm/crds/leaksignal-crd.yaml https://raw.githubusercontent.com/leaksignal/leaksignal/master/operator_helm/crds/leaksignal-cluster-crd.yaml
+```
 
 ### Helm Values
 
