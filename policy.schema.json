@@ -102,7 +102,7 @@
                                 },
                                 "matches": {
                                     "anyOf": [
-                                        { "$ref": "#/$defs/matches" },
+                                        { "$ref": "#/$defs/category" },
                                         { "type": "string" }
                                     ]
                                 }
@@ -423,6 +423,18 @@
                 }
             ],
             "unevaluatedProperties": false
+        },
+        "category": {
+            "oneOf": [
+                { "$ref": "#/$defs/matches" },
+                {
+                    "type": "object",
+                    "items": {
+                        "matchers": { "$ref": "#/$defs/matches" },
+                        "tag": { "type": "string" }
+                    }
+                }
+            ]
         },
         "matches": {
             "anyOf": [
@@ -1129,10 +1141,7 @@
         }
     },
     "properties": {
-        "categories": {
-            "type": "object",
-            "additionalProperties": { "$ref": "#/$defs/matches" }
-        },
+        "categories": { "$ref": "#/$defs/category" },
         "endpoints": { "$ref": "#/$defs/endpoints" },
         "filter": { "$ref": "#/$defs/service_filter" },
         "sbac": {

@@ -139,3 +139,25 @@ categories:
           - raw_insensitive: social
           - raw_insensitive: security
 ```
+
+
+## Category Tags
+
+There is an alternative form of parsing for categories that allows you to set a tag for the corresponding matchers. if used, the tag will be added to the metadata of any produced matches.
+
+The below example will set `"tag": "routing"` in the metadata field of any matches produced by `routing` or `routing_2`. As contrast, the `phone_number` category still uses the normal form of category parsing.
+
+```yaml
+categories:
+  phone_number:
+    - regex: "[^0-9][0-9]{10}[^0-9]"
+  routing:
+    matchers: !internal routing_number
+    tag: "routing"
+  routing_2:
+    matchers:
+      - regex: "\\b\\d{9}\\b"
+      - regex: "\\b\\d{5}\\b"
+      - and: !internal routing_number
+    tag: "routing"
+```
