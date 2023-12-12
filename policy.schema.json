@@ -259,7 +259,7 @@
                     "type": "object",
                     "properties": {
                         "internal": {
-                            "enum": ["routing_number", "credit_card"]
+                            "enum": ["routing_number", "credit_card", "int_phone", "national_phone"]
                         }
                     },
                     "required": ["internal"],
