@@ -259,7 +259,18 @@
                     "type": "object",
                     "properties": {
                         "internal": {
-                            "enum": ["routing_number", "credit_card", "int_phone", "national_phone"]
+                            "oneOf": [
+                                { "enum": ["routing_number", "credit_card", "int_phone"] },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "national_phone": { "type": "string" }
+                                    },
+                                    "required": ["national_phone"],
+                                    "unevaluatedProperties": false,
+                                    "additionalProperties": false
+                                }
+                            ]
                         }
                     },
                     "required": ["internal"],
