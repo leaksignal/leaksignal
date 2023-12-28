@@ -4,8 +4,8 @@
         {
           "builtIn": 1,
           "datasource": {
-            "type": "grafana",
-            "uid": "-- Grafana --"
+            "type": "datasource",
+            "uid": "grafana"
           },
           "enable": true,
           "hide": true,
@@ -31,7 +31,7 @@
       {
         "datasource": {
           "type": "prometheus",
-          "uid": "P1809F7CD0C75ACF3"
+          "uid": "$datasource"
         },
         "fieldConfig": {
           "defaults": {
@@ -109,7 +109,7 @@
           {
             "datasource": {
               "type": "prometheus",
-              "uid": "P1809F7CD0C75ACF3"
+              "uid": "$datasource"
             },
             "editorMode": "code",
             "expr": "histogram_quantile(0.5, sum by (local_service, policy_path, category, le)(irate(leaksignal_match_count_bucket{deployment=\"$deployment\", local_service=~\"$service\", in_header=~\"${in_header:regex}\", in_response=~\"${in_response:regex}\", category=~\"$category\"}[$__rate_interval])))",
@@ -137,7 +137,7 @@
           },
           "datasource": {
             "type": "prometheus",
-            "uid": "P1809F7CD0C75ACF3"
+            "uid": "$datasource"
           },
           "definition": "label_values(leaksignal_match_count_bucket, deployment)",
           "error": {},
@@ -183,7 +183,7 @@
           },
           "datasource": {
             "type": "prometheus",
-            "uid": "P1809F7CD0C75ACF3"
+            "uid": "$datasource"
           },
           "definition": "label_values(leaksignal_match_count_bucket{deployment=\"$deployment\"}, local_service)",
           "error": {},
@@ -289,7 +289,7 @@
           },
           "datasource": {
             "type": "prometheus",
-            "uid": "P1809F7CD0C75ACF3"
+            "uid": "$datasource"
           },
           "definition": "label_values(leaksignal_match_count_bucket{deployment=\"$deployment\"}, category)",
           "error": {},

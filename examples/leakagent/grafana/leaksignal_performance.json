@@ -4,8 +4,8 @@
       {
         "builtIn": 1,
         "datasource": {
-          "type": "grafana",
-          "uid": "-- Grafana --"
+          "type": "datasource",
+          "uid": "grafana"
         },
         "enable": true,
         "hide": true,
@@ -31,7 +31,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "prometheus"
+        "uid": "$datasource"
       },
       "fieldConfig": {
         "defaults": {
@@ -109,7 +109,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "prometheus"
+            "uid": "$datasource"
           },
           "editorMode": "code",
           "expr": "sum by (local_service, policy_path, status)(irate(leaksignal_status_code{deployment=\"$deployment\",local_service=~\"$service\",policy_path=~\"$policy_path\",is_outbound=\"true\"}[$__rate_interval]))",
@@ -124,7 +124,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "prometheus"
+        "uid": "$datasource"
       },
       "fieldConfig": {
         "defaults": {
@@ -178,7 +178,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "prometheus"
+            "uid": "$datasource"
           },
           "editorMode": "code",
           "exemplar": false,
@@ -197,7 +197,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "prometheus"
+        "uid": "$datasource"
       },
       "fieldConfig": {
         "defaults": {
@@ -277,7 +277,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "prometheus"
+            "uid": "$datasource"
           },
           "editorMode": "code",
           "expr": "histogram_quantile($pvalue, sum by (local_service, policy_path, le)(rate(leaksignal_request_time_ms_bucket{deployment=\"$deployment\",local_service=~\"$service\",policy_path=~\"$policy_path\",is_outbound=\"true\"}[$__rate_interval])))\n",
@@ -292,7 +292,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "prometheus"
+        "uid": "$datasource"
       },
       "fieldConfig": {
         "defaults": {
@@ -346,7 +346,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "prometheus"
+            "uid": "$datasource"
           },
           "editorMode": "code",
           "exemplar": false,
@@ -365,7 +365,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "prometheus"
+        "uid": "$datasource"
       },
       "fieldConfig": {
         "defaults": {
@@ -445,7 +445,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "prometheus"
+            "uid": "$datasource"
           },
           "editorMode": "code",
           "expr": "histogram_quantile($pvalue, sum by (local_service, policy_path, le)(rate(leaksignal_response_time_ms_bucket{deployment=\"$deployment\",local_service=~\"$service\",policy_path=~\"$policy_path\",is_outbound=\"true\"}[$__rate_interval])))\n",
@@ -456,7 +456,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "prometheus"
+            "uid": "$datasource"
           },
           "editorMode": "code",
           "expr": "",
@@ -472,7 +472,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "prometheus"
+        "uid": "$datasource"
       },
       "fieldConfig": {
         "defaults": {
@@ -551,7 +551,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "prometheus"
+            "uid": "$datasource"
           },
           "editorMode": "code",
           "expr": "histogram_quantile($pvalue, sum by (local_service, policy_path, le)(rate(leaksignal_match_time_ms_bucket{deployment=\"$deployment\",local_service=~\"$service\",policy_path=~\"$policy_path\",is_outbound=\"true\"}[$__rate_interval])))",
@@ -579,7 +579,7 @@
         },
         "datasource": {
           "type": "prometheus",
-          "uid": "prometheus"
+          "uid": "$datasource"
         },
         "definition": "label_values(leaksignal_request_time_ms_bucket, deployment)",
         "hide": 0,
@@ -610,7 +610,7 @@
         },
         "datasource": {
           "type": "prometheus",
-          "uid": "prometheus"
+          "uid": "$datasource"
         },
         "definition": "label_values(leaksignal_request_time_ms_bucket{deployment=\"$deployment\"}, local_service)",
         "hide": 0,
@@ -641,7 +641,7 @@
         },
         "datasource": {
           "type": "prometheus",
-          "uid": "prometheus"
+          "uid": "$datasource"
         },
         "definition": "label_values(leaksignal_request_time_ms_bucket{deployment=\"$deployment\", local_service=~\"$service\",  is_outbound=\"true\"}, policy_path)",
         "hide": 0,

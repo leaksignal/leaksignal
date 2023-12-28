@@ -4,8 +4,8 @@
         {
           "builtIn": 1,
           "datasource": {
-            "type": "grafana",
-            "uid": "-- Grafana --"
+            "type": "datasource",
+            "uid": "grafana"
           },
           "enable": true,
           "hide": true,
@@ -31,7 +31,7 @@
       {
         "datasource": {
           "type": "prometheus",
-          "uid": "P1809F7CD0C75ACF3"
+          "uid": "$datasource"
         },
         "fieldConfig": {
           "defaults": {
@@ -108,7 +108,7 @@
           {
             "datasource": {
               "type": "prometheus",
-              "uid": "P1809F7CD0C75ACF3"
+              "uid": "$datasource"
             },
             "editorMode": "code",
             "expr": "sum by (status)(irate(leaksignal_status_code{deployment=\"$deployment\"}[$__rate_interval]))",
@@ -123,7 +123,7 @@
       {
         "datasource": {
           "type": "prometheus",
-          "uid": "P1809F7CD0C75ACF3"
+          "uid": "$datasource"
         },
         "fieldConfig": {
           "defaults": {
@@ -201,7 +201,7 @@
           {
             "datasource": {
               "type": "prometheus",
-              "uid": "P1809F7CD0C75ACF3"
+              "uid": "$datasource"
             },
             "editorMode": "code",
             "expr": "histogram_quantile(0.50, sum by (local_service, le)(rate(leaksignal_request_time_ms_bucket{deployment=\"$deployment\"}[$__rate_interval])))",
@@ -212,7 +212,7 @@
           {
             "datasource": {
               "type": "prometheus",
-              "uid": "P1809F7CD0C75ACF3"
+              "uid": "$datasource"
             },
             "editorMode": "code",
             "expr": "",
@@ -228,7 +228,7 @@
       {
         "datasource": {
           "type": "prometheus",
-          "uid": "P1809F7CD0C75ACF3"
+          "uid": "$datasource"
         },
         "fieldConfig": {
           "defaults": {
@@ -306,7 +306,7 @@
           {
             "datasource": {
               "type": "prometheus",
-              "uid": "P1809F7CD0C75ACF3"
+              "uid": "$datasource"
             },
             "editorMode": "code",
             "expr": "sum by (local_service, le)(irate(leaksignal_request_size_bytes_sum{deployment=\"$deployment\"}[$__rate_interval]))/sum by (local_service, le)(irate(leaksignal_request_size_bytes_count{deployment=\"$deployment\"}[$__rate_interval]))",
@@ -322,7 +322,7 @@
       {
         "datasource": {
           "type": "prometheus",
-          "uid": "P1809F7CD0C75ACF3"
+          "uid": "$datasource"
         },
         "fieldConfig": {
           "defaults": {
@@ -400,7 +400,7 @@
           {
             "datasource": {
               "type": "prometheus",
-              "uid": "P1809F7CD0C75ACF3"
+              "uid": "$datasource"
             },
             "editorMode": "code",
             "expr": "histogram_quantile(0.50, sum by (local_service, le)(rate(leaksignal_response_time_ms_bucket{deployment=\"$deployment\"}[$__rate_interval])))",
@@ -411,7 +411,7 @@
           {
             "datasource": {
               "type": "prometheus",
-              "uid": "P1809F7CD0C75ACF3"
+              "uid": "$datasource"
             },
             "editorMode": "code",
             "expr": "",
@@ -427,7 +427,7 @@
       {
         "datasource": {
           "type": "prometheus",
-          "uid": "P1809F7CD0C75ACF3"
+          "uid": "$datasource"
         },
         "fieldConfig": {
           "defaults": {
@@ -505,7 +505,7 @@
           {
             "datasource": {
               "type": "prometheus",
-              "uid": "P1809F7CD0C75ACF3"
+              "uid": "$datasource"
             },
             "editorMode": "code",
             "expr": "sum by (local_service, le)(irate(leaksignal_response_size_bytes_sum{deployment=\"$deployment\"}[$__rate_interval]))/sum by (local_service, le)(irate(leaksignal_response_size_bytes_count{deployment=\"$deployment\"}[$__rate_interval]))",
@@ -521,7 +521,7 @@
       {
         "datasource": {
           "type": "prometheus",
-          "uid": "P1809F7CD0C75ACF3"
+          "uid": "$datasource"
         },
         "fieldConfig": {
           "defaults": {
@@ -599,7 +599,7 @@
           {
             "datasource": {
               "type": "prometheus",
-              "uid": "P1809F7CD0C75ACF3"
+              "uid": "$datasource"
             },
             "editorMode": "code",
             "expr": "histogram_quantile(0.50, sum by (le)(rate(leaksignal_match_time_ms_bucket{deployment=\"$deployment\"}[$__rate_interval])))",
@@ -627,7 +627,7 @@
           },
           "datasource": {
             "type": "prometheus",
-            "uid": "P1809F7CD0C75ACF3"
+            "uid": "$datasource"
           },
           "definition": "label_values(leaksignal_request_time_ms_bucket, deployment)",
           "hide": 0,

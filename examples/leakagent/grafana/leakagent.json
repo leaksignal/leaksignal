@@ -4,8 +4,8 @@
         {
           "builtIn": 1,
           "datasource": {
-            "type": "grafana",
-            "uid": "-- Grafana --"
+            "type": "datasource",
+            "uid": "grafana"
           },
           "enable": true,
           "hide": true,
@@ -31,7 +31,7 @@
       {
         "datasource": {
           "type": "prometheus",
-          "uid": "P1809F7CD0C75ACF3"
+          "uid": "$datasource"
         },
         "fieldConfig": {
           "defaults": {
@@ -109,7 +109,7 @@
           {
             "datasource": {
               "type": "prometheus",
-              "uid": "P1809F7CD0C75ACF3"
+              "uid": "$datasource"
             },
             "editorMode": "code",
             "expr": "sum(irate(leakagent_match_inbound[$__rate_interval]))",
@@ -124,7 +124,7 @@
       {
         "datasource": {
           "type": "prometheus",
-          "uid": "P1809F7CD0C75ACF3"
+          "uid": "$datasource"
         },
         "fieldConfig": {
           "defaults": {
@@ -202,7 +202,7 @@
           {
             "datasource": {
               "type": "prometheus",
-              "uid": "P1809F7CD0C75ACF3"
+              "uid": "$datasource"
             },
             "editorMode": "code",
             "expr": "sum(irate(leakagent_proxy_pull[$__rate_interval]))",
@@ -217,7 +217,7 @@
       {
         "datasource": {
           "type": "prometheus",
-          "uid": "P1809F7CD0C75ACF3"
+          "uid": "$datasource"
         },
         "fieldConfig": {
           "defaults": {
@@ -295,7 +295,7 @@
           {
             "datasource": {
               "type": "prometheus",
-              "uid": "P1809F7CD0C75ACF3"
+              "uid": "$datasource"
             },
             "editorMode": "code",
             "expr": "sum by (policy)(irate(leakagent_policy_update_send[$__rate_interval]))",
@@ -310,7 +310,7 @@
       {
         "datasource": {
           "type": "prometheus",
-          "uid": "P1809F7CD0C75ACF3"
+          "uid": "$datasource"
         },
         "fieldConfig": {
           "defaults": {
@@ -388,7 +388,7 @@
           {
             "datasource": {
               "type": "prometheus",
-              "uid": "P1809F7CD0C75ACF3"
+              "uid": "$datasource"
             },
             "editorMode": "code",
             "expr": "sum by (policy)(irate(leakagent_policy_update_init[$__rate_interval]))",
@@ -403,7 +403,7 @@
       {
         "datasource": {
           "type": "prometheus",
-          "uid": "P1809F7CD0C75ACF3"
+          "uid": "$datasource"
         },
         "fieldConfig": {
           "defaults": {
@@ -481,7 +481,7 @@
           {
             "datasource": {
               "type": "prometheus",
-              "uid": "P1809F7CD0C75ACF3"
+              "uid": "$datasource"
             },
             "editorMode": "code",
             "expr": "sum by (deployment)(leakagent_policy_update_waiting)",
@@ -496,7 +496,7 @@
       {
         "datasource": {
           "type": "prometheus",
-          "uid": "P1809F7CD0C75ACF3"
+          "uid": "$datasource"
         },
         "fieldConfig": {
           "defaults": {
@@ -574,7 +574,7 @@
           {
             "datasource": {
               "type": "prometheus",
-              "uid": "P1809F7CD0C75ACF3"
+              "uid": "$datasource"
             },
             "editorMode": "code",
             "expr": "sum by (policy)(irate(leakagent_policy_update_turnaway[$__rate_interval]))",

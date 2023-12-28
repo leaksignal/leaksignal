@@ -23,6 +23,16 @@ rules:
   - list
   - get
   - delete
+- apiGroups: ["apps"]
+  resources:
+  - deployments
+  - replicasets
+  - statefulsets
+  verbs:
+  - list
+  - get
+  - patch
+  - update
 - apiGroups:
   - leaksignal.com
   resources:
