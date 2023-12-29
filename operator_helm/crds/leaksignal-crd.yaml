@@ -61,6 +61,8 @@ spec:
                   enum: ["default", "envoy"]
                 enableStreaming:
                   type: boolean
+                native:
+                  type: boolean
                 failOpen:
                   type: boolean
                 workloadSelector:
