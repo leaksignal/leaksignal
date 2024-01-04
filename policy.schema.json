@@ -3,6 +3,85 @@
     "$schema": "https://json-schema.org/draft/2020-12/schema",
     "type": "object",
     "$defs": {
+        "hash_type": {
+            "enum": [
+                "bcrypt",
+                "sha256_crypt",
+                "sha512_crypt",
+                "md5_crypt",
+                "sha1_crypt",
+                "sun_md5_crypt",
+                "argon2",
+                "bcrypt_sha256",
+                "phpass",
+                "pbkdf2_sha1",
+                "pbkdf2_sha256",
+                "pbkdf2_sha512",
+                "scram",
+                "scrypt",
+                "apr_md5_crypt",
+                "cta_pbkdf2_sha1",
+                "dlitz_pbkdf2_sha1",
+                "mssql2000",
+                "mssql2005",
+                "mysql141",
+                "postgres_md5",
+                "oracle11",
+                "bsd_nthash",
+                "django_pbkdf2_sha1",
+                "django_pbkdf2_sha256",
+                "django_salted_sha1",
+                "django_salted_md5",
+                "django_des_crypt",
+                "grub_pbkdf2_sha512"
+            ]
+        },
+        "error_text": {
+            "enum": [
+                "js_error",
+                "py_error",
+                "java_error",
+                "rust_error",
+                "ruby_error",
+                "go_error",
+                "php_error",
+                "mysql_error",
+                "postgres_error",
+                "redis_error",
+                "mongodb_error",
+                "type_error",
+                "uncaught",
+                "socket_error",
+                "operation_not_supported",
+                "callback",
+                "segfault",
+                "runtime_error",
+                "out_of_memory",
+                "permission_denied",
+                "command_not_found",
+                "js_unknown_argument",
+                "js_invalid_invocation",
+                "js_bug_message",
+                "envoy_segfault"
+            ]
+        },
+        "exploit_detection": {
+            "type": "object",
+            "properties": {
+                "hashes": {
+                    "type": "array",
+                    "items": { "$ref": "#/$defs/hash_type" }
+                },
+                "error_text": {
+                    "type": "array",
+                    "items": { "$ref": "#/$defs/error_text" }
+                },
+                "measure_entropy": { "type": "boolean" },
+                "detect_non_ascii": { "type": "boolean" }
+            },
+            "unevaluatedProperties": false,
+            "additionalProperties": false
+        },
         "service_name_source": {
             "oneOf": [
                 { "enum": ["none", "istio"] },
@@ -260,13 +339,41 @@
                     "properties": {
                         "internal": {
                             "oneOf": [
-                                { "enum": ["routing_number", "credit_card", "int_phone"] },
+                                { "enum": ["routing_number", "credit_card", "int_phone", "hash", "error_text"] },
                                 {
                                     "type": "object",
                                     "properties": {
                                         "national_phone": { "type": "string" }
                                     },
                                     "required": ["national_phone"],
+                                    "unevaluatedProperties": false,
+                                    "additionalProperties": false
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "hash": {
+                                            "oneOf": [
+                                                { "$ref": "#/$defs/hash_type" },
+                                                { "type": "array", "items": { "$ref": "#/$defs/hash_type" } }
+                                            ]
+                                        }
+                                    },
+                                    "required": ["hash"],
+                                    "unevaluatedProperties": false,
+                                    "additionalProperties": false
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "error_text": {
+                                            "oneOf": [
+                                                { "$ref": "#/$defs/error_text" },
+                                                { "type": "array", "items": { "$ref": "#/$defs/error_text" } }
+                                            ]
+                                        }
+                                    },
+                                    "required": ["error_text"],
                                     "unevaluatedProperties": false,
                                     "additionalProperties": false
                                 }
@@ -522,6 +629,7 @@
                     },
                     "report_style": { "$ref": "#/$defs/report_style" },
                     "report_bits": { "type": "integer" },
+                    "exploit_detection": { "$ref": "#/$defs/exploit_detection" },
                     "config": {
                         "type": "object",
                         "additionalProperties": {
