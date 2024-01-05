@@ -124,6 +124,7 @@ endpoints:
         contexts:
           - header: "hello"
         search: request_header
+    exploit_detection: {}
     token_extractor:
       location: request
       header: "block_me"
