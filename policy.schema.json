@@ -70,45 +70,70 @@
             "properties": {
                 "hashes": {
                     "type": "array",
-                    "items": { "$ref": "#/$defs/hash_type" }
+                    "items": {
+                        "$ref": "#/$defs/hash_type"
+                    }
                 },
                 "error_text": {
                     "type": "array",
-                    "items": { "$ref": "#/$defs/error_text" }
+                    "items": {
+                        "$ref": "#/$defs/error_text"
+                    }
                 },
-                "measure_entropy": { "type": "boolean" },
-                "detect_non_ascii": { "type": "boolean" }
+                "measure_entropy": {
+                    "type": "boolean"
+                },
+                "detect_non_ascii": {
+                    "type": "boolean"
+                }
             },
             "unevaluatedProperties": false,
             "additionalProperties": false
         },
         "service_name_source": {
             "oneOf": [
-                { "enum": ["none", "istio"] },
+                {
+                    "enum": [
+                        "none",
+                        "istio"
+                    ]
+                },
                 {
                     "type": "object",
                     "properties": {
-                        "env": { "type": "string" }
+                        "env": {
+                            "type": "string"
+                        }
                     },
-                    "required": ["env"],
+                    "required": [
+                        "env"
+                    ],
                     "unevaluatedProperties": false,
                     "additionalProperties": false
                 },
                 {
                     "type": "object",
                     "properties": {
-                        "attrs": { "type": "string" }
+                        "attrs": {
+                            "type": "string"
+                        }
                     },
-                    "required": ["attrs"],
+                    "required": [
+                        "attrs"
+                    ],
                     "unevaluatedProperties": false,
                     "additionalProperties": false
                 },
                 {
                     "type": "object",
                     "properties": {
-                        "raw": { "type": "string" }
+                        "raw": {
+                            "type": "string"
+                        }
                     },
-                    "required": ["raw"],
+                    "required": [
+                        "raw"
+                    ],
                     "unevaluatedProperties": false,
                     "additionalProperties": false
                 },
@@ -118,15 +143,24 @@
                         "default": {
                             "type": "object",
                             "properties": {
-                                "from": { "$ref": "#/$defs/service_name_source" },
-                                "to": { "$ref": "#/$defs/service_name_source" }
+                                "from": {
+                                    "$ref": "#/$defs/service_name_source"
+                                },
+                                "to": {
+                                    "$ref": "#/$defs/service_name_source"
+                                }
                             },
-                            "required": ["from", "to"],
+                            "required": [
+                                "from",
+                                "to"
+                            ],
                             "unevaluatedProperties": false,
                             "additionalProperties": false
                         }
                     },
-                    "required": ["default"],
+                    "required": [
+                        "default"
+                    ],
                     "unevaluatedProperties": false,
                     "additionalProperties": false
                 }
@@ -136,10 +170,18 @@
         "service_name_extractor": {
             "type": "object",
             "properties": {
-                "cluster": { "$ref": "#/$defs/service_name_source" },
-                "ns": { "$ref": "#/$defs/service_name_source" },
-                "sa": { "$ref": "#/$defs/service_name_source" },
-                "workload": { "$ref": "#/$defs/service_name_source" }
+                "cluster": {
+                    "$ref": "#/$defs/service_name_source"
+                },
+                "ns": {
+                    "$ref": "#/$defs/service_name_source"
+                },
+                "sa": {
+                    "$ref": "#/$defs/service_name_source"
+                },
+                "workload": {
+                    "$ref": "#/$defs/service_name_source"
+                }
             },
             "required": [],
             "unevaluatedProperties": false,
@@ -148,7 +190,12 @@
         "rule_by": {
             "oneOf": [
                 {
-                    "enum": ["ip", "token", "outbound_service", "inbound_service"]
+                    "enum": [
+                        "ip",
+                        "token",
+                        "outbound_service",
+                        "inbound_service"
+                    ]
                 },
                 {
                     "type": "object",
@@ -157,7 +204,9 @@
                             "type": "string"
                         }
                     },
-                    "required": ["header"],
+                    "required": [
+                        "header"
+                    ],
                     "unevaluatedProperties": false,
                     "additionalProperties": false
                 }
@@ -166,7 +215,9 @@
         },
         "match_item": {
             "oneOf": [
-                { "$ref": "#/$defs/service_rule" },
+                {
+                    "$ref": "#/$defs/service_rule"
+                },
                 {
                     "type": "object",
                     "properties": {
@@ -174,22 +225,35 @@
                             "type": "object",
                             "properties": {
                                 "interest": {
-                                    "enum": ["primary", "secondary", "all"]
+                                    "enum": [
+                                        "primary",
+                                        "secondary",
+                                        "all"
+                                    ]
                                 },
                                 "max_distance": {
                                     "type": "integer"
                                 },
                                 "matches": {
                                     "anyOf": [
-                                        { "$ref": "#/$defs/category" },
-                                        { "type": "string" }
+                                        {
+                                            "$ref": "#/$defs/category"
+                                        },
+                                        {
+                                            "type": "string"
+                                        }
                                     ]
                                 }
                             },
-                            "required": ["max_distance", "matches"]
+                            "required": [
+                                "max_distance",
+                                "matches"
+                            ]
                         }
                     },
-                    "required": ["correlate"],
+                    "required": [
+                        "correlate"
+                    ],
                     "unevaluatedProperties": false,
                     "additionalProperties": false
                 }
@@ -198,8 +262,12 @@
         },
         "match_filter_rule": {
             "oneOf": [
-                { "type": "integer" },
-                { "type": "string" },
+                {
+                    "type": "integer"
+                },
+                {
+                    "type": "string"
+                },
                 {
                     "type": "array",
                     "items": {
@@ -209,8 +277,15 @@
                                 "properties": {
                                     "path": {
                                         "anyOf": [
-                                            { "type": "string" },
-                                            { "type": "array", "items": { "type": "string" } }
+                                            {
+                                                "type": "string"
+                                            },
+                                            {
+                                                "type": "array",
+                                                "items": {
+                                                    "type": "string"
+                                                }
+                                            }
                                         ]
                                     }
                                 }
@@ -220,8 +295,15 @@
                                 "properties": {
                                     "exclude_path": {
                                         "anyOf": [
-                                            { "type": "string" },
-                                            { "type": "array", "items": { "type": "string" } }
+                                            {
+                                                "type": "string"
+                                            },
+                                            {
+                                                "type": "array",
+                                                "items": {
+                                                    "type": "string"
+                                                }
+                                            }
                                         ]
                                     }
                                 }
@@ -239,8 +321,15 @@
                                 "properties": {
                                     "value": {
                                         "anyOf": [
-                                            { "$ref": "#/$defs/rule_filter" },
-                                            { "type": "array", "items": { "$ref": "#/$defs/rule_filter" } }
+                                            {
+                                                "$ref": "#/$defs/rule_filter"
+                                            },
+                                            {
+                                                "type": "array",
+                                                "items": {
+                                                    "$ref": "#/$defs/rule_filter"
+                                                }
+                                            }
                                         ]
                                     }
                                 }
@@ -249,7 +338,10 @@
                                 "type": "object",
                                 "properties": {
                                     "any": {
-                                        "type": "array", "items": { "$ref": "#/$defs/match_filter_rule" }
+                                        "type": "array",
+                                        "items": {
+                                            "$ref": "#/$defs/match_filter_rule"
+                                        }
                                     }
                                 }
                             },
@@ -257,7 +349,10 @@
                                 "type": "object",
                                 "properties": {
                                     "all": {
-                                        "type": "array", "items": { "$ref": "#/$defs/match_filter_rule" }
+                                        "type": "array",
+                                        "items": {
+                                            "$ref": "#/$defs/match_filter_rule"
+                                        }
                                     }
                                 }
                             }
@@ -275,7 +370,9 @@
                             "type": "string"
                         }
                     },
-                    "required": ["raw"],
+                    "required": [
+                        "raw"
+                    ],
                     "unevaluatedProperties": false,
                     "additionalProperties": false
                 },
@@ -286,7 +383,9 @@
                             "type": "string"
                         }
                     },
-                    "required": ["raw_insensitive"],
+                    "required": [
+                        "raw_insensitive"
+                    ],
                     "unevaluatedProperties": false,
                     "additionalProperties": false
                 },
@@ -297,7 +396,9 @@
                             "type": "string"
                         }
                     },
-                    "required": ["regex"],
+                    "required": [
+                        "regex"
+                    ],
                     "unevaluatedProperties": false,
                     "additionalProperties": false
                 },
@@ -308,7 +409,9 @@
                             "type": "string"
                         }
                     },
-                    "required": ["except_regex"],
+                    "required": [
+                        "except_regex"
+                    ],
                     "unevaluatedProperties": false,
                     "additionalProperties": false
                 },
@@ -319,7 +422,9 @@
                             "type": "string"
                         }
                     },
-                    "required": ["except"],
+                    "required": [
+                        "except"
+                    ],
                     "unevaluatedProperties": false,
                     "additionalProperties": false
                 },
@@ -330,7 +435,9 @@
                             "type": "string"
                         }
                     },
-                    "required": ["except_insensitive"],
+                    "required": [
+                        "except_insensitive"
+                    ],
                     "unevaluatedProperties": false,
                     "additionalProperties": false
                 },
@@ -339,13 +446,26 @@
                     "properties": {
                         "internal": {
                             "oneOf": [
-                                { "enum": ["routing_number", "credit_card", "int_phone", "hash", "error_text"] },
+                                {
+                                    "enum": [
+                                        "routing_number",
+                                        "credit_card",
+                                        "int_phone",
+                                        "hash",
+                                        "error_text",
+                                        "sql"
+                                    ]
+                                },
                                 {
                                     "type": "object",
                                     "properties": {
-                                        "national_phone": { "type": "string" }
+                                        "national_phone": {
+                                            "type": "string"
+                                        }
                                     },
-                                    "required": ["national_phone"],
+                                    "required": [
+                                        "national_phone"
+                                    ],
                                     "unevaluatedProperties": false,
                                     "additionalProperties": false
                                 },
@@ -354,12 +474,21 @@
                                     "properties": {
                                         "hash": {
                                             "oneOf": [
-                                                { "$ref": "#/$defs/hash_type" },
-                                                { "type": "array", "items": { "$ref": "#/$defs/hash_type" } }
+                                                {
+                                                    "$ref": "#/$defs/hash_type"
+                                                },
+                                                {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "$ref": "#/$defs/hash_type"
+                                                    }
+                                                }
                                             ]
                                         }
                                     },
-                                    "required": ["hash"],
+                                    "required": [
+                                        "hash"
+                                    ],
                                     "unevaluatedProperties": false,
                                     "additionalProperties": false
                                 },
@@ -368,32 +497,49 @@
                                     "properties": {
                                         "error_text": {
                                             "oneOf": [
-                                                { "$ref": "#/$defs/error_text" },
-                                                { "type": "array", "items": { "$ref": "#/$defs/error_text" } }
+                                                {
+                                                    "$ref": "#/$defs/error_text"
+                                                },
+                                                {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "$ref": "#/$defs/error_text"
+                                                    }
+                                                }
                                             ]
                                         }
                                     },
-                                    "required": ["error_text"],
+                                    "required": [
+                                        "error_text"
+                                    ],
                                     "unevaluatedProperties": false,
                                     "additionalProperties": false
                                 }
                             ]
                         }
                     },
-                    "required": ["internal"],
+                    "required": [
+                        "internal"
+                    ],
                     "unevaluatedProperties": false,
                     "additionalProperties": false
                 },
                 {
                     "type": "object",
                     "properties": {
-                        "and": { "$ref": "#/$defs/matches" }
+                        "and": {
+                            "$ref": "#/$defs/matches"
+                        }
                     },
-                    "required": ["and"],
+                    "required": [
+                        "and"
+                    ],
                     "unevaluatedProperties": false,
                     "additionalProperties": false
                 },
-                { "type": "string" }
+                {
+                    "type": "string"
+                }
             ]
         },
         "service_filter": {
@@ -403,12 +549,21 @@
                     "properties": {
                         "cluster": {
                             "anyOf": [
-                                { "$ref": "#/$defs/service_rule" },
-                                { "type": "array", "items": { "$ref": "#/$defs/service_rule" } }
+                                {
+                                    "$ref": "#/$defs/service_rule"
+                                },
+                                {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/$defs/service_rule"
+                                    }
+                                }
                             ]
                         }
                     },
-                    "required": ["cluster"],
+                    "required": [
+                        "cluster"
+                    ],
                     "unevaluatedProperties": false,
                     "additionalProperties": false
                 },
@@ -417,12 +572,21 @@
                     "properties": {
                         "exclude_cluster": {
                             "anyOf": [
-                                { "$ref": "#/$defs/service_rule" },
-                                { "type": "array", "items": { "$ref": "#/$defs/service_rule" } }
+                                {
+                                    "$ref": "#/$defs/service_rule"
+                                },
+                                {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/$defs/service_rule"
+                                    }
+                                }
                             ]
                         }
                     },
-                    "required": ["exclude_cluster"],
+                    "required": [
+                        "exclude_cluster"
+                    ],
                     "unevaluatedProperties": false,
                     "additionalProperties": false
                 },
@@ -431,12 +595,21 @@
                     "properties": {
                         "ns": {
                             "anyOf": [
-                                { "$ref": "#/$defs/service_rule" },
-                                { "type": "array", "items": { "$ref": "#/$defs/service_rule" } }
+                                {
+                                    "$ref": "#/$defs/service_rule"
+                                },
+                                {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/$defs/service_rule"
+                                    }
+                                }
                             ]
                         }
                     },
-                    "required": ["ns"],
+                    "required": [
+                        "ns"
+                    ],
                     "unevaluatedProperties": false,
                     "additionalProperties": false
                 },
@@ -445,12 +618,21 @@
                     "properties": {
                         "exclude_ns": {
                             "anyOf": [
-                                { "$ref": "#/$defs/service_rule" },
-                                { "type": "array", "items": { "$ref": "#/$defs/service_rule" } }
+                                {
+                                    "$ref": "#/$defs/service_rule"
+                                },
+                                {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/$defs/service_rule"
+                                    }
+                                }
                             ]
                         }
                     },
-                    "required": ["exclude_ns"],
+                    "required": [
+                        "exclude_ns"
+                    ],
                     "unevaluatedProperties": false,
                     "additionalProperties": false
                 },
@@ -459,12 +641,21 @@
                     "properties": {
                         "sa": {
                             "anyOf": [
-                                { "$ref": "#/$defs/service_rule" },
-                                { "type": "array", "items": { "$ref": "#/$defs/service_rule" } }
+                                {
+                                    "$ref": "#/$defs/service_rule"
+                                },
+                                {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/$defs/service_rule"
+                                    }
+                                }
                             ]
                         }
                     },
-                    "required": ["sa"],
+                    "required": [
+                        "sa"
+                    ],
                     "unevaluatedProperties": false,
                     "additionalProperties": false
                 },
@@ -473,12 +664,21 @@
                     "properties": {
                         "exclude_sa": {
                             "anyOf": [
-                                { "$ref": "#/$defs/service_rule" },
-                                { "type": "array", "items": { "$ref": "#/$defs/service_rule" } }
+                                {
+                                    "$ref": "#/$defs/service_rule"
+                                },
+                                {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/$defs/service_rule"
+                                    }
+                                }
                             ]
                         }
                     },
-                    "required": ["exclude_sa"],
+                    "required": [
+                        "exclude_sa"
+                    ],
                     "unevaluatedProperties": false,
                     "additionalProperties": false
                 },
@@ -487,12 +687,21 @@
                     "properties": {
                         "workload": {
                             "anyOf": [
-                                { "$ref": "#/$defs/service_rule" },
-                                { "type": "array", "items": { "$ref": "#/$defs/service_rule" } }
+                                {
+                                    "$ref": "#/$defs/service_rule"
+                                },
+                                {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/$defs/service_rule"
+                                    }
+                                }
                             ]
                         }
                     },
-                    "required": ["workload"],
+                    "required": [
+                        "workload"
+                    ],
                     "unevaluatedProperties": false,
                     "additionalProperties": false
                 },
@@ -501,16 +710,30 @@
                     "properties": {
                         "exclude_workload": {
                             "anyOf": [
-                                { "$ref": "#/$defs/service_rule" },
-                                { "type": "array", "items": { "$ref": "#/$defs/service_rule" } }
+                                {
+                                    "$ref": "#/$defs/service_rule"
+                                },
+                                {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/$defs/service_rule"
+                                    }
+                                }
                             ]
                         }
                     },
-                    "required": ["exclude_workload"],
+                    "required": [
+                        "exclude_workload"
+                    ],
                     "unevaluatedProperties": false,
                     "additionalProperties": false
                 },
-                { "enum": ["response_outbound", "response_inbound"] },
+                {
+                    "enum": [
+                        "response_outbound",
+                        "response_inbound"
+                    ]
+                },
                 {
                     "type": "object",
                     "properties": {
@@ -521,7 +744,9 @@
                             }
                         }
                     },
-                    "required": ["any"],
+                    "required": [
+                        "any"
+                    ],
                     "unevaluatedProperties": false,
                     "additionalProperties": false
                 },
@@ -535,7 +760,9 @@
                             }
                         }
                     },
-                    "required": ["all"],
+                    "required": [
+                        "all"
+                    ],
                     "unevaluatedProperties": false,
                     "additionalProperties": false
                 }
@@ -544,59 +771,107 @@
         },
         "category": {
             "oneOf": [
-                { "$ref": "#/$defs/matches" },
+                {
+                    "$ref": "#/$defs/matches"
+                },
                 {
                     "type": "object",
                     "items": {
-                        "matchers": { "$ref": "#/$defs/matches" },
-                        "tag": { "type": "string" }
+                        "matchers": {
+                            "$ref": "#/$defs/matches"
+                        },
+                        "tag": {
+                            "type": "string"
+                        }
                     }
                 }
             ]
         },
         "matches": {
             "anyOf": [
-                { "$ref": "#/$defs/match_item" },
+                {
+                    "$ref": "#/$defs/match_item"
+                },
                 {
                     "type": "array",
-                    "items": { "$ref": "#/$defs/match_item" }
+                    "items": {
+                        "$ref": "#/$defs/match_item"
+                    }
                 }
             ]
         },
-        "report_style": { "enum": ["raw", "partial_sha256", "sha256", "none"] },
-        "content_type": { "enum": ["text", "json", "grpc", "filebeat", "tls", "none"] },
-        "match_context": { "anyOf": [
-            { "enum": ["keys", "values", "values_key"] },
-            {
-                "type": "object",
-                "properties": {
-                    "header": { "type": "string" }
+        "report_style": {
+            "enum": [
+                "raw",
+                "partial_sha256",
+                "sha256",
+                "none"
+            ]
+        },
+        "content_type": {
+            "enum": [
+                "text",
+                "json",
+                "grpc",
+                "filebeat",
+                "tls",
+                "none"
+            ]
+        },
+        "match_context": {
+            "anyOf": [
+                {
+                    "enum": [
+                        "keys",
+                        "values",
+                        "values_key"
+                    ]
                 },
-                "required": ["header"],
-                "unevaluatedProperties": false,
-                "additionalProperties": false
-            }
-        ] },
+                {
+                    "type": "object",
+                    "properties": {
+                        "header": {
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "header"
+                    ],
+                    "unevaluatedProperties": false,
+                    "additionalProperties": false
+                }
+            ]
+        },
         "token_extractor": {
             "anyOf": [
                 {
                     "type": "object",
                     "properties": {
-                        "regex": { "type": "string" }
+                        "regex": {
+                            "type": "string"
+                        }
                     },
-                    "required": ["regex"],
+                    "required": [
+                        "regex"
+                    ],
                     "unevaluatedProperties": false,
                     "additionalProperties": false
                 },
                 {
-                    "enum": ["jwt_decode"]
+                    "enum": [
+                        "jwt_decode"
+                    ]
                 },
                 {
                     "type": "object",
                     "properties": {
-                        "json_path": { "type": "string" }
+                        "json_path": {
+                            "type": "string"
+                        }
                     },
-                    "required": ["json_path"],
+                    "required": [
+                        "json_path"
+                    ],
                     "unevaluatedProperties": false,
                     "additionalProperties": false
                 }
@@ -607,72 +882,159 @@
             "items": {
                 "type": "object",
                 "properties": {
-                    "matches": { "$ref": "#/$defs/rule_filter" },
+                    "matches": {
+                        "$ref": "#/$defs/rule_filter"
+                    },
                     "search": {
-                        "enum": ["request_body", "downstream", "request_header", "response_body", "upstream", "response_header", "all_body", "all_header", "all"]
+                        "enum": [
+                            "request_body",
+                            "downstream",
+                            "request_header",
+                            "response_body",
+                            "upstream",
+                            "response_header",
+                            "all_body",
+                            "all_header",
+                            "all"
+                        ]
                     },
                     "token_extractor": {
                         "type": "object",
                         "properties": {
-                            "location": { "enum": ["request", "request_cookie", "response"] },
-                            "header": { "type": "string" },
+                            "location": {
+                                "enum": [
+                                    "request",
+                                    "request_cookie",
+                                    "response"
+                                ]
+                            },
+                            "header": {
+                                "type": "string"
+                            },
                             "extractor": {
                                 "anyOf": [
-                                    { "$ref": "#/$defs/rule_filter" },
-                                    { "type": "array", "items": { "$ref": "#/$defs/rule_filter" }}
+                                    {
+                                        "$ref": "#/$defs/rule_filter"
+                                    },
+                                    {
+                                        "type": "array",
+                                        "items": {
+                                            "$ref": "#/$defs/rule_filter"
+                                        }
+                                    }
                                 ]
-                             },
-                            "hash": { "type": "boolean" }
+                            },
+                            "hash": {
+                                "type": "boolean"
+                            }
                         },
-                        "required": ["location", "header"],
+                        "required": [
+                            "location",
+                            "header"
+                        ],
                         "unevaluatedProperties": false
                     },
-                    "report_style": { "$ref": "#/$defs/report_style" },
-                    "report_bits": { "type": "integer" },
-                    "exploit_detection": { "$ref": "#/$defs/exploit_detection" },
+                    "report_style": {
+                        "$ref": "#/$defs/report_style"
+                    },
+                    "report_bits": {
+                        "type": "integer"
+                    },
+                    "exploit_detection": {
+                        "$ref": "#/$defs/exploit_detection"
+                    },
                     "config": {
                         "type": "object",
                         "additionalProperties": {
                             "type": "object",
                             "properties": {
-                                "name": { "type": "string" },
-                                "matcher": { "type": "string" },
+                                "name": {
+                                    "type": "string"
+                                },
+                                "matcher": {
+                                    "type": "string"
+                                },
                                 "action": {
                                     "oneOf": [
-                                        {"enum": ["ignore", "alert", "block"]},
+                                        {
+                                            "enum": [
+                                                "ignore",
+                                                "alert",
+                                                "block"
+                                            ]
+                                        },
                                         {
                                             "type": "object",
-                                            "properties": {"redact": {"type": "string"}},
-                                            "required": ["redact"],
+                                            "properties": {
+                                                "redact": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "required": [
+                                                "redact"
+                                            ],
                                             "unevaluatedProperties": false,
                                             "additionalProperties": false
                                         }
                                     ]
                                 },
-                                "content_types": { "anyOf": [
-                                    { "$ref": "#/$defs/content_type" },
-                                    {
-                                        "type": "array",
-                                        "items": { "$ref": "#/$defs/content_type" }
+                                "content_types": {
+                                    "anyOf": [
+                                        {
+                                            "$ref": "#/$defs/content_type"
+                                        },
+                                        {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/$defs/content_type"
+                                            }
+                                        }
+                                    ]
+                                },
+                                "contexts": {
+                                    "anyOf": [
+                                        {
+                                            "$ref": "#/$defs/match_context"
+                                        },
+                                        {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/$defs/match_context"
+                                            }
+                                        }
+                                    ]
+                                },
+                                "search": {
+                                    "enum": [
+                                        "request_body",
+                                        "request_header",
+                                        "response_body",
+                                        "response_header",
+                                        "all_body",
+                                        "all_header",
+                                        "all"
+                                    ]
+                                },
+                                "ignore": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "string"
                                     }
-                                ] },
-                                "contexts": { "anyOf": [
-                                    { "$ref": "#/$defs/match_context" },
-                                    {
-                                        "type": "array",
-                                        "items": { "$ref": "#/$defs/match_context" }
-                                    }
-                                ] },
-                                "search": { "enum": ["request_body", "request_header", "response_body", "response_header", "all_body", "all_header", "all"] },
-                                "ignore": { "type": "array", "items": { "type": "string" } },
-                                "report_style": { "$ref": "#/$defs/report_style" },
-                                "report_bits": { "type": "integer" }
+                                },
+                                "report_style": {
+                                    "$ref": "#/$defs/report_style"
+                                },
+                                "report_bits": {
+                                    "type": "integer"
+                                }
                             },
                             "unevaluatedProperties": false
                         }
                     }
                 },
-                "required": ["matches"],
+                "required": [
+                    "matches"
+                ],
                 "unevaluatedProperties": false,
                 "additionalProperties": false
             }
@@ -684,12 +1046,21 @@
                     "properties": {
                         "endpoint": {
                             "anyOf": [
-                                { "type": "string" },
-                                { "type": "array", "items": { "type": "string" } }
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "string"
+                                    }
+                                }
                             ]
                         }
                     },
-                    "required": ["endpoint"],
+                    "required": [
+                        "endpoint"
+                    ],
                     "unevaluatedProperties": false,
                     "additionalProperties": false
                 },
@@ -698,12 +1069,21 @@
                     "properties": {
                         "exclude_endpoint": {
                             "anyOf": [
-                                { "type": "string" },
-                                { "type": "array", "items": { "type": "string" } }
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "string"
+                                    }
+                                }
                             ]
                         }
                     },
-                    "required": ["exclude_endpoint"],
+                    "required": [
+                        "exclude_endpoint"
+                    ],
                     "unevaluatedProperties": false,
                     "additionalProperties": false
                 },
@@ -712,12 +1092,21 @@
                     "properties": {
                         "policy_path": {
                             "anyOf": [
-                                { "type": "string" },
-                                { "type": "array", "items": { "type": "string" } }
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "string"
+                                    }
+                                }
                             ]
                         }
                     },
-                    "required": ["policy_path"],
+                    "required": [
+                        "policy_path"
+                    ],
                     "unevaluatedProperties": false,
                     "additionalProperties": false
                 },
@@ -726,48 +1115,73 @@
                     "properties": {
                         "exclude_policy_path": {
                             "anyOf": [
-                                { "type": "string" },
-                                { "type": "array", "items": { "type": "string" } }
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "string"
+                                    }
+                                }
                             ]
                         }
                     },
-                    "required": ["exclude_policy_path"],
+                    "required": [
+                        "exclude_policy_path"
+                    ],
                     "unevaluatedProperties": false,
                     "additionalProperties": false
                 },
                 {
                     "type": "object",
                     "properties": {
-                        "peer_service": { "$ref": "#/$defs/service_filter" }
+                        "peer_service": {
+                            "$ref": "#/$defs/service_filter"
+                        }
                     },
-                    "required": ["peer_service"],
+                    "required": [
+                        "peer_service"
+                    ],
                     "unevaluatedProperties": false,
                     "additionalProperties": false
                 },
                 {
                     "type": "object",
                     "properties": {
-                        "exclude_peer_service": { "$ref": "#/$defs/service_filter" }
+                        "exclude_peer_service": {
+                            "$ref": "#/$defs/service_filter"
+                        }
                     },
-                    "required": ["exclude_peer_service"],
+                    "required": [
+                        "exclude_peer_service"
+                    ],
                     "unevaluatedProperties": false,
                     "additionalProperties": false
                 },
                 {
                     "type": "object",
                     "properties": {
-                        "local_service": { "$ref": "#/$defs/service_filter" }
+                        "local_service": {
+                            "$ref": "#/$defs/service_filter"
+                        }
                     },
-                    "required": ["local_service"],
+                    "required": [
+                        "local_service"
+                    ],
                     "unevaluatedProperties": false,
                     "additionalProperties": false
                 },
                 {
                     "type": "object",
                     "properties": {
-                        "exclude_local_service": { "$ref": "#/$defs/service_filter" }
+                        "exclude_local_service": {
+                            "$ref": "#/$defs/service_filter"
+                        }
                     },
-                    "required": ["exclude_local_service"],
+                    "required": [
+                        "exclude_local_service"
+                    ],
                     "unevaluatedProperties": false,
                     "additionalProperties": false
                 },
@@ -776,12 +1190,21 @@
                     "properties": {
                         "token": {
                             "anyOf": [
-                                { "$ref": "#/$defs/service_rule" },
-                                { "type": "array", "items": { "$ref": "#/$defs/service_rule" } }
+                                {
+                                    "$ref": "#/$defs/service_rule"
+                                },
+                                {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/$defs/service_rule"
+                                    }
+                                }
                             ]
                         }
                     },
-                    "required": ["token"],
+                    "required": [
+                        "token"
+                    ],
                     "unevaluatedProperties": false,
                     "additionalProperties": false
                 },
@@ -790,12 +1213,21 @@
                     "properties": {
                         "exclude_token": {
                             "anyOf": [
-                                { "$ref": "#/$defs/service_rule" },
-                                { "type": "array", "items": { "$ref": "#/$defs/service_rule" } }
+                                {
+                                    "$ref": "#/$defs/service_rule"
+                                },
+                                {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/$defs/service_rule"
+                                    }
+                                }
                             ]
                         }
                     },
-                    "required": ["exclude_token"],
+                    "required": [
+                        "exclude_token"
+                    ],
                     "unevaluatedProperties": false,
                     "additionalProperties": false
                 },
@@ -804,12 +1236,21 @@
                     "properties": {
                         "ip": {
                             "anyOf": [
-                                { "type": "string" },
-                                { "type": "array", "items": { "type": "string" } }
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "string"
+                                    }
+                                }
                             ]
                         }
                     },
-                    "required": ["ip"],
+                    "required": [
+                        "ip"
+                    ],
                     "unevaluatedProperties": false,
                     "additionalProperties": false
                 },
@@ -818,12 +1259,21 @@
                     "properties": {
                         "exclude_ip": {
                             "anyOf": [
-                                { "type": "string" },
-                                { "type": "array", "items": { "type": "string" } }
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "string"
+                                    }
+                                }
                             ]
                         }
                     },
-                    "required": ["exclude_ip"],
+                    "required": [
+                        "exclude_ip"
+                    ],
                     "unevaluatedProperties": false,
                     "additionalProperties": false
                 },
@@ -834,13 +1284,22 @@
                             "type": "object",
                             "additionalProperties": {
                                 "anyOf": [
-                                    { "$ref": "#/$defs/match_filter_rule" },
-                                    { "type": "array", "items": { "$ref": "#/$defs/match_filter_rule" } }
+                                    {
+                                        "$ref": "#/$defs/match_filter_rule"
+                                    },
+                                    {
+                                        "type": "array",
+                                        "items": {
+                                            "$ref": "#/$defs/match_filter_rule"
+                                        }
+                                    }
                                 ]
                             }
                         }
                     },
-                    "required": ["request_matches"],
+                    "required": [
+                        "request_matches"
+                    ],
                     "unevaluatedProperties": false,
                     "additionalProperties": false
                 },
@@ -851,13 +1310,22 @@
                             "type": "object",
                             "additionalProperties": {
                                 "anyOf": [
-                                    { "$ref": "#/$defs/match_filter_rule" },
-                                    { "type": "array", "items": { "$ref": "#/$defs/match_filter_rule" } }
+                                    {
+                                        "$ref": "#/$defs/match_filter_rule"
+                                    },
+                                    {
+                                        "type": "array",
+                                        "items": {
+                                            "$ref": "#/$defs/match_filter_rule"
+                                        }
+                                    }
                                 ]
                             }
                         }
                     },
-                    "required": ["response_matches"],
+                    "required": [
+                        "response_matches"
+                    ],
                     "unevaluatedProperties": false,
                     "additionalProperties": false
                 },
@@ -868,13 +1336,22 @@
                             "type": "object",
                             "additionalProperties": {
                                 "anyOf": [
-                                    { "$ref": "#/$defs/match_filter_rule" },
-                                    { "type": "array", "items": { "$ref": "#/$defs/match_filter_rule" } }
+                                    {
+                                        "$ref": "#/$defs/match_filter_rule"
+                                    },
+                                    {
+                                        "type": "array",
+                                        "items": {
+                                            "$ref": "#/$defs/match_filter_rule"
+                                        }
+                                    }
                                 ]
                             }
                         }
                     },
-                    "required": ["upstream_matches"],
+                    "required": [
+                        "upstream_matches"
+                    ],
                     "unevaluatedProperties": false,
                     "additionalProperties": false
                 },
@@ -885,13 +1362,22 @@
                             "type": "object",
                             "additionalProperties": {
                                 "anyOf": [
-                                    { "$ref": "#/$defs/match_filter_rule" },
-                                    { "type": "array", "items": { "$ref": "#/$defs/match_filter_rule" } }
+                                    {
+                                        "$ref": "#/$defs/match_filter_rule"
+                                    },
+                                    {
+                                        "type": "array",
+                                        "items": {
+                                            "$ref": "#/$defs/match_filter_rule"
+                                        }
+                                    }
                                 ]
                             }
                         }
                     },
-                    "required": ["downstream_matches"],
+                    "required": [
+                        "downstream_matches"
+                    ],
                     "unevaluatedProperties": false,
                     "additionalProperties": false
                 },
@@ -902,13 +1388,22 @@
                             "type": "object",
                             "additionalProperties": {
                                 "anyOf": [
-                                    { "$ref": "#/$defs/service_rule" },
-                                    { "type": "array", "items": { "$ref": "#/$defs/service_rule" } }
+                                    {
+                                        "$ref": "#/$defs/service_rule"
+                                    },
+                                    {
+                                        "type": "array",
+                                        "items": {
+                                            "$ref": "#/$defs/service_rule"
+                                        }
+                                    }
                                 ]
                             }
                         }
                     },
-                    "required": ["request_headers"],
+                    "required": [
+                        "request_headers"
+                    ],
                     "unevaluatedProperties": false,
                     "additionalProperties": false
                 },
@@ -919,13 +1414,22 @@
                             "type": "object",
                             "additionalProperties": {
                                 "anyOf": [
-                                    { "$ref": "#/$defs/service_rule" },
-                                    { "type": "array", "items": { "$ref": "#/$defs/service_rule" } }
+                                    {
+                                        "$ref": "#/$defs/service_rule"
+                                    },
+                                    {
+                                        "type": "array",
+                                        "items": {
+                                            "$ref": "#/$defs/service_rule"
+                                        }
+                                    }
                                 ]
                             }
                         }
                     },
-                    "required": ["exclude_request_headers"],
+                    "required": [
+                        "exclude_request_headers"
+                    ],
                     "unevaluatedProperties": false,
                     "additionalProperties": false
                 },
@@ -936,13 +1440,22 @@
                             "type": "object",
                             "additionalProperties": {
                                 "anyOf": [
-                                    { "$ref": "#/$defs/service_rule" },
-                                    { "type": "array", "items": { "$ref": "#/$defs/service_rule" } }
+                                    {
+                                        "$ref": "#/$defs/service_rule"
+                                    },
+                                    {
+                                        "type": "array",
+                                        "items": {
+                                            "$ref": "#/$defs/service_rule"
+                                        }
+                                    }
                                 ]
                             }
                         }
                     },
-                    "required": ["response_headers"],
+                    "required": [
+                        "response_headers"
+                    ],
                     "unevaluatedProperties": false,
                     "additionalProperties": false
                 },
@@ -953,13 +1466,22 @@
                             "type": "object",
                             "additionalProperties": {
                                 "anyOf": [
-                                    { "$ref": "#/$defs/service_rule" },
-                                    { "type": "array", "items": { "$ref": "#/$defs/service_rule" } }
+                                    {
+                                        "$ref": "#/$defs/service_rule"
+                                    },
+                                    {
+                                        "type": "array",
+                                        "items": {
+                                            "$ref": "#/$defs/service_rule"
+                                        }
+                                    }
                                 ]
                             }
                         }
                     },
-                    "required": ["exclude_response_headers"],
+                    "required": [
+                        "exclude_response_headers"
+                    ],
                     "unevaluatedProperties": false,
                     "additionalProperties": false
                 },
@@ -970,13 +1492,22 @@
                             "type": "object",
                             "additionalProperties": {
                                 "anyOf": [
-                                    { "$ref": "#/$defs/service_rule" },
-                                    { "type": "array", "items": { "$ref": "#/$defs/service_rule" } }
+                                    {
+                                        "$ref": "#/$defs/service_rule"
+                                    },
+                                    {
+                                        "type": "array",
+                                        "items": {
+                                            "$ref": "#/$defs/service_rule"
+                                        }
+                                    }
                                 ]
                             }
                         }
                     },
-                    "required": ["response_trailers"],
+                    "required": [
+                        "response_trailers"
+                    ],
                     "unevaluatedProperties": false,
                     "additionalProperties": false
                 },
@@ -987,13 +1518,22 @@
                             "type": "object",
                             "additionalProperties": {
                                 "anyOf": [
-                                    { "$ref": "#/$defs/service_rule" },
-                                    { "type": "array", "items": { "$ref": "#/$defs/service_rule" } }
+                                    {
+                                        "$ref": "#/$defs/service_rule"
+                                    },
+                                    {
+                                        "type": "array",
+                                        "items": {
+                                            "$ref": "#/$defs/service_rule"
+                                        }
+                                    }
                                 ]
                             }
                         }
                     },
-                    "required": ["exclude_response_trailers"],
+                    "required": [
+                        "exclude_response_trailers"
+                    ],
                     "unevaluatedProperties": false,
                     "additionalProperties": false
                 },
@@ -1004,13 +1544,22 @@
                             "type": "object",
                             "additionalProperties": {
                                 "anyOf": [
-                                    { "$ref": "#/$defs/service_rule" },
-                                    { "type": "array", "items": { "$ref": "#/$defs/service_rule" } }
+                                    {
+                                        "$ref": "#/$defs/service_rule"
+                                    },
+                                    {
+                                        "type": "array",
+                                        "items": {
+                                            "$ref": "#/$defs/service_rule"
+                                        }
+                                    }
                                 ]
                             }
                         }
                     },
-                    "required": ["request_cookie"],
+                    "required": [
+                        "request_cookie"
+                    ],
                     "unevaluatedProperties": false,
                     "additionalProperties": false
                 },
@@ -1021,17 +1570,31 @@
                             "type": "object",
                             "additionalProperties": {
                                 "anyOf": [
-                                    { "$ref": "#/$defs/service_rule" },
-                                    { "type": "array", "items": { "$ref": "#/$defs/service_rule" } }
+                                    {
+                                        "$ref": "#/$defs/service_rule"
+                                    },
+                                    {
+                                        "type": "array",
+                                        "items": {
+                                            "$ref": "#/$defs/service_rule"
+                                        }
+                                    }
                                 ]
                             }
                         }
                     },
-                    "required": ["exclude_request_cookie"],
+                    "required": [
+                        "exclude_request_cookie"
+                    ],
                     "unevaluatedProperties": false,
                     "additionalProperties": false
                 },
-                { "enum": ["response_outbound", "response_inbound"] },
+                {
+                    "enum": [
+                        "response_outbound",
+                        "response_inbound"
+                    ]
+                },
                 {
                     "type": "object",
                     "properties": {
@@ -1042,7 +1605,9 @@
                             }
                         }
                     },
-                    "required": ["any"],
+                    "required": [
+                        "any"
+                    ],
                     "unevaluatedProperties": false,
                     "additionalProperties": false
                 },
@@ -1056,7 +1621,9 @@
                             }
                         }
                     },
-                    "required": ["all"],
+                    "required": [
+                        "all"
+                    ],
                     "unevaluatedProperties": false,
                     "additionalProperties": false
                 }
@@ -1083,7 +1650,10 @@
             "type": "object",
             "properties": {
                 "name": {
-                    "type": ["string", "null"]
+                    "type": [
+                        "string",
+                        "null"
+                    ]
                 },
                 "stage": {
                     "$ref": "#/$defs/stage"
@@ -1092,7 +1662,9 @@
                     "$ref": "#/$defs/rule_filter"
                 }
             },
-            "required": ["filter"],
+            "required": [
+                "filter"
+            ],
             "unevaluatedProperties": false,
             "additionalProperties": false
         },
@@ -1110,87 +1682,126 @@
                 {
                     "type": "object",
                     "properties": {
-                        "frames": { "type": "integer" }
+                        "frames": {
+                            "type": "integer"
+                        }
                     },
-                    "required": ["frames"],
+                    "required": [
+                        "frames"
+                    ],
                     "unevaluatedProperties": false,
                     "additionalProperties": false
                 },
                 {
                     "type": "object",
                     "properties": {
-                        "matches": { "type": "integer" }
+                        "matches": {
+                            "type": "integer"
+                        }
                     },
-                    "required": ["matches"],
+                    "required": [
+                        "matches"
+                    ],
                     "unevaluatedProperties": false,
                     "additionalProperties": false
                 },
                 {
                     "type": "object",
                     "properties": {
-                        "time": { "type": "integer" }
+                        "time": {
+                            "type": "integer"
+                        }
                     },
-                    "required": ["time"],
+                    "required": [
+                        "time"
+                    ],
                     "unevaluatedProperties": false,
                     "additionalProperties": false
                 },
                 {
                     "type": "object",
                     "properties": {
-                        "all": { "type": "#/$defs/stream_upload_interval" }
+                        "all": {
+                            "type": "#/$defs/stream_upload_interval"
+                        }
                     },
-                    "required": ["all"],
+                    "required": [
+                        "all"
+                    ],
                     "unevaluatedProperties": false,
                     "additionalProperties": false
                 },
                 {
                     "type": "object",
                     "properties": {
-                        "any": { "type": "#/$defs/stream_upload_interval" }
+                        "any": {
+                            "type": "#/$defs/stream_upload_interval"
+                        }
                     },
-                    "required": ["any"],
+                    "required": [
+                        "any"
+                    ],
                     "unevaluatedProperties": false,
                     "additionalProperties": false
                 },
                 {
                     "type": "object",
                     "properties": {
-                        "all": { "type": "#/$defs/stream_upload_interval" }
+                        "all": {
+                            "type": "#/$defs/stream_upload_interval"
+                        }
                     },
-                    "required": ["all"],
+                    "required": [
+                        "all"
+                    ],
                     "unevaluatedProperties": false,
                     "additionalProperties": false
                 },
-                { "enum": ["none"] }
+                {
+                    "enum": [
+                        "none"
+                    ]
+                }
             ]
-
         },
         "stream_port_filter": {
             "oneOf": [
                 {
                     "type": "object",
                     "properties": {
-                        "src": { "type": "#/$defs/stream_port_filter" }
+                        "src": {
+                            "type": "#/$defs/stream_port_filter"
+                        }
                     },
-                    "required": ["src"],
+                    "required": [
+                        "src"
+                    ],
                     "unevaluatedProperties": false,
                     "additionalProperties": false
                 },
                 {
                     "type": "object",
                     "properties": {
-                        "dest": { "type": "#/$defs/stream_port_filter" }
+                        "dest": {
+                            "type": "#/$defs/stream_port_filter"
+                        }
                     },
-                    "required": ["dest"],
+                    "required": [
+                        "dest"
+                    ],
                     "unevaluatedProperties": false,
                     "additionalProperties": false
                 },
                 {
                     "type": "object",
                     "properties": {
-                        "port": { "type": "integer" }
+                        "port": {
+                            "type": "integer"
+                        }
                     },
-                    "required": ["port"],
+                    "required": [
+                        "port"
+                    ],
                     "unevaluatedProperties": false,
                     "additionalProperties": false
                 },
@@ -1203,12 +1814,17 @@
                                 "start": "integer",
                                 "end": "integer"
                             },
-                            "required": ["start", "end"],
+                            "required": [
+                                "start",
+                                "end"
+                            ],
                             "unevaluatedProperties": false,
                             "additionalProperties": false
                         }
                     },
-                    "required": ["range"],
+                    "required": [
+                        "range"
+                    ],
                     "unevaluatedProperties": false,
                     "additionalProperties": false
                 },
@@ -1217,10 +1833,14 @@
                     "properties": {
                         "any": {
                             "type": "array",
-                            "items": { "type": "#/$defs/stream_port_filter" }
+                            "items": {
+                                "type": "#/$defs/stream_port_filter"
+                            }
                         }
                     },
-                    "required": ["any"],
+                    "required": [
+                        "any"
+                    ],
                     "unevaluatedProperties": false,
                     "additionalProperties": false
                 },
@@ -1229,10 +1849,14 @@
                     "properties": {
                         "all": {
                             "type": "array",
-                            "items": { "type": "#/$defs/stream_port_filter" }
+                            "items": {
+                                "type": "#/$defs/stream_port_filter"
+                            }
                         }
                     },
-                    "required": ["all"],
+                    "required": [
+                        "all"
+                    ],
                     "unevaluatedProperties": false,
                     "additionalProperties": false
                 },
@@ -1246,66 +1870,138 @@
                                 },
                                 {
                                     "type": "array",
-                                    "items": { "type": "#/$defs/stream_port_filter" }
+                                    "items": {
+                                        "type": "#/$defs/stream_port_filter"
+                                    }
                                 }
                             ]
                         }
                     },
-                    "required": ["not"],
+                    "required": [
+                        "not"
+                    ],
                     "unevaluatedProperties": false,
                     "additionalProperties": false
                 },
-                { "enum": ["always", "never"] }
+                {
+                    "enum": [
+                        "always",
+                        "never"
+                    ]
+                }
             ]
         }
     },
     "properties": {
-        "categories": { "$ref": "#/$defs/category" },
-        "endpoints": { "$ref": "#/$defs/endpoints" },
-        "filter": { "$ref": "#/$defs/service_filter" },
+        "categories": {
+            "$ref": "#/$defs/category"
+        },
+        "endpoints": {
+            "$ref": "#/$defs/endpoints"
+        },
+        "filter": {
+            "$ref": "#/$defs/service_filter"
+        },
         "sbac": {
             "anyOf": [
-                { "$ref": "#/$defs/sbac_item" },
-                { "type": "array", "items": { "$ref": "#/$defs/sbac_item" } }
+                {
+                    "$ref": "#/$defs/sbac_item"
+                },
+                {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/$defs/sbac_item"
+                    }
+                }
             ]
         },
-        "collected_request_headers": { "type": "array", "items": { "type": "string" }},
-        "collected_response_headers": { "type": "array", "items": { "type": "string" }},
+        "collected_request_headers": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            }
+        },
+        "collected_response_headers": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            }
+        },
         "body_collection": {
             "type": "array",
             "items": {
                 "type": "object",
                 "properties": {
-                    "mode": { "enum": ["request_only", "upstream_only", "response_only", "downstream_only", "all"] },
-                    "sample_rate": { "type": "number" },
-                    "max_body_collection_mb": { "type": "number" },
-                    "filter": { "$ref": "#/$defs/rule_filter" }
+                    "mode": {
+                        "enum": [
+                            "request_only",
+                            "upstream_only",
+                            "response_only",
+                            "downstream_only",
+                            "all"
+                        ]
+                    },
+                    "sample_rate": {
+                        "type": "number"
+                    },
+                    "max_body_collection_mb": {
+                        "type": "number"
+                    },
+                    "filter": {
+                        "$ref": "#/$defs/rule_filter"
+                    }
                 },
-                "required": ["sample_rate"],
+                "required": [
+                    "sample_rate"
+                ],
                 "unevaluatedProperties": false,
                 "additionalProperties": false
             }
         },
         "header_collection": {
-            "type":  "#/$defs/header_collection_mode"
+            "type": "#/$defs/header_collection_mode"
         },
-        "report_style": { "$ref": "#/$defs/report_style" },
-        "report_bits": { "type": "integer" },
-        "blocked_ips": { "type": "string" },
-        "blocked_tokens": { "type": "string" },
+        "report_style": {
+            "$ref": "#/$defs/report_style"
+        },
+        "report_bits": {
+            "type": "integer"
+        },
+        "blocked_ips": {
+            "type": "string"
+        },
+        "blocked_tokens": {
+            "type": "string"
+        },
         "rules": {
             "type": "array",
             "items": {
                 "type": "object",
                 "properties": {
-                    "name": { "type": "string" },
-                    "grouping": {
-                        "enum": ["global", "per_inbound_service", "per_outbound_service", "per_endpoint"]
+                    "name": {
+                        "type": "string"
                     },
-                    "by": { "$ref": "#/$defs/rule_by" },
-                    "count_by": { "$ref": "#/$defs/rule_by" },
+                    "grouping": {
+                        "enum": [
+                            "global",
+                            "per_inbound_service",
+                            "per_outbound_service",
+                            "per_endpoint"
+                        ]
+                    },
+                    "by": {
+                        "$ref": "#/$defs/rule_by"
+                    },
+                    "count_by": {
+                        "$ref": "#/$defs/rule_by"
+                    },
                     "action": {
-                        "enum": ["nothing", "alert", "block", "alert_block"]
+                        "enum": [
+                            "nothing",
+                            "alert",
+                            "block",
+                            "alert_block"
+                        ]
                     },
                     "timespan_secs": {
                         "type": "integer"
@@ -1313,13 +2009,25 @@
                     "limit": {
                         "type": "integer"
                     },
-                    "filter": { "$ref": "#/$defs/rule_filter" },
-                    "severity": {
-                        "enum": ["routine", "notable", "concern", "immediate"]
+                    "filter": {
+                        "$ref": "#/$defs/rule_filter"
                     },
-                    "muted": { "type": "boolean" }
+                    "severity": {
+                        "enum": [
+                            "routine",
+                            "notable",
+                            "concern",
+                            "immediate"
+                        ]
+                    },
+                    "muted": {
+                        "type": "boolean"
+                    }
                 },
-                "required": ["by", "limit"],
+                "required": [
+                    "by",
+                    "limit"
+                ],
                 "unevaluatedProperties": false,
                 "additionalProperties": false
             }
@@ -1344,12 +2052,21 @@
         },
         "path_groups": {
             "oneOf": [
-                { "type": "string" },
-                { "type": "array", "items": { "type": "string" } }
+                {
+                    "type": "string"
+                },
+                {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
             ]
         }
     },
-    "required": ["categories"],
+    "required": [
+        "categories"
+    ],
     "unevaluatedProperties": false,
     "additionalProperties": false,
     "stream_upload_interval": {

@@ -30,6 +30,7 @@ Internal matchers can be specified via the "internal" match rule. They allow you
 - `national_phone`: Matches on phone numbers specific to a country. Requires the country ID to be specified (ie `US`, `NL`). Since you specify the country in the policy, the number doesn't require the country code (ie `+1`) to be specified. NOTE: This is a "secondary matcher", meaning it can only be used inside `and` MatchRules. This means you need to specify a custom matcher to match for the phone number format of your desired country, and THEN specify `national_phone` in the `and` matcher to perform a full check.
 - `hash`: A bundle of regexes to match against easily identifiable hash types. You can optionally specify a list of which hash types to use, or leave it empty to use the default list. A full list can be found [here](#supported%20`hashes`%20types)
 - `error_text`: A bundle of regexes to match against easily identifiable error messages for various programming languages and frameworks. You can optionally specify a list of which error types to target, or leave it empty to use the default list. A full list can be found [here](#supported%20`error_text`%20types)
+- `sql`: Matches on SQL statements. To avoid false positives, extremely simple or benign statements are not considered a match.
 
 ## Examples
 
