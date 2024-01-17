@@ -859,7 +859,7 @@
                 },
                 {
                     "enum": [
-                        "jwt_decode"
+                        "jwt_decode", "hash"
                     ]
                 },
                 {
@@ -871,6 +871,32 @@
                     },
                     "required": [
                         "json_path"
+                    ],
+                    "unevaluatedProperties": false,
+                    "additionalProperties": false
+                },
+                {
+                    "type": "object",
+                    "metadata": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "type": {
+                                "anyOf": [
+                                    {
+                                        "type": "#/$defs/token_extractor"
+                                    },
+                                    {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "#/$defs/token_extractor"
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                    "required": [
+                        "metadata"
                     ],
                     "unevaluatedProperties": false,
                     "additionalProperties": false
@@ -1770,7 +1796,7 @@
                     "type": "object",
                     "properties": {
                         "src": {
-                            "type": "#/$defs/stream_port_filter"
+                            "$ref": "#/$defs/stream_port_filter"
                         }
                     },
                     "required": [
@@ -1783,7 +1809,7 @@
                     "type": "object",
                     "properties": {
                         "dest": {
-                            "type": "#/$defs/stream_port_filter"
+                            "$ref": "#/$defs/stream_port_filter"
                         }
                     },
                     "required": [
@@ -1811,8 +1837,12 @@
                         "range": {
                             "type": "object",
                             "properties": {
-                                "start": "integer",
-                                "end": "integer"
+                                "start": {
+                                    "type": "integer"
+                                },
+                                "end": {
+                                    "type": "integer"
+                                }
                             },
                             "required": [
                                 "start",
@@ -1834,7 +1864,7 @@
                         "any": {
                             "type": "array",
                             "items": {
-                                "type": "#/$defs/stream_port_filter"
+                                "$ref": "#/$defs/stream_port_filter"
                             }
                         }
                     },
@@ -1850,7 +1880,7 @@
                         "all": {
                             "type": "array",
                             "items": {
-                                "type": "#/$defs/stream_port_filter"
+                                "$ref": "#/$defs/stream_port_filter"
                             }
                         }
                     },
@@ -1866,12 +1896,12 @@
                         "not": {
                             "oneOf": [
                                 {
-                                    "type": "#/$defs/stream_port_filter"
+                                    "$ref": "#/$defs/stream_port_filter"
                                 },
                                 {
                                     "type": "array",
                                     "items": {
-                                        "type": "#/$defs/stream_port_filter"
+                                        "$ref": "#/$defs/stream_port_filter"
                                     }
                                 }
                             ]
@@ -1959,7 +1989,7 @@
             }
         },
         "header_collection": {
-            "type": "#/$defs/header_collection_mode"
+            "$ref": "#/$defs/header_collection_mode"
         },
         "report_style": {
             "$ref": "#/$defs/report_style"
