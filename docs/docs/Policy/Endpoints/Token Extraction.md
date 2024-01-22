@@ -74,7 +74,7 @@ an example of what the output of the above policy might look like in the `MatchD
 
 # Body Extraction
 
-Similar to token extraction, leaksignal also supports extracting metadata from specific fields in a request/response body. The way this works is simpler than Token Extraction, you just supply a mapping of keys and json paths and the first json path to match during parsing will have its value placed under that key in the resulting proto.
+Similar to token extraction, leaksignal also supports extracting metadata from specific fields in a request/response body. The way this works is simpler than Token Extraction, you just supply a mapping of keys and json paths and any value that matches that path during parsing will have its value placed in the resulting proto.
 
 ## Example:
 
@@ -89,13 +89,22 @@ endpoints:
       "ssn2": "test.my_ssn3[*].my_ssn4"
 ```
 
-an example of what the output of the above policy might look like in the `MatchData` output from leaksignal:
+an example of what the output of the above policy might look like in the `MatchData` output from leaksignal. here `blob_idx` refers to the index of the json body for cases where a single payload will contain multiple separate json objects:
 ```json
 "matches": {
   "response": {
-    "body_metadata": {
-      "ssn2": "123-45-4895"
-    }
+    "body_metadata": [
+      {
+        "key": "ssn",
+        "value": "123-45-4892",
+        "blob_idx": 0
+      },
+      {
+        "key": "ssn",
+        "value": "123-45-4895",
+        "blob_idx": 0
+      }
+    ]
   }
 }
 ```
