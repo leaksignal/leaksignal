@@ -859,7 +859,8 @@
                 },
                 {
                     "enum": [
-                        "jwt_decode", "hash"
+                        "jwt_decode",
+                        "hash"
                     ]
                 },
                 {
@@ -903,6 +904,28 @@
                 }
             ]
         },
+        "body_extractor": {
+            "type": "object",
+            "additionalProperties": {
+                "type": {
+                    "anyOf": [
+                        {
+                            "type": "string"
+                        },
+                        {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    ]
+                }
+            },
+            "required": [
+                "metadata"
+            ],
+            "unevaluatedProperties": false
+        },
         "endpoints": {
             "type": "array",
             "items": {
@@ -940,18 +963,15 @@
                             "extractor": {
                                 "anyOf": [
                                     {
-                                        "$ref": "#/$defs/rule_filter"
+                                        "$ref": "#/$defs/token_extractor"
                                     },
                                     {
                                         "type": "array",
                                         "items": {
-                                            "$ref": "#/$defs/rule_filter"
+                                            "$ref": "#/$defs/token_extractor"
                                         }
                                     }
                                 ]
-                            },
-                            "hash": {
-                                "type": "boolean"
                             }
                         },
                         "required": [
@@ -1056,6 +1076,12 @@
                             },
                             "unevaluatedProperties": false
                         }
+                    },
+                    "request_extractors": {
+                        "$ref": "#/$defs/body_extractor"
+                    },
+                    "response_extractors": {
+                        "$ref": "#/$defs/body_extractor"
                     }
                 },
                 "required": [

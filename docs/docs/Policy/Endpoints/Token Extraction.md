@@ -26,7 +26,7 @@ An extraction instruction that takes in a string, performs an extraction on it, 
 - `metadata`: works differently than the rest of the extractors. this will "fork" the extractor at the current extraction step and parse any amount of tokens you want from it, then insert them into the `token_metadata` field of the `MatchData` output. This is great if you have any additional metadata you want to extract from a token without actually setting that value as the token.
 
 
-# Examples:
+## Examples:
 generic example that extracts the first 4 letters of the "name" field in a jwt token
 ``` yaml
 token_extractor:
@@ -69,5 +69,33 @@ an example of what the output of the above policy might look like in the `MatchD
 "token_metadata": {
     "c": "C775E7B757EDE630CD0AA1113BD102661AB38829CA52A6422AB782862F268646",
     "a": "1234567890"
+}
+```
+
+# Body Extraction
+
+Similar to token extraction, leaksignal also supports extracting metadata from specific fields in a request/response body. The way this works is simpler than Token Extraction, you just supply a mapping of keys and json paths and the first json path to match during parsing will have its value placed under that key in the resulting proto.
+
+## Example:
+
+```yaml
+endpoints:
+  - request_extractors:
+      "ssn":
+        - "test.my_ssn3[*].my_ssn4"
+        - "test.my_ssn2"
+      "never": "aaa.aaa.aaa.aaa.aaa.hello"
+    response_extractors:
+      "ssn2": "test.my_ssn3[*].my_ssn4"
+```
+
+an example of what the output of the above policy might look like in the `MatchData` output from leaksignal:
+```json
+"matches": {
+  "response": {
+    "body_metadata": {
+      "ssn2": "123-45-4895"
+    }
+  }
 }
 ```
