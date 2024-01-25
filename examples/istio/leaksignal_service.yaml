@@ -25,10 +25,10 @@ spec:
               code:
                 remote:
                   http_uri:
-                    uri: https://ingestion.app.leaksignal.com/s3/leakproxy/2024_01_25_19_29_24_5e18e0b_0.9.2/leaksignal.wasm
+                    uri: https://ingestion.app.leaksignal.com/s3/leakproxy/2024_01_25_19_57_54_fcc9694_0.9.3/leaksignal.wasm
                     timeout: 10s
                     cluster: leaksignal_infra
-                  sha256: 9f811e481be5b67259349c0b791ce107038a609bd23bd4d6a0cf71ee45ce220a
+                  sha256: bb9bc48c8b58ab61c7aea5697c28caa7871c181a6db4dda651af5ffcc3453514
                   retry_policy:
                     num_retries: 10
   - applyTo: HTTP_FILTER
@@ -82,10 +82,10 @@ spec:
                 code:
                   remote:
                     http_uri:
-                      uri: https://ingestion.app.leaksignal.com/s3/leakproxy/2024_01_25_19_29_24_5e18e0b_0.9.2/leaksignal.wasm
+                      uri: https://ingestion.app.leaksignal.com/s3/leakproxy/2024_01_25_19_57_54_fcc9694_0.9.3/leaksignal.wasm
                       timeout: 10s
                       cluster: leaksignal_infra
-                    sha256: 9f811e481be5b67259349c0b791ce107038a609bd23bd4d6a0cf71ee45ce220a
+                    sha256: bb9bc48c8b58ab61c7aea5697c28caa7871c181a6db4dda651af5ffcc3453514
                     retry_policy:
                       num_retries: 10
   - applyTo: CLUSTER

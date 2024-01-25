@@ -33,7 +33,7 @@ If your function is in one of the supported regions, installing LeakLambda is as
 
 ### Creating your own custom layer
 
-If you are outside the supported regions then you can create your own layer using our LeakLambda zip file hosted on S3. Simply [download the zip file](https://leakproxy.s3.us-west-2.amazonaws.com/leaklambda-0.9.2.zip), go to `Lambda` > `Layers`, click `Create Layer`, and upload the zip file. From there all you have to do is add the layer to your function.
+If you are outside the supported regions then you can create your own layer using our LeakLambda zip file hosted on S3. Simply [download the zip file](https://leakproxy.s3.us-west-2.amazonaws.com/leaklambda-0.9.3.zip), go to `Lambda` > `Layers`, click `Create Layer`, and upload the zip file. From there all you have to do is add the layer to your function.
 
 ## Setup
 
