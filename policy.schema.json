@@ -202,6 +202,9 @@
                     "properties": {
                         "header": {
                             "type": "string"
+                        },
+                        "regex": {
+                            "type": "string"
                         }
                     },
                     "required": [
