@@ -28,7 +28,7 @@ The following fields are defined by LeaksignalIstio and ClusterLeaksignalIstio o
 proxyVersion: 2024_01_26_19_18_07_0292938_0.9.4
 
 # Required, SHA256 Hash of the WASM proxy module
-proxyHash: 3da2f55fc89b867f273768461f86b5251752b26c10de4acbb2bea51a6079f95c
+proxyHash: fcecd3a3b099bebb432cf78e48c6f3f24a7d71b92e06b75ba5301877554960ff
 
 # Required, API Key from Leaksignal Command dashboard or the deployment name from LeakAgent
 apiKey: MY_API_KEY
@@ -79,7 +79,7 @@ metadata:
   name: leaksignal-istio
 spec:
   proxyVersion: 2024_01_26_19_18_07_0292938_0.9.4
-  proxyHash: 3da2f55fc89b867f273768461f86b5251752b26c10de4acbb2bea51a6079f95c
+  proxyHash: fcecd3a3b099bebb432cf78e48c6f3f24a7d71b92e06b75ba5301877554960ff
   apiKey: MY_API_KEY
 ```
 
@@ -93,7 +93,7 @@ metadata:
   name: leaksignal-istio
 spec:
   proxyVersion: 2024_01_26_19_18_07_0292938_0.9.4
-  proxyHash: 3da2f55fc89b867f273768461f86b5251752b26c10de4acbb2bea51a6079f95c
+  proxyHash: fcecd3a3b099bebb432cf78e48c6f3f24a7d71b92e06b75ba5301877554960ff
   apiKey: MY_API_KEY
   upstreamLocation: ingestion.leaksignal.mydomain.com
 ```
@@ -107,7 +107,7 @@ metadata:
   name: leaksignal-istio
 spec:
   proxyVersion: 2024_01_26_19_18_07_0292938_0.9.4
-  proxyHash: 3da2f55fc89b867f273768461f86b5251752b26c10de4acbb2bea51a6079f95c
+  proxyHash: fcecd3a3b099bebb432cf78e48c6f3f24a7d71b92e06b75ba5301877554960ff
   apiKey: MY_API_KEY
   upstreamLocation: ingestion.leaksignal.mydomain.com
   caBundle: /etc/ssl/certs/ca-bundle.crt
@@ -123,7 +123,7 @@ metadata:
   name: leaksignal-istio
 spec:
   proxyVersion: 2024_01_26_19_18_07_0292938_0.9.4
-  proxyHash: 3da2f55fc89b867f273768461f86b5251752b26c10de4acbb2bea51a6079f95c
+  proxyHash: fcecd3a3b099bebb432cf78e48c6f3f24a7d71b92e06b75ba5301877554960ff
   apiKey: my_policy_name
 
   upstreamLocation: leakagent.leakagent.svc.cluster.local
@@ -142,7 +142,7 @@ metadata:
   name: leaksignal-istio
 spec:
   proxyVersion: 2024_01_26_19_18_07_0292938_0.9.4
-  proxyHash: 3da2f55fc89b867f273768461f86b5251752b26c10de4acbb2bea51a6079f95c
+  proxyHash: fcecd3a3b099bebb432cf78e48c6f3f24a7d71b92e06b75ba5301877554960ff
   apiKey: my_policy_name
 
   upstreamLocation: leakagent.mydomain.com
