@@ -7,5 +7,5 @@ LABEL operators.operatorframework.io.bundle.package.v1=leaksignal-operator
 LABEL operators.operatorframework.io.bundle.channels.v1=stable
 
 # Copy files to locations specified by labels.
-COPY bundle/manifests /manifests/
-COPY bundle/metadata /metadata/
+COPY manifests /manifests/
+COPY metadata /metadata/

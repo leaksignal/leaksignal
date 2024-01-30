@@ -25,6 +25,7 @@ spec:
       version: v1
       kind: ClusterLeaksignalIstio
   install:
+    strategy: deployment
     spec:
       clusterPermissions:
       - rules:

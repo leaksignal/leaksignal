@@ -1,0 +1,5 @@
+schema: olm.channel
+package: leaksignal-operator
+name: stable
+entries:
+- name: leaksignal-operator.0.3.1
