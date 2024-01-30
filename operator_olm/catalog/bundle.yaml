@@ -1,0 +1,56 @@
+schema: olm.bundle
+package: leaksignal-operator
+name: leaksignal-operator.0.3.1
+
+image: docker.io/leaksignal/leaksignal-operator-olm:0.3.1
+relatedImages:
+ - name: bundle
+   image: docker.io/leaksignal/leaksignal-operator-olm:0.3.1
+ - name: operator
+   image: docker.io/leaksignal/leaksignal-operator:0.3.1
+properties:
+- type: olm.package
+  value:
+    packageName: leaksignal-operator
+    version: 0.3.1
+- type: olm.gvk
+  value:
+    group: leaksignal.com
+    version: v1
+    kind: LeaksignalIstio
+- type: olm.gvk
+  value:
+    group: leaksignal.com
+    version: v1
+    kind: ClusterLeaksignalIstio
+- type: olm.csv.metadata
+  value:
+    apiServiceDefinitions: {}
+    crdDescriptions:
+      owned:
+      - kind: LeaksignalIstio
+        name: leaksignal-istios.leaksignal.com
+        version: v1
+      - kind: ClusterLeaksignalIstio
+        name: cluster-leaksignal-istios.leaksignal.com
+        version: v1
+    description: This is an operator for LeakSignal.
+    displayName: LeakSignal Operator
+    installModes:
+    - supported: false
+      type: OwnNamespace
+    - supported: false
+      type: SingleNamespace
+    - supported: false
+      type: MultiNamespace
+    - supported: true
+      type: AllNamespaces
+    keywords:
+    - leaksignal
+    maintainers:
+    - email: max@leaksignal.com
+      name: Max Bruce
+    maturity: stable
+    provider:
+      name: LeakSignal
+      url: leaksignal.com

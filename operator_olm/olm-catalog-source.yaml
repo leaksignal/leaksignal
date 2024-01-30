@@ -1,0 +1,15 @@
+apiVersion: operators.coreos.com/v1alpha1
+kind: CatalogSource
+metadata:
+  name: leaksignal-operator
+  namespace: olm
+spec:
+  sourceType: grpc
+  image: leaksignal/leaksignal-operator-olm:0.3.1-index
+  displayName: Leaksignal Operator
+  publisher: Leaksignal
+  updateStrategy:
+    registryPoll:
+      interval: 10m
+  grpcPodConfig:
+    securityContextConfig: restricted
