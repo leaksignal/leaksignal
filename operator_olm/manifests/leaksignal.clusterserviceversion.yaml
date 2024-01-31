@@ -1,13 +1,50 @@
 apiVersion: operators.coreos.com/v1alpha1
 kind: ClusterServiceVersion
 metadata:
-  annotations:
   name: leaksignal-operator.0.3.1
+  annotations:
+    capabilities: Full Lifecycle
+    categories: Security
+    containerImage: docker.io/leaksignal/leaksignal-operator:0.3.1
+    createdAt: '2024-01-31T00:00:00Z'
+    support: LeakSignal Inc. https://leaksignal.com
+    description: Install LeakSignal in seconds with the LeakSignal Operator.
+    repository: https://github.com/leaksignal/leaksignal
+    certified: 'false'
+    alm-examples: |
+      [
+        {
+          "apiVersion": "leaksignal.com/v1",
+          "kind": "LeaksignalIstio",
+          "metadata": {
+            "name": "leaksignal-istio"
+          },
+          "spec": {
+            "proxyHash": "fcecd3a3b099bebb432cf78e48c6f3f24a7d71b92e06b75ba5301877554960ff",
+            "proxyVersion": "2024_01_29_22_53_36_5a454f0_0.9.5",
+            "apiKey": "example",
+          }
+        },
+        {
+          "apiVersion": "leaksignal.com/v1",
+          "kind": "ClusterLeaksignalIstio",
+          "metadata": {
+            "name": "leaksignal-istio"
+          },
+          "spec": {
+            "proxyHash": "fcecd3a3b099bebb432cf78e48c6f3f24a7d71b92e06b75ba5301877554960ff",
+            "proxyVersion": "2024_01_29_22_53_36_5a454f0_0.9.5",
+            "apiKey": "example",
+          }
+        }
+      ]
 spec:
-  description: This is an operator for LeakSignal.
+  description: Install LeakSignal in seconds with the LeakSignal Operator.
   displayName: LeakSignal Operator
   keywords:
   - leaksignal
+  - istio
+  - wasm
   maintainers:
   - email: max@leaksignal.com
     name: Max Bruce
@@ -15,6 +52,9 @@ spec:
   provider:
     name: LeakSignal
     url: leaksignal.com
+  links:
+  - name: Documentation
+    url: https://www.leaksignal.com/docs/Operator/Getting%20Started
   version: 0.3.1
   customresourcedefinitions:
     owned:
