@@ -27,8 +27,9 @@ The easiest way to deploy the Operator is with the Helm Chart:
 
 ```
 helm upgrade --install leaksignal-operator oci://registry-1.docker.io/leaksignal/leaksignal-operator \
-  --version 1.3.1-helm \
-  --namespace kube-system
+  --version 1.5.0-helm \
+  --namespace leaksignal-operator \
+  --create-namespace
 ```
 
 The namespace can be changed if preferred.
