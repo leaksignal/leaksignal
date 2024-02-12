@@ -1,9 +1,0 @@
-apiVersion: v2
-name: leaksignal-operator
-description: A helm chart to install LeakSignal Operator
-
-type: application
-
-version: 1.3.1-helm
-
-appVersion: "1.3.1"

@@ -39,7 +39,7 @@ When upgrading the helm chart, the `helm upgrade --install` command above should
 
 You should also update the CRDs:
 ```
-kubectl apply -f https://raw.githubusercontent.com/leaksignal/leaksignal/master/operator_helm/crds/leaksignal-crd.yaml https://raw.githubusercontent.com/leaksignal/leaksignal/master/operator_helm/crds/leaksignal-cluster-crd.yaml
+kubectl apply -f https://raw.githubusercontent.com/leaksignal/leaksignal-operator/master/chart/crds/leaksignal-crd.yaml https://raw.githubusercontent.com/leaksignal/leaksignal-operator/master/chart/crds/leaksignal-cluster-crd.yaml
 ```
 
 ### Helm Values
