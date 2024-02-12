@@ -817,6 +817,7 @@
                 "json",
                 "grpc",
                 "filebeat",
+                "fluentd",
                 "tls",
                 "none"
             ]
