@@ -908,27 +908,58 @@
                 }
             ]
         },
-        "body_extractor": {
+        "body_extractor_extractor": {
             "type": "object",
             "additionalProperties": {
-                "type": {
-                    "anyOf": [
-                        {
+                "oneOf": [
+                    { "type": "string" },
+                    {
+                        "type": "array",
+                        "items": {
                             "type": "string"
-                        },
-                        {
-                            "type": "array",
-                            "items": {
-                                "type": "string"
-                            }
                         }
-                    ]
+                    },
+                    {
+                        "type": "object",
+                        "properties": {
+                            "path": {
+                                "oneOf": [
+                                    {
+                                        "type": "string"
+                                    },
+                                    {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    }
+                                ]
+                            },
+                            "regex": { "type": "string" }
+                        },
+                        "required": ["path"],
+                        "unevaluatedProperties": false,
+                        "additionalProperties": false
+                    }
+                ]
+            }
+        },
+        "body_extractor": {
+            "oneOf": [
+                {
+                    "type": "object",
+                    "object": {
+                        "extractors": { "$ref": "#/$defs/body_extractor_extractor" },
+                        "include_all": { "type": "boolean" }
+                    },
+                    "required": ["extractors"],
+                    "unevaluatedProperties": false,
+                    "additionalProperties": false
+                },
+                {
+                    "$ref": "#/$defs/body_extractor_extractor"
                 }
-            },
-            "required": [
-                "metadata"
-            ],
-            "unevaluatedProperties": false
+            ]
         },
         "endpoints": {
             "type": "array",
@@ -936,7 +967,10 @@
                 "type": "object",
                 "properties": {
                     "matches": {
-                        "$ref": "#/$defs/rule_filter"
+                        "oneOf": [
+                            { "type": "string" },
+                            { "$ref": "#/$defs/rule_filter" }
+                        ]
                     },
                     "search": {
                         "enum": [
