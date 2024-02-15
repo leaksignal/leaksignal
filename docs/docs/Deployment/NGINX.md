@@ -1,4 +1,6 @@
-# LeakNGX
+---
+sidebar_position: 2
+---
 
 LeakNGX is a native NGINX plugin to integrate LeakSignal.
 

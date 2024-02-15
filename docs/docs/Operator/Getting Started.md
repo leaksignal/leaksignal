@@ -8,64 +8,17 @@ There are two CRDs (custom resource definitions) owned by the LeakSignal Operato
 
 ### LeaksignalIstio
 
-LeaksignalIstio CRs (custom resources) configure LeakSignal proxies to be added to the Istio sidecars in the same namespace as the LeaksignalIstio object.
+[LeaksignalIstio](./CRDs/ClusterLeaksignalIstio%20&%20LeaksignalIstio) CRs (custom resources) configure LeakSignal proxies to be added to the Istio sidecars in the same namespace as the LeaksignalIstio object.
 
-EnvoyFilter objects are created and managed by the operator to faciliate this. Pods with sidecars are automatically restarted to allow for changes to propagate.
+EnvoyFilter objects are created and managed by the operator to faciliate this. Pods with sidecars are automatically restarted to allow for changes to propagate (WASM only).
 
 Automatic pod refreshment can be disabled with the `spec.refreshPodsOnUpdate` value.
 
 ### ClusterLeaksignalIstio
 
-ClusterLeaksignalIstio CRs create a default configuration for all Istio sidecars in all namespaces except for those containing a LeaksignalIstio CR.
+[ClusterLeaksignalIstio](./CRDs/ClusterLeaksignalIstio%20&%20LeaksignalIstio) CRs create a default configuration for all Istio sidecars in all namespaces except for those containing a LeaksignalIstio CR.
 
 They are cluster-scoped objects, and have the same format as LeaksignalIstio objects.
-
-## (Cluster)LeaksignalIstio Fields
-
-The following fields are defined by LeaksignalIstio and ClusterLeaksignalIstio objects:
-```
-# Required, Proxy Version String, can see all versions at https://github.com/leaksignal/leaksignal/releases
-proxyVersion: 2024_02_14_13_47_18_c5db81b_0.10.1
-
-# Required, SHA256 Hash of the WASM proxy module
-proxyHash: a3e851833223951f3460c4851d088ff1efc0a955cba7a68c7cafa0e596c474b2
-
-# Required, API Key from Leaksignal Command dashboard or the deployment name from LeakAgent
-apiKey: MY_API_KEY
-
-# Optional. The ingestion service hostname. The default is `ingestion.app.leaksignal.com` for the public dashboard. This does not include the port.
-upstreamLocation: ingestion.app.leaksignal.com
-
-# Optional. The port for the ingestion service. The default is 443.
-upstreamPort: 443
-
-# Optional. Default is `s3/leakproxy` for public or onprem Command instances. For LeakAgent, the correct value is usually `proxy`.
-proxyPrefix: s3/leakproxy
-
-# Optional. Default is `true`. Sets whether TLS will be used for the proxy -> Command/LeakAgent communication.
-tls: true
-
-# Optional. The location of the CA certificate bundle on the Envoy Sidecar for TLS communication to the upstream Command/LeakAgent.
-# For public TLS certificates, it will always be `/etc/ssl/certs/ca-certificates.crt` for Istio. (default)
-# For OpenShift Service Mesh, the value is `/etc/ssl/certs/ca-bundle.crt`.
-caBundle: /etc/ssl/certs/ca-certificates.crt
-
-# Optional. Default is `true`. If set, when the Operator detects a sidecar has had it's LeakSignal configuration change, the pod is restarted.
-# Envoy can load proxies without a reload okay, but doesn't do well loading in new versions of the proxy or changing the configuration on the fly.
-# This option exists to avoid confusing states where one version is configured to run, but an older one is still executing.
-refreshPodsOnUpdate: true
-
-# Optional. Default is `default` which uses Google'd GRPC implementation. A value of `envoy` will use the built-in Envoy GRPC client.
-grpcMode: default
-
-# Optioal. Default is `true`. If set, L4 streaming is enabled.
-enableStreaming: true
-
-# Optional. A label selector that operates on pods. Only pods with sidecars that match all specified labels will deploy LeakSignal. The default is empty (no labels required).
-workloadSelector:
-  labels:
-    app: my-app
-```
 
 ## Examples
 
@@ -128,7 +81,6 @@ spec:
 
   upstreamLocation: leakagent.leakagent.svc.cluster.local
   upstreamPort: 8121
-  proxyPrefix: proxy
   tls: false
 ```
 
@@ -147,5 +99,4 @@ spec:
 
   upstreamLocation: leakagent.mydomain.com
   upstreamPort: 443
-  proxyPrefix: proxy
 ```
