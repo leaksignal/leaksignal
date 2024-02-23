@@ -1,10 +1,8 @@
 ---
-sidebar_position: 1
+sidebar_position: 2
 ---
 
-# Matchers
-
-Matchers are data patterns that are searched in a response body. They can be regexes, raw strings, excluding rules, correlate rules, or accelerated native matchers.
+Categories are data patterns that are searched in a response body. They can be regexes, raw strings, excluding rules, correlate rules, or accelerated native matchers.
 
 The following matching strategies are considered individually, and a match by any matching strategy constitutes a match of the category:
 
