@@ -13,7 +13,7 @@ See [Examples](https://github.com/leaksignal/leaksignal/tree/master/examples/lea
 ### Helm Install Command
 ```
 helm upgrade --install leakagent oci://registry-1.docker.io/leaksignal/leakagent \
-  --version 0.10.1-helm \
+  --version 0.10.5-helm \
   --namespace leakagent --create-namespace
 
 # or more generally
@@ -25,7 +25,7 @@ helm upgrade --install leakagent oci://registry-1.docker.io/leaksignal/leakagent
 # with a specific values.yaml (i.e. to set policies)
 
 helm upgrade --install leakagent oci://registry-1.docker.io/leaksignal/leakagent \
-  --version 0.10.1-helm \
+  --version 0.10.5-helm \
   -f ./values.yaml \
   --namespace leakagent --create-namespace
 ```
