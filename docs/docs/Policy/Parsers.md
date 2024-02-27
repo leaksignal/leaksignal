@@ -52,6 +52,9 @@ stream_types:
   filebeat:
     dest:
       port: 5044
+  fluentd:
+    dest:
+      port: 24224
   text:
     any:
       - port: 80
@@ -59,7 +62,7 @@ stream_types:
       - port: 8000
 ```
 
-This means the `filebeat` parser will be used if the destination port is 5044, and the `text` parser will be used if either the source or destination port are 80, 8080, or 8000. The filters are checked in the order that they are defined with the default filters checked last.
+This means the `filebeat` parser will be used if the destination port is 5044, `fluentd` will be used if the destination is 24224, and the `text` parser will be used if either the source or destination port are 80, 8080, or 8000. The filters are checked in the order that they are defined with the default filters checked last.
 
 If you wanted to disable text parsing you could add the following to your policy to overwrite the default:
 
