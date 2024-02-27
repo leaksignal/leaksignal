@@ -3,8 +3,6 @@ sidebar_position: 4
 ---
 
 
-# Usage
-
 Match Rules are a text-based filter based on one or more strings. They are used for rate limits and service matching.
 
 ## Format
