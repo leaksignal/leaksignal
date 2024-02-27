@@ -2,7 +2,7 @@
 sidebar_position: 1
 ---
 
-The easiest way to deploy for [Istio](https://istio.io/) and [OpenShift Service Mesh](https://www.redhat.com/en/technologies/cloud-computing/openshift/what-is-openshift-service-mesh) is via the [LeakSignal Operator](/Operator).
+The easiest way to deploy for [Istio](https://istio.io/) and [OpenShift Service Mesh](https://www.redhat.com/en/technologies/cloud-computing/openshift/what-is-openshift-service-mesh) is via the [LeakSignal Operator](/Operator/Deployment).
 
 ## Deploying the Operator
 

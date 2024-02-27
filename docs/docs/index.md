@@ -68,7 +68,7 @@ LeakSignal can be setup in the following modes:
 
 ### Test and configure L7 Policy
 
-After you've verified that the filter is running, you can configure the policy to check for specific sensitive data types or patterns. For examples of preconfigured and performance tested policies, see [LeakSignal Policies](Policy)
+After you've verified that the filter is running, you can configure the policy to check for specific sensitive data types or patterns. For examples of preconfigured and performance tested policies, see [LeakSignal Policies](Policy/Overview)
 
 ## Commercial support
 
