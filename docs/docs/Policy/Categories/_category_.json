@@ -1,8 +1,0 @@
-{
-  "label": "Categories",
-  "position": 1,
-  "link": {
-    "type": "generated-index",
-    "description": "Categories map a human concept of sensitive data to concrete ways to match that data. Regexes, literal strings, regexes near other regexes, etc, are all examples of this."
-  }
-}

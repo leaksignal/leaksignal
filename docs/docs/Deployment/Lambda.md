@@ -1,4 +1,6 @@
-# LeakLambda
+---
+sidebar_position: 4
+---
 
 LeakLambda is an AWS Lambda layer capable of running LeakSignal inside a Lambda function with support for all Lambda runtimes on the x86_64 architecture.
 LeakLambda gives you complete control over the usual matching, redaction, blocking, and early returns for your Lambda functions input and output.

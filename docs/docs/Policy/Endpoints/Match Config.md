@@ -62,8 +62,13 @@ The default is no whitelist at all (all content types are allowed).
 
 Can be one or more of the following values, as a string or array of strings.
 
-* `html`
+* `text`
 * `json`
+* `grpc`
+* `filebeat`
+* `tls`
+* `msgpack`
+* `fluentd`
 
 ### contexts
 

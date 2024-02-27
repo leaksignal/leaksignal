@@ -70,7 +70,7 @@ const config = {
           },
           {
             type: 'doc',
-            docId: 'Policy/Policy',
+            docId: 'Policy/Overview',
             position: 'left',
             label: 'Policy',
           },

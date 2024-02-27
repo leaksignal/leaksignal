@@ -1,10 +1,14 @@
 ---
-sidebar_position: 2
+sidebar_position: 6
 ---
 
 # SBAC: Service Based Access Control
 
-SBAC allows you to dynamically control the blocking of services based on a set of FilterRules
+SBAC allows you to dynamically control the blocking of services based on a set of [RuleFilter](./Rules#filters)s
+
+## Function
+
+SBAC rules are evaluated inline continuously throughout all request/response pairs or TCP streams. If insufficient data is present (i.e. filtering on a request header, but we haven't gotten all the headers yet), the rule is skipped, or if the `stage` field has not yet happened.
 
 ## Format
 
@@ -26,7 +30,7 @@ Each SBAC item has the following fields:
   * `on_response_trailer_chunk`
   * `post_response_trailers`
   * `any` (default)
-* `filter`: the `RuleFilter` to check
+* `filter`: the [RuleFilter](./Rules#filters) to check
 
 ## Example
 

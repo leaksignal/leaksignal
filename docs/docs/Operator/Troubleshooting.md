@@ -1,16 +1,16 @@
 ---
-sidebar_position: 3
+sidebar_position: 4
 ---
 
 ## Getting Help
 
-For technical issues you can [file an issue on GitHub](https://github.com/leaksignal/leaksignal/issues). You can also reach out to us at support@leaksignal.com.
+For technical issues you can [file an issue on GitHub](https://github.com/leaksignal/leaksignal-operator/issues). You can also reach out to us at support@leaksignal.com.
 
 ## Logs
 
-The LeakSignal Operator exposes logs on a pod in the namespace deployed, i.e. `kube-system`.
+The LeakSignal Operator exposes logs on a pod in the namespace deployed, i.e. `leaksignal-operator`.
 
-To fetch logs on a Kubernetes deployment in the `kube-system` namespace, run:
+To fetch logs on a Kubernetes deployment in the `leaksignal-operator` namespace, run:
 
-1. `kubectl -n kube-system get pods`
-2. `kubectl -n kube-system logs leaksignal-operator-0`
+1. `kubectl -n leaksignal-operator get pods`
+2. `kubectl -n leaksignal-operator logs leaksignal-operator-0`
