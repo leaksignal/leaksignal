@@ -21,7 +21,7 @@ If updating from a previous version via Helm, make sure to manually update the C
 $ kubectl apply -f https://raw.githubusercontent.com/leaksignal/leaksignal-operator/v1.6.2/crds/leaksignal-crd.yaml https://raw.githubusercontent.com/leaksignal/leaksignal-operator/v1.6.2/crds/leaksignal-cluster-crd.yaml
 ```
 
-You can find the code, CRDs, and Helm Charts on [GitHub](https://github.com/leaksignal/leaksignal-operator) and more documentation [Here](/Operator).
+You can find the code, CRDs, and Helm Charts on [GitHub](https://github.com/leaksignal/leaksignal-operator) and more documentation [Here](/Operator/Deployment).
 
 ## Native vs WASM
 
