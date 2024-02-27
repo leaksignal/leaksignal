@@ -68,7 +68,7 @@ Can be one or more of the following values, as a string or array of strings.
 * `filebeat`
 * `tls`
 * `msgpack`
-* `Fluentd`
+* `fluentd`
 
 ### contexts
 
