@@ -9,9 +9,7 @@ The following matching strategies are considered individually, and a match by an
 - raw (String),
 - rawInsensitive (String),
 - regex (Regex),
-- internal (native matcher) the possible values for `internal` are:
-  - routing_number
-  - credit_card
+- internal (native matcher). a complete list of native matchers can be found [here](./Match%20Rules#Internal%20matchers)
 
 The following have special properties that will override the behavior of other rules in the category:
 
