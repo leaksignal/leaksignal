@@ -39,4 +39,4 @@ Deploy the LeakSignal filter by copy and pasting the configuration with your API
 
 ![LeakSignal Registration Step 1](../../static/img/step3.png)
 
-From here, navigate to the Service Map to understand sensitive data flows and configure alerts in the [Policy](/Policy) to receive an SMS or email alert when sensitive data is emitted from your AI workload.
+From here, navigate to the Service Map to understand sensitive data flows and configure alerts in the [Policy](/Policy/Overview) to receive an SMS or email alert when sensitive data is emitted from your AI workload.
