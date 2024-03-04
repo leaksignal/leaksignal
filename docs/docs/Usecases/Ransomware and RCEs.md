@@ -33,7 +33,7 @@ The commands will generate responses with unique signals that would never be see
 ```
 
 :::note
-See [Policy](/Policy) documentation for more information on how policies work.
+See [Policy](/Policy/Overview) documentation for more information on how policies work.
 :::
 
 When any of the above matching rules are triggered, LeakSignal will fire an alert in the COMMAND dashboard (along with sending you an SMS and email).
