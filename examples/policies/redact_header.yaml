@@ -1,0 +1,18 @@
+categories:
+  bees: !raw "bees"
+  world: !raw "world"
+  html: !raw "html"
+endpoints:
+  - config:
+      bees:
+        action: !redact "REDACTED"
+        search: request_header
+      world:
+        action: !redact "REDACTED"
+        search: request_header
+      html:
+        action: !redact "NOPE"
+        search: response_header
+    report_style: raw
+report_style: none
+stream_upload_interval: none

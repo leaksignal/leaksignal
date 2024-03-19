@@ -1,0 +1,48 @@
+categories:
+  ssn: !regex "(?:[^0-9]|^)\\d{3}[\\s.-]\\d{2}[\\s.-]\\d{4}(?:[^0-9]|$)"
+  credit_card:
+    - regex: "\\d{16}"
+    - regex: "\\d{4}[\\s.-]\\d{4}[\\s.-]\\d{4}[\\s.-]\\d{4}"
+    - internal: credit_card
+    - except: 0000-0000-0000-0000
+  email:
+    - regex: "[a-zA-Z0-9_.+-]{2,}@[a-zA-Z0-9-]{3,}\\.[a-zA-Z0-9-.]{2,}"
+    - except: someone@example.com
+  phone_number: !regex "(?:[^0-9]|^)(?:\\+1[\\s.-])?(?:\\d{3}|\\(\\d{3}\\))[\\s.-]\\d{3}[\\s.-]\\d{4}(?:[^0-9]|$)"
+  address: !regex "(?ui)[0-9]+\\s+[a-zà-ú.,-]*\\s+((highway)|(autoroute)|(north)|(nord)|(south)|(sud)|(east)|(est)|(west)|(ouest)|(avenue)|(lane)|(voie)|(ruelle)|(road)|(rue)|(route)|(drive)|(boulevard)|(circle)|(cercle)|(street)|(parkway)|(cer\\.?)|(pkwy\\.?)|(cir\\.?)|(blvd\\.?)|(hway\\.?)|(st\\.?)|(aut\\.?)|(ave\\.?)|(ln\\.?)|(rd\\.?)|(hw\\.?)|(dr\\.?))([ .,-]*[a-zà-ú0-9]*)*"
+  currency:
+    - raw: USD
+    - raw: EUR
+endpoints:
+  - matches: "**"
+    config:
+      credit_card: {}
+      email: {}
+      address: {}
+      currency: {}
+  - matches:
+      - "*/product/*"
+      - "*/hipstershop.CurrencyService/GetSupportedCurrencies"
+      - "*/hipstershop.CartService/GetCart"
+      - "*/hipstershop.ShippingService/GetQuote"
+      - "*/hipstershop.CurrencyService/Convert"
+      - "*/hipstershop.PaymentService/Charge"
+      - "*/hipstershop.ShippingService/ShipOrder"
+      - "*/hipstershop.CartService/EmptyCart"
+      - "*/hipstershop.EmailService/SendOrderConfirmation"
+      - "*/hipstershop.CheckoutService/PlaceOrder"
+      - "*/hipstershop.ProductCatalogService/GetProduct"
+      - "*/hipstershop.ProductCatalogService/ListProducts"
+      - "*/hipstershop.RecommendationService/ListRecommendations"
+      - "*/hipstershop.AdService/GetAds"
+      - "*/hipstershop.CartService/AddItem"
+  - matches: "*/cart"
+  - matches: "*/cart/checkout"
+rules:
+  - grouping: global
+    by: ip
+    timespan_secs: 10
+    limit: 1
+    action: alert
+header_collection: all_request
+stream_upload_interval: none

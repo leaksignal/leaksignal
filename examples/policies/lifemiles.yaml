@@ -1,0 +1,165 @@
+categories:
+  pii_dob_correlate:
+    - regex: "(?-u:\\b)(19[2-9]\\d|20[0-1]\\d)(([-/.](0?[1-9]|1[0-2])[-/.](0?[1-9]|1\\d|2\\d|3[0-1]))|((0[1-9]|1[0-2])(0[1-9]|1\\d|2\\d|3[0-1])))(?-u:\\b)|(?-u:\\b)(((0?[1-9]|1\\d|2\\d|3[0-1])[-/.](0?[1-9]|1[0-2])[-/.])|((0[1-9]|1\\d|2\\d|3[0-1])(0[1-9]|1[0-2]))|((0?[1-9]|1[0-2])[-/.](0?[1-9]|1\\d|2\\d|3[0-1])[-/.])|((0[1-9]|1[0-2])(0[1-9]|1\\d|2\\d|3[0-1])))(19[2-9]\\d|20[0-1]\\d)(?-u:\\b)"
+    - correlate:
+        interest: primary
+        max_distance: 32
+        matches:
+          - raw_insensitive: dob
+          - raw_insensitive: date_of_birth
+          - raw_insensitive: "date of birth"
+          - raw_insensitive: birthday
+  pii_dob_key:
+    - dob
+    - date_of_birth
+    - dateOfBirth
+    - birthDate
+    - birth_date
+    - birthdate
+    - birthday
+  pii_email:
+    - regex: "(?-u:\\b)[a-zA-Z0-9][a-zA-Z0-9_.+-]{0,}@[a-zA-Z0-9][a-zA-Z0-9-.]{0,}\\.[a-zA-Z]{2,}(?-u:\\b)"
+    - except: someone@example.com
+  pii_bad_email:
+    - regex: "(?-u:\\b)[a-zA-Z0-9][a-zA-Z0-9_.+-]{0,}@hotmail\\.red"
+  pii_ssn_us:
+    - regex: "(?-u:\\b)\\d{3}[ .-]\\d{2}[ .-]\\d{4}(?-u:\\b)"
+  pii_phone_us:
+    - regex: "(?-u:\\b)(1[ .-]?)?[2-9]\\d{2}[ .-]?\\d{3}[ .-]?\\d{4}(?-u:\\b)|((?-u:\\b)1[ .-]?)?\\([2-9]\\d{2}\\)[ .-]?\\d{3}[ .-]?\\d{4}(?-u:\\b)"
+  pii_phone_us_correlate:
+    - regex: "(?-u:\\b)1[2-9]\\d{9}(?-u:\\b)"
+    - correlate:
+        interest: primary
+        max_distance: 64
+        matches:
+          - raw_insensitive: phone
+  pii_address_us_narrow:
+    - regex: "(?i)(?-u:\\b)\\d{1,5} ([a-zA-Z0-9]+ ){0,5}(street|st|avenue|ave|boulevard|blvd|road|rd|route|way|highway|hwy|drive|lane|loop|court|circle|cove|place|terrace),?( [a-zA-Z0-9#,\\.]+){0,3}(?-u:\\b)"
+  pii_phone_int: !internal int_phone
+  aws_access_token:
+    - regex: "(?-u:\\b)((A3T[A-Z0-9]|ABIA|ACCA|AGPA|AIDA|AIPA|AKIA|ANPA|ANVA|APKA|AROA|ASCA|ASIA)[A-Z0-9]{16,18})(?-u:\\b)"
+  credit_card: !internal credit_card
+  lifemiles_number: !raw ftNum
+  name:
+    - first_name
+    - last_name
+    - firstName
+    - lastName
+    - full_name
+    - fullName
+  operation_flag:
+    - U
+sbac:
+- name: block_vuln
+  stage: post_request_headers
+  filter:
+    all:
+    - response_outbound
+    - any:
+      - request_matches:
+          operation_flag:
+          - path: memberAccount.operationFlag
+      - request_matches:
+          operation_flag:
+          - path: memberAccount.memberProfile.operationFlag
+      - request_matches:
+          operation_flag:
+          - path: memberAccount.memberProfile.individualInfo.operationFlag
+      - request_matches:
+          operation_flag:
+          - path: memberAccount.memberProfile.individualInfo.memberContactInfos[*].operationFlag
+    - request_headers:
+        ":path":
+        - /svc/request-enrollment
+        - /svc/account/full-enrollment
+        - /svc/account/enrollment/lm
+        ":authority": "api.lifemiles.com"
+- name: block_bad_emails
+  stage: post_request_headers
+  filter:
+    all:
+    - response_outbound
+    - request_matches:
+        pii_bad_email: 1
+    - request_headers:
+        ":path":
+        - /svc/request-enrollment
+        - /svc/account/full-enrollment
+        - /svc/account/enrollment/lm
+        ":authority": "api.lifemiles.com"
+endpoints:
+  - matches: "**"
+    config:
+      pii_bad_email: {}
+      operation_flag:
+        content_types: json
+        contexts: values
+      pii_dob_correlate:
+        name: pii_dob
+      pii_dob_key:
+        name: pii_dob
+      pii_email: {}
+      pii_ssn_us:
+        report_style: partial_sha256
+        report_bits: 24
+      pii_phone_us: {}
+      pii_phone_us_correlate:
+        name: pii_phone_us
+      pii_address_us_narrow:
+        name: pii_address_us
+      pii_phone_int: {}
+      credit_card:
+        report_style: partial_sha256
+        report_bits: 32
+      lifemiles_number:
+        content_types: json
+        contexts: values_key
+      name:
+        content_types: json
+        contexts: keys
+    token_extractor:
+      location: request_cookie
+      header: dra3j
+      extractor:
+        - jwt_decode
+        - json_path: $.lm-id
+rules:
+- grouping: per_inbound_service
+  by:
+    header: lifemilesnumber
+  count_by:
+    header: ip
+  limit: 30
+  timespan_secs: 86400
+  action: alert_block
+  filter:
+    all:
+    - response_outbound
+    - request_headers:
+        ":authority": "be-availability-svc:90"
+- grouping: per_inbound_service
+  by:
+    header: X-RDWR-IP
+  limit: 10
+  timespan_secs: 3600
+  action: alert_block
+  filter:
+    all:
+    - response_outbound
+    - request_headers:
+        ":path":
+        - /svc/request-enrollment
+        - /svc/account/full-enrollment
+        - /svc/account/enrollment/lm
+        ":authority": "api.lifemiles.com"
+collected_request_headers:
+- ip
+- lifemilesnumber
+
+body_collection:
+- sample_rate: 1.0
+  filter:
+    all:
+    - response_outbound
+    - request_headers:
+        ":authority": "be-availability-svc:90"

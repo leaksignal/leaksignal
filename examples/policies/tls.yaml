@@ -1,0 +1,4 @@
+categories: {}
+stream_types:
+  tls: always
+stream_upload_interval: none

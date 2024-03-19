@@ -1,0 +1,118 @@
+categories:
+  ssn: !regex "\\b\\d{3}[ .-]\\d{2}[ .-]\\d{4}\\b"
+  credit_card: !internal credit_card
+  email:
+    - regex: "\\b[a-zA-Z0-9][a-zA-Z0-9_.+-]{0,}@[a-zA-Z0-9][a-zA-Z0-9-.]{0,}\\.[a-zA-Z]{2,}\\b"
+    - except: someone@example.com
+  phone:
+    - regex: "(?u)\\b(1[ .-]?)?[2-9]\\d{2}[ .-]?\\d{3}[ .-]?\\d{4}\\b|(\\b1[ .-]?)?\\([2-9]\\d{2}\\)[ .-]?\\d{3}[ .-]?\\d{4}\\b"
+    - and:
+      - internal: !national_phone US
+  address: !regex "(?i)\\b\\d{1,5} ([a-zA-Z0-9]+ ){0,5}(street|st|avenue|ave|boulevard|blvd|road|rd|route|rt|rte|sr|way|wy|highway|hwy|camino|broadway|parkway|pkwy|expressway|expy?|drive|dr|lane|ln|trail|alley|loop|court|circle|park|plaza|place|square|terrace|row|walk|cove|cv|run|path|pass|hollow|bend),?( [a-zA-Z0-9#,\\.]+){0,3}\\b"
+  phone_number_correlate:
+    - regex: "\\b[0-9]{10}\\b"
+    - correlate:
+        interest: primary
+        max_distance: 64
+        matches: !raw_insensitive phone
+  keywords:
+    - raw: "ssn"
+    - raw_insensitive: "phone"
+    - raw: "url"
+  any: !regex ".*"
+  routing:
+    matchers: !internal routing_number
+    tag: "routing"
+  routing_2:
+    matchers:
+      - regex: "\\b\\d{9}\\b"
+      - regex: "\\b\\d{5}\\b"
+      - and: !internal routing_number
+    tag: "routing"
+  international_phone: !internal int_phone
+  sql: !internal sql
+  gt10: !int_gt 10
+rules:
+  - grouping: per_inbound_service
+    by: outbound_service
+    filter:
+      any:
+        - peer_service: "cluster.local/default/cartservice"
+        - peer_service: "cluster.local/default/checkoutservice"
+    action: block
+    timespan_secs: 30
+    limit: 3000
+  - grouping: per_endpoint
+    by: ip
+    filter:
+      all:
+        - endpoint: "**/api/**"
+        - exclude_endpoint: "**/api/v1/health"
+    action: alert
+    timespan_secs: 60
+    limit: 750
+  - grouping: per_endpoint
+    by: ip
+    filter:
+      all:
+        - endpoint: "**/api/**"
+        - exclude_endpoint: "**/api/v1/health"
+        - exclude_token: exampleToken123
+    action: block
+    timespan_secs: 60
+    limit: 1500
+endpoints:
+  - config:
+      ssn:
+        action: !redact "REDACTED"
+      credit_card: {}
+      email:
+        content_types: text
+      phone_number:
+        matcher: phone
+      address: {}
+      phone_number_correlate: {}
+      keywords:
+        content_types: json
+        contexts: values_key
+        action: !redact "FORBIDDEN"
+      any:
+        action: !redact ""
+        content_types: json
+        contexts: !header "content-type"
+        search: response_header
+      any_2:
+        name: any
+        matcher: any
+        contexts: !header "hello"
+        search: request_header
+      routing: {}
+      routing_2:
+        report_style: sha256
+      international_phone: {}
+      sql: {}
+      gt10:
+        search: all_header
+        contexts:
+          - !header "a"
+          - !header "b"
+    request_extractors:
+      extractors:
+        "ssn":
+          - "test.my_ssn3[*].my_ssn4"
+          - "test.my_ssn2"
+        "never": "aaa.aaa.aaa.aaa.aaa.hello"
+      include_all: true
+    response_extractors:
+      "ssn2":
+        path: "test.my_ssn3[*].my_ssn4"
+        regex: "\\d{4}"
+      "never2":
+        - "hello.aaa.aaa.aaa.aaa.aaa"
+        - "goodbye.aaa.aaa.aaa.aaa.aaa"
+    report_style: raw
+report_style: none
+content_types:
+  "application/imaginary": text
+path_groups: "*/invalid*/!*"
+stream_upload_interval: none

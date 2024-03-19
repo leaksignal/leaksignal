@@ -1,0 +1,26 @@
+name: Schema
+on:
+  pull_request:
+    paths:
+      - 'policy.schema.json'
+      - 'examples/policies/*'
+concurrency:
+  group: ${{ github.head_ref || github.run_id }} schema
+  cancel-in-progress: true
+
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Setup Node.js
+      uses: actions/setup-node@v1
+      with:
+        node-version: '14'
+    - name: Install ajv-cli
+      run: npm install -g ajv-cli
+    - name: Validate JSON
+      run: |
+        chmod +x test_schema.sh
+        ./test_schema.sh

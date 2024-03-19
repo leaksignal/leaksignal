@@ -1,0 +1,61 @@
+categories:
+  ssn: !regex "\\b\\d{3}[ .-]\\d{2}[ .-]\\d{4}\\b"
+  credit_card: !internal credit_card
+  email:
+    - regex: "\\b[a-zA-Z0-9][a-zA-Z0-9_.+-]{0,}@[a-zA-Z0-9][a-zA-Z0-9-.]{0,}\\.[a-zA-Z]{2,}\\b"
+    - except: someone@example.com
+  phone_number: !regex "\\b(1[ .-]?)?[2-9]\\d{2}[ .-]?\\d{3}[ .-]?\\d{4}\\b|(\\b1[ .-]?)?\\([2-9]\\d{2}\\)[ .-]?\\d{3}[ .-]?\\d{4}\\b"
+  address: !regex "(?i)\\b\\d{1,5} ([a-zA-Z0-9]+ ){0,5}(street|st|avenue|ave|boulevard|blvd|road|rd|route|rt|rte|sr|way|wy|highway|hwy|camino|broadway|parkway|pkwy|expressway|expy?|drive|dr|lane|ln|trail|alley|loop|court|circle|park|plaza|place|square|terrace|row|walk|cove|cv|run|path|pass|hollow|bend),?( [a-zA-Z0-9#,\\.]+){0,3}\\b"
+  phone_number_correlate:
+    - regex: "\\b[0-9]{10}\\b"
+    - correlate:
+        interest: primary
+        max_distance: 64
+        matches: !raw_insensitive phone
+rules:
+  - grouping: per_inbound_service
+    by: outbound_service
+    filter:
+      any:
+        - peer_service: "cluster.local/default/cartservice"
+        - peer_service: "cluster.local/default/checkoutservice"
+    action: block
+    timespan_secs: 30
+    limit: 3000
+  - grouping: per_endpoint
+    by: ip
+    filter:
+      all:
+        - endpoint: "**/api/**"
+        - exclude_endpoint: "**/api/v1/health"
+    action: alert
+    timespan_secs: 60
+    limit: 750
+  - grouping: per_endpoint
+    by: ip
+    filter:
+      all:
+        - endpoint: "**/api/**"
+        - exclude_endpoint: "**/api/v1/health"
+        - exclude_token: exampleToken123
+    action: block
+    timespan_secs: 60
+    limit: 1500
+endpoints:
+  - matches: "**"
+    config:
+      ssn: {}
+      credit_card: {}
+      email: {}
+      phone_number: {}
+      address: {}
+      phone_number_correlate: {}
+    token_extractor:
+      location: request
+      header: "block_me"
+      regex: ".*"
+      hash: true
+blocked_tokens:
+  - "9FC2BAB31B8C9738DAE5FEFBFF80B214011A7A317B75FC1AB352D17343F1166E"
+report_style: raw
+stream_upload_interval: none

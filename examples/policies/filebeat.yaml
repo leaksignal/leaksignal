@@ -1,0 +1,13 @@
+categories:
+  timestamp: !raw timestamp
+endpoints:
+  - matches: "**"
+    config:
+      timestamp:
+        contexts: values_key
+    request_extractors:
+      log_path:
+        - log.file.path
+stream_types:
+  filebeat: always
+stream_upload_interval: none

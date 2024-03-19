@@ -1,0 +1,17 @@
+categories:
+  insecure: "http://"
+endpoints:
+  - matches: "**"
+    config:
+      insecure:
+        contexts:
+        - values
+    request_extractors:
+      deployment: "kubernetes.labels.name"
+      insecure_url:
+        path: "responseObject.spec.displayName"
+        regex: "Observability .*"
+    exploit_detection: {}
+stream_types:
+  fluentd: always
+stream_upload_interval: none

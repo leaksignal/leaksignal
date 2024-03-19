@@ -1,0 +1,11 @@
+categories:
+  start: "start"
+  rsyslogd: "rsyslogd"
+endpoints:
+  - matches: "**"
+    config:
+      start:
+        action: !redact "KEYWORD"
+      rsyslogd:
+        action: !redact "PROCESS"
+stream_upload_interval: none

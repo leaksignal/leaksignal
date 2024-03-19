@@ -213,8 +213,7 @@
                     "unevaluatedProperties": false,
                     "additionalProperties": false
                 }
-            ],
-            "unevaluatedProperties": false
+            ]
         },
         "match_item": {
             "oneOf": [
@@ -260,8 +259,7 @@
                     "unevaluatedProperties": false,
                     "additionalProperties": false
                 }
-            ],
-            "unevaluatedProperties": false
+            ]
         },
         "match_filter_rule": {
             "oneOf": [
@@ -769,8 +767,7 @@
                     "unevaluatedProperties": false,
                     "additionalProperties": false
                 }
-            ],
-            "unevaluatedProperties": false
+            ]
         },
         "category": {
             "oneOf": [
@@ -778,13 +775,16 @@
                     "$ref": "#/$defs/matches"
                 },
                 {
-                    "type": "object",
+                    "type": "array",
                     "items": {
-                        "matchers": {
-                            "$ref": "#/$defs/matches"
-                        },
-                        "tag": {
-                            "type": "string"
+                        "type": "object",
+                        "properties": {
+                            "matchers": {
+                                "$ref": "#/$defs/matches"
+                            },
+                            "tag": {
+                                "type": "string"
+                            }
                         }
                     }
                 }
@@ -882,18 +882,18 @@
                 },
                 {
                     "type": "object",
-                    "metadata": {
-                        "type": "object",
-                        "additionalProperties": {
-                            "type": {
+                    "properties": {
+                        "metadata": {
+                            "type": "object",
+                            "additionalProperties": {
                                 "anyOf": [
                                     {
-                                        "type": "#/$defs/token_extractor"
+                                        "$ref": "#/$defs/token_extractor"
                                     },
                                     {
                                         "type": "array",
                                         "items": {
-                                            "type": "#/$defs/token_extractor"
+                                            "$ref": "#/$defs/token_extractor"
                                         }
                                     }
                                 ]
@@ -912,7 +912,9 @@
             "type": "object",
             "additionalProperties": {
                 "oneOf": [
-                    { "type": "string" },
+                    {
+                        "type": "string"
+                    },
                     {
                         "type": "array",
                         "items": {
@@ -935,9 +937,13 @@
                                     }
                                 ]
                             },
-                            "regex": { "type": "string" }
+                            "regex": {
+                                "type": "string"
+                            }
                         },
-                        "required": ["path"],
+                        "required": [
+                            "path"
+                        ],
                         "unevaluatedProperties": false,
                         "additionalProperties": false
                     }
@@ -948,11 +954,17 @@
             "oneOf": [
                 {
                     "type": "object",
-                    "object": {
-                        "extractors": { "$ref": "#/$defs/body_extractor_extractor" },
-                        "include_all": { "type": "boolean" }
+                    "properties": {
+                        "extractors": {
+                            "$ref": "#/$defs/body_extractor_extractor"
+                        },
+                        "include_all": {
+                            "type": "boolean"
+                        }
                     },
-                    "required": ["extractors"],
+                    "required": [
+                        "extractors"
+                    ],
                     "unevaluatedProperties": false,
                     "additionalProperties": false
                 },
@@ -968,8 +980,12 @@
                 "properties": {
                     "matches": {
                         "oneOf": [
-                            { "type": "string" },
-                            { "$ref": "#/$defs/rule_filter" }
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "$ref": "#/$defs/rule_filter"
+                            }
                         ]
                     },
                     "search": {
@@ -1717,8 +1733,7 @@
                     "unevaluatedProperties": false,
                     "additionalProperties": false
                 }
-            ],
-            "unevaluatedProperties": false
+            ]
         },
         "stage": {
             "type": "string",
@@ -1812,7 +1827,7 @@
                     "type": "object",
                     "properties": {
                         "all": {
-                            "type": "#/$defs/stream_upload_interval"
+                            "$ref": "#/$defs/stream_upload_interval"
                         }
                     },
                     "required": [
@@ -1825,7 +1840,7 @@
                     "type": "object",
                     "properties": {
                         "any": {
-                            "type": "#/$defs/stream_upload_interval"
+                            "$ref": "#/$defs/stream_upload_interval"
                         }
                     },
                     "required": [
@@ -1838,7 +1853,7 @@
                     "type": "object",
                     "properties": {
                         "all": {
-                            "type": "#/$defs/stream_upload_interval"
+                            "$ref": "#/$defs/stream_upload_interval"
                         }
                     },
                     "required": [
@@ -2156,14 +2171,14 @@
                     }
                 }
             ]
+        },
+        "stream_upload_interval": {
+            "$ref": "#/$defs/stream_upload_interval"
         }
     },
     "required": [
         "categories"
     ],
     "unevaluatedProperties": false,
-    "additionalProperties": false,
-    "stream_upload_interval": {
-        "$ref": "#/$defs/stream_upload_interval"
-    }
+    "additionalProperties": false
 }
