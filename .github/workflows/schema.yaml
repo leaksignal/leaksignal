@@ -4,6 +4,7 @@ on:
     paths:
       - 'policy.schema.json'
       - 'examples/policies/*'
+      - 'ci_tools/check_schema/*'
 concurrency:
   group: ${{ github.head_ref || github.run_id }} schema
   cancel-in-progress: true
@@ -13,14 +14,34 @@ jobs:
   validate:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
-    - name: Setup Node.js
-      uses: actions/setup-node@v1
-      with:
-        node-version: '14'
-    - name: Install ajv-cli
-      run: npm install -g ajv-cli
-    - name: Validate JSON
-      run: |
-        chmod +x test_schema.sh
-        ./test_schema.sh
+      - name: Ssh Add
+        uses: webfactory/ssh-agent@v0.8.0
+        with:
+            ssh-private-key: |
+              ${{ secrets.PROXY_WASM2_KEY }}
+              ${{ secrets.LEAKSIGNAL_KEY }}
+
+      - name: Checkout Sources
+        uses: actions/checkout@v2
+
+      - name: Rust Cache
+        uses: Swatinem/rust-cache@v2.6.0
+
+      - name: Install stable toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
+
+      - name: Install protoc
+        shell: bash
+        run: |
+          curl -LO https://github.com/protocolbuffers/protobuf/releases/download/v22.3/protoc-22.3-linux-x86_64.zip
+          unzip protoc-22.3-linux-x86_64.zip -d $HOME/.local
+          export PATH="$PATH:$HOME/.local/bin"
+
+      - name: Validate Schema
+        run: |
+          cd ci_tools/check_schema
+          cargo run
