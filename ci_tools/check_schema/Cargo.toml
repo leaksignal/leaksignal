@@ -1,0 +1,11 @@
+[package]
+name = "check_schema"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+leakpolicy = { git = "https://github.com/leaksignal/leaksignal-proxy.git", branch = "master" }
+serde_json = "1.0.114"
+jsonschema = "0.17.1"
