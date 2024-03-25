@@ -71,9 +71,19 @@ stream_types:
     text: never
 ```
 
+### File System
+
+If using the LeakFile proxy, you can use the `file_types` to set which files to parse and what parsers to use
+
+```yaml
+file_types:
+  /usr/**/*.log: text
+  coding/work/my_log.txt: text
+```
+
 #### Telemetry Flushing
 
-With TCP streaming, connections are long lived, and a request/response model is not always applicable. To allow consistent telemetry upload to Command, we define `stream_upload_interval` on the policy.
+With TCP streaming and LeakFile parsing, connections are long lived, and a request/response model is not always applicable. To allow consistent telemetry upload to Command, we define `stream_upload_interval` on the policy.
 
 `stream_upload_interval` is a filter that determines how frequently match data will be sent when in TCP streaming mode. Once the rule is satisfied, the parser will be flushed and telemetry will be sent to Command. No matter what is put here, data will always be sent when the connection is closed.
 
