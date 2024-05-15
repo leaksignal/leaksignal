@@ -11,7 +11,7 @@ LeakSignal Operator is available on [OperatorHub](https://operatorhub.io/operato
 You can also install the operator via a Helm Chart:
 ```bash
 $ helm upgrade --install leaksignal-operator oci://registry-1.docker.io/leaksignal/leaksignal-operator \
-  --version 1.6.2-helm \
+  --version 0.11.1-helm \
   --namespace leaksignal-operator \
   --create-namespace
 ```
