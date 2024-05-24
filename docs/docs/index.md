@@ -23,21 +23,13 @@ LeakSignal can deploy in a variety of environments -- Istio, OpenShift Service M
 
 See detailed installation instructions [here](./Deployment/Istio%20&%20OSSM).
 
-Here's the Markdown for three marketplace boxes with their respective logos and links to install LeakSignal:
-
----
-
-## Install LeakSignal from Your Preferred Marketplace
+### Install LeakSignal from Your Preferred Marketplace
 
 [Install LeakSignal on AWS](https://aws.amazon.com/marketplace/pp/prodview-4et32qmmt3yse)
 
 [Install LeakSignal on Azure](https://azuremarketplace.microsoft.com/en-us/marketplace/apps/leaksignalinc1673983004536.leaksignal_test?tab=Overview)
 
 [Install LeakSignal on Red Hat OpenShift](https://catalog.redhat.com/software/containers/leaksignal/leaksignal-operator/65bba2dfc5a5071d0ac06f82?architecture=amd64&image=65d63f73a90f7d622e03f5fd)
-
----
-
-This Markdown will create three sections for AWS, Azure, and Red Hat marketplaces, each with their logos and links to install LeakSignal.
 
 ## Overview
 

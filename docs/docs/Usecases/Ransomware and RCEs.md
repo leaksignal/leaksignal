@@ -74,8 +74,6 @@ This policy detects various signals that are indicative of a successful exploit:
 - **rce_etc_passwd**: Identifies lines from the `/etc/passwd` file indicating user information.
 - **rce_uname**: Matches system information output from the `uname -a` command, including kernel version and build info.
 
-By employing these regex patterns, LeakSignal can detect a broader range of exploit indicators, providing a more comprehensive defense against RCE attacks.
-
 LeakSignal can also detect specific system outputs, such as those from Microsoft Exchange vulnerabilities like ProxyLogin and ProxyNotShell:
 
 ```yaml
