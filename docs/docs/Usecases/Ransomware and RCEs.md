@@ -1,27 +1,34 @@
 ---
-sidebar_position: 2
+sidebar_position: 3
 ---
 
-## How Ransomware Works
+## Detecting the First Signs of Serious Exploits
 
-According to the 2021 Verizon Data Breach Investigations Report, web applications were the top attack vector for ransomware, accounting for 29% of all incidents analyzed. Similarly, a report from cybersecurity firm CrowdStrike found that 33% of ransomware incidents involved attackers exploiting vulnerabilities in web applications.
+In today's cybersecurity landscape, a critical aspect of safeguarding your infrastructure is the ability to detect the first signs of serious exploits as they occur. LeakSignal excels at identifying these initial indicators by analyzing live traffic and responses to early-stage attacks.
 
-Ransomware attacks on public facing web infrastructure begin with a feeback loop. There’s no way for a single human to scan all the web infrastructure so they employ scanning tools to find an [RCE](/Usecases/Ransomware%20and%20RCEs) or other vulnerability. Here are a few examples of tools and scanners available that can check for vulnerable web servers:
+### How Exploits Work
 
-1. Nmap: Nmap is a network exploration and security auditing tool that can be used to scan for open ports and services on a web server. By identifying open ports, it can help to identify any services that might be vulnerable to attacks.
-2. OpenVAS: OpenVAS is an open-source vulnerability scanner that can be used to scan web servers and web applications for known vulnerabilities. It can identify issues such as outdated software versions, misconfigurations, and insecure settings.
-3. Nikto: Nikto is a web server scanner that can be used to identify vulnerabilities and misconfigurations in web servers. It can scan for over 6700 potentially dangerous files and scripts on web servers, including server misconfigurations, outdated software versions, and insecure settings.
-4. Burp Suite: Burp Suite is a web application security testing tool that can be used to identify vulnerabilities in web applications. It can scan for a wide range of vulnerabilities, including cross-site scripting (XSS), SQL injection, and file inclusion vulnerabilities.
-5. Metasploit: Metasploit is a penetration testing framework that can be used to identify vulnerabilities in web servers and web applications. It includes a variety of tools and modules that can be used to scan for and exploit vulnerabilities in target systems.
-6. Cobalt Strike: In recent years, threat actors have increasingly used Cobalt Strike as part of their attack chain, particularly in ransomware attacks. They use the tool to gain initial access to a network, move laterally through the network, and deploy ransomware to encrypt files and demand a ransom payment.
+Cybercriminals often begin their attacks by using automated scanning tools to find vulnerable web servers. Once a vulnerability is detected, they execute commands on the compromised server to confirm the exploit. This feedback loop is a crucial stage where the attack can be detected early.
 
-When attackers run one of the aforementioned tools and actually find a vulnerable web server, they receive the results of a system command that has been executed on the vulnerable service. This could be in the form of a `ls`, `cat`, or `ifconfig` linux command. Here's an example of the ls command output from a scanning attack:
+#### Common Scanning Tools
 
-![directory listing output](../../static/img/ls-output.png)
+1. **Nmap**: Identifies open ports and services, highlighting potential vulnerabilities.
+2. **OpenVAS**: Scans for known vulnerabilities in web servers and applications.
+3. **Nikto**: Detects server misconfigurations, outdated software, and insecure settings.
+4. **Burp Suite**: Finds vulnerabilities like XSS and SQL injection in web applications.
+5. **Metasploit**: Exploits detected vulnerabilities in web servers and applications.
+6. **Cobalt Strike**: Used by attackers to gain initial access, move laterally, and deploy ransomware.
 
-The commands will generate responses with unique signals that would never be seen in normal traffic. One sure fire way to detect this type of attack in real time is to create a matcher category for signs of ransomware. Here is an example policy that will detect the majority of ransomware feedback loops that attackers are hoping to see after running their favorite scanning tool:
+### Detecting Initial Exploits with LeakSignal
+
+When an attacker successfully executes a command on a vulnerable server, the response contains unique signals that indicate the exploit. LeakSignal can detect these signals in real-time, providing an early warning system for serious exploits.
+
+#### Example: Detecting Ransomware Feedback Loops
+
+Attackers often run commands like `ls`, `cat`, or `ifconfig` to gather information from the compromised server. LeakSignal can be configured to detect the unique outputs of these commands. For instance, the following policy detects the output of common reconnaissance commands:
 
 ```yaml
+categories:
   rce_ls:
     - regex: "(?-u:\\b)drwx"
   rce_ifconfig:
@@ -32,68 +39,51 @@ The commands will generate responses with unique signals that would never be see
     - regex: PRIVATE KEY
 ```
 
-:::note
-See [Policy](/Policy/Overview) documentation for more information on how policies work.
-:::
+When any of these rules are triggered, LeakSignal alerts you in the COMMAND dashboard and can send notifications via SMS or email.
 
-When any of the above matching rules are triggered, LeakSignal will fire an alert in the COMMAND dashboard (along with sending you an SMS and email).
+#### Example: Detecting Remote Command Execution (RCE)
 
-![directory listing output](../../static/img/ransomware-detected.png)
-
-After clicking on the Traffic Item details, it's easy to see what was matched in the response to determine the type of malicious command that ran on the service:
-
-![directory listing output](../../static/img/ransomware-signals.png)
-
-This is just the beginning of a comprehensive LeakSignal policy that can detect the initial feedback loop of any ransomware attack.
-
-## Remote Command Execution (RCE)
-
-Remote Command Execution (RCE) is one of the most dangerous types of vulnerabilities. It allows attackers to execute commands on a server by simply requesting a URL with a crafted payload. To execute an RCE and eventually takeover a machine, one simply sends a request to a URL similar to the following:
-
-```
-http:/yourwebsite.com/vulnerableAPI/attack?search=<query>
-```
-
-Using the latest Text4Shell vulnerability as an example, an attacker would send the following request to an exposed server:
-
-```
-http:/yourwebsite.com/vulnerableAPI/attack?search=${script:javascript:java.lang.Runtime.getRuntime().exec('ls -e /bin/sh')}
-```
-
-These types of requests trigger undetected exploits in underlying production code. In the cases of log4shell in 2021 and the Equifax breach of 2017, RCEs were found in the underlying components that were widely used across many public facing software systems worldwide - and these types of exploits are [only getting worse](https://www.cisa.gov/known-exploited-vulnerabilities-catalog).
-
-## RCE Detection
-
-RCE detection can be difficult due to many factors. Some detection solutions require agent installation or instrumentation of an existing codebase. These solutions become cumbersome, hard to implement consistently across large organizations, and are an overall maintenance nightmare.
-
-Additionally, third party (supply chain) scanning is a good preventitive measure, but not effective in preventing zero days and flawed API logic susceptible to an RCE attack.
-There are no silver bullets to defend against every type of RCE, but response analysis is one of the most efficacious approaches.
-
-When attackers are probing to check for RCE vulnerabilities, they're looking for indicators of a successful exploit. Many probing and scanning tools send a malicious request to check for system output. This could be in the form of a `ls`, `cat`, or `ifconfig` linux command. The commands will generate responses with unique signals that can be detected with low false positive rates.
-Here's an example of the `ls` command used in a scanning attack:
-
-![directory listing output](../../static/img/ls-output.png)
-
-To detect this type of infrastructure probing, a LeakSignal category can be created in the policy to detect the signature of `ls` output.
+RCE vulnerabilities allow attackers to execute commands on a server via crafted URLs. Detecting these exploits is challenging but crucial. LeakSignal can identify RCE attempts by analyzing response signatures. Here’s an example of a policy detecting `ls` command output:
 
 ```yaml
 categories:
   rce_ls_root:
     - regex: "\\broot root\\b"
+    - regex: "\\bdrwxr-xr-x\\b"
+    - regex: "\\btotal [0-9]+\\b"
+  rce_ifconfig:
+    - regex: "\\beth0\\b"
+    - regex: "\\binet [0-9]+\\.[0-9]+\\.[0-9]+\\.[0-9]+\\b"
+    - regex: "\\bnetmask [0-9]+\\.[0-9]+\\.[0-9]+\\.[0-9]+\\b"
+  rce_private_key:
+    - regex: "-----BEGIN RSA PRIVATE KEY-----"
+    - regex: "-----BEGIN PRIVATE KEY-----"
+  rce_etc_passwd:
+    - regex: "\\broot:x:0:0:root:/root:/bin/bash\\b"
+    - regex: "\\bnobody:x:65534:65534:nobody:/nonexistent:/usr/sbin/nologin\\b"
+  rce_uname:
+    - regex: "\\bLinux [a-zA-Z0-9]+ [0-9]+\\.[0-9]+\\.[0-9]+\\b"
+    - regex: "\\bSMP [a-zA-Z]+ [0-9]{4}\\b"
+
 ```
+This policy detects various signals that are indicative of a successful exploit:
 
-:::note
-See [Policy](/Policy/Overview) documentation for more information on how policies work.
-:::
+- **rce_ls_root**: Looks for common directory listing outputs such as "root root," permissions strings, and total counts.
+- **rce_ifconfig**: Matches network interface configuration outputs like "eth0," IP addresses, and netmask values.
+- **rce_private_key**: Detects private key headers in responses.
+- **rce_etc_passwd**: Identifies lines from the `/etc/passwd` file indicating user information.
+- **rce_uname**: Matches system information output from the `uname -a` command, including kernel version and build info.
 
-Additionally, response signatures can be customized to match the output of specific systems like Microsoft Exchange. The following example shows how exploitation of ProxyLogin and ProxyNotShell could be detected in the outgoing HTTP response.
+By employing these regex patterns, LeakSignal can detect a broader range of exploit indicators, providing a more comprehensive defense against RCE attacks.
 
-![exchange proxylogin](https://github.com/leaksignal/leaksignal/raw/master/assets/proxylogin-output.png)
+LeakSignal can also detect specific system outputs, such as those from Microsoft Exchange vulnerabilities like ProxyLogin and ProxyNotShell:
 
 ```yaml
 categories:
-  rce_ls_root:
+  rce_exchange:
     - regex: "\\bnt authority\/system\\b"
 ```
 
-LeakSignal can detect response signatures across all mesh API, HTTP, gRPC and WebSocket traffic.
+LeakSignal offers robust detection capabilities across various protocols, including API, HTTP, gRPC, and WebSocket traffic. By monitoring for the unique signals generated by initial exploit commands, LeakSignal provides a critical layer of defense, enabling you to respond swiftly and effectively to emerging threats.
+
+This approach ensures that your security team is alerted at the first signs of an exploit, allowing for immediate investigation and mitigation to protect your infrastructure from further damage.
