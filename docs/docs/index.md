@@ -3,19 +3,41 @@ sidebar_position: 1
 title: Getting Started
 ---
 
-# Getting Started
+# Getting Started with LeakSignal
 
-🔍 Unlock real-time visibility into your sensitive data flows.
-
-LeakSignal provides real-time visibility and governance for sensitive data in your microservices. This openly distributed solution empowers operations engineers (SRE, DevOps, Platform Eng. etc) to combat API exploits, misconfigurations, and data leakage with ease.
+LeakSignal provides real-time visibility and governance over sensitive data flows within your services. As an openly distributed project, it offers comprehensive observability metrics and mitigation capabilities across the full spectrum of Layer 4 and 7 protocols.
 
 ## Features
 
-- **Real-Time Analysis**: Fast, inline Layer 4 and 7 request/response analysis.
-- **Configurable Rules**: Easy-to-configure rules for detecting and analyzing sensitive data (e.g., PII).
-  - Detect part numbers, account numbers, patient info, grades, dates, email addresses, and more.
-- **Comprehensive Dashboard**: Cloud-based dashboard with policy editor, monitoring, and alerting.
-- **Seamless Integration**: Expose analysis metrics via Envoy for integration with OpenTelemetry, Prometheus, etc.
+- **Real-Time Layer 4 and 7 Analysis**  
+  Inline inspection and classification of request and response data. Ideal for service mesh environments (OpenShift, Istio, Kubernetes) and WASM runtimes.
+
+- **Flexible Policy Configuration**  
+  Create and manage custom rules for detecting sensitive data leakage (e.g., PII, financial data).
+
+- **Comprehensive Data Visibility**  
+  Gain insights into data flows, including IP, token, and service-level access patterns. Provide visibility into data access in APIs, GraphQL, or gRPC streams (east/west and north/south). Map digital identities (non-human, human, etc.) to the data accessed.
+
+- **Advanced Threat Mitigation**  
+  Proactively identify and block unauthorized data access using real-time data classification.
+
+- **Sensitive Data in Logs**  
+  Observe and redact sensitive data in log streams before storage.
+
+- **Egress Visibility**  
+  Understand when sensitive data is sent out as part of a third-party call.
+
+- **Robust Dashboard and Alerts**  
+  Cloud-based dashboard with policy editor, monitoring, and alerting. Available for free as SaaS or self-hosted on-premises for enterprise customers.
+
+- **Extensive Integration Support**  
+  Metrics can be exposed via Envoy and integrated with OpenTelemetry, Prometheus, and other tools.
+
+- **Scalable and Flexible Deployment**  
+  Compatible with various environments, including Istio, OpenShift Service Mesh, NGINX, Lambda, Fastly Compute and more.
+
+- **Enhanced Accuracy with Partner Integrations**  
+  Leverage partner integrations (Cyera, BigID, etc) for tagging and classification to ensure there are little to no false positives.
 
 ## Installation
 
@@ -45,6 +67,12 @@ The Proxy is written in Rust and compiles to WASM (for Proxy-Wasm/Envoy) or Nati
 
 ![Filter Overview](../static/img/full_solution_latest.png)
 
+### LeakSignal COMMAND
+
+The LeakSignal Command dashboard provides real-time visibility and alerting for unauthorized data access. It's available publicly as a SaaS or on-prem solution for enterprise customers.
+
+![Command Overview](../static/img/ServiceMap_shorter.gif)
+
 #### Key Functionalities:
 
 - **Sensitive Data Observability**: Monitor and analyze sensitive data flows.
@@ -54,18 +82,12 @@ The Proxy is written in Rust and compiles to WASM (for Proxy-Wasm/Envoy) or Nati
 - **Dashboard Visualization**: View data through histograms and heatmaps.
 - **Rules Engine**: Set up alerts, blocks, and distributed rate limits.
 
-### LeakSignal COMMAND
-
-The LeakSignal Command dashboard provides real-time visibility and alerting for unauthorized data access. It's available publicly as a SaaS or on-prem solution for enterprise customers.
-
-![Command Overview](../static/img/ServiceMap_shorter.gif)
-
 ### Architecture
 
 LeakSignal Proxy performs inline traffic analysis and acts as a policy enforcement point for all Layer 4 and Layer 7 traffic, including HTTP, log collection, and databases. Policies and telemetry are managed through LeakAgent or LeakSignal Command.
 
 - **LeakAgent**: A free, on-prem Prometheus metrics adapter.
-- **Command SaaS**: Cloud-hosted metrics and configuration.
+- **Command SaaS**: Free, Cloud-hosted metrics and configuration.
 - **Command On-Prem**: The self-hosted commercial offering.
 
 ### Setup Modes:
@@ -73,14 +95,16 @@ LeakSignal Proxy performs inline traffic analysis and acts as a policy enforceme
 - **Local Setup**: All metrics and configuration remain on-prem.
 - **Cloud Setup**: Metrics and configuration are managed in the cloud with telemetry sent to the LeakSignal Command SaaS.
 
-## Test and Configure L7 Policy
-
-Verify the filter is running, then configure policies to check for specific sensitive data types or patterns. For preconfigured and performance-tested policies, see [LeakSignal Policies](Policy/Overview).
-
 ## Commercial Support
 
 LeakSignal, Inc offers support and self-hosted versions of the cloud dashboard. Contact us at <sales@leaksignal.com>.
 
 ## License
 
-Licensed under the Apache License, Version 2.0. See the License for the specific language governing permissions and limitations under the License.
+Copyright 2024 LeakSignal, Inc.
+
+Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
