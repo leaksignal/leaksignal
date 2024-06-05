@@ -15,6 +15,7 @@ sidebar_position: 1
 * [Header Collection](Header%20Collection): What headers to upload for telemetry
 * [Report Style](Report%20Style): Configures what form is match information sent upstream
 * [Parsers](Parsers): Interpreting Layer 4 and Layer 7 structure.
+* [Environment Collection](Environment): Interpreting Layer 4 and Layer 7 structure.
 
 ## Misc Fields
 

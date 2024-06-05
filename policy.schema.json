@@ -912,7 +912,9 @@
             "type": "object",
             "additionalProperties": {
                 "oneOf": [
-                    { "type": "string" },
+                    {
+                        "type": "string"
+                    },
                     {
                         "type": "array",
                         "items": {
@@ -935,9 +937,13 @@
                                     }
                                 ]
                             },
-                            "regex": { "type": "string" }
+                            "regex": {
+                                "type": "string"
+                            }
                         },
-                        "required": ["path"],
+                        "required": [
+                            "path"
+                        ],
                         "unevaluatedProperties": false,
                         "additionalProperties": false
                     }
@@ -949,10 +955,16 @@
                 {
                     "type": "object",
                     "object": {
-                        "extractors": { "$ref": "#/$defs/body_extractor_extractor" },
-                        "include_all": { "type": "boolean" }
+                        "extractors": {
+                            "$ref": "#/$defs/body_extractor_extractor"
+                        },
+                        "include_all": {
+                            "type": "boolean"
+                        }
                     },
-                    "required": ["extractors"],
+                    "required": [
+                        "extractors"
+                    ],
                     "unevaluatedProperties": false,
                     "additionalProperties": false
                 },
@@ -968,8 +980,12 @@
                 "properties": {
                     "matches": {
                         "oneOf": [
-                            { "type": "string" },
-                            { "$ref": "#/$defs/rule_filter" }
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "$ref": "#/$defs/rule_filter"
+                            }
                         ]
                     },
                     "search": {
@@ -2020,6 +2036,19 @@
             "items": {
                 "type": "string"
             }
+        },
+        "collected_env_vars": {
+            "anyOf": [
+                {
+                    "type": "string"
+                },
+                {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            ]
         },
         "body_collection": {
             "type": "array",
