@@ -1,14 +1,20 @@
-# Backends
-- requires a `forward_to` backend with `override_host`
-- requires a `command` backend with `override_host`
+# Configuration
+leakfastly requires some setup to get running properly. Most of this is automatically handled through command, but the following needs to be set up manually:
 
-# Config stores
-requires a config store named `leaksignal_config` with the following:
-- requires `policy_id` key with corresponding policy_id string. Will fail open if not included.
-- requires `policy` key with leaksignal policy serialized as json without newlines. Will fail open if not included.
-- optional `block_state` key containing a json serialized `BlockState`. Will use no block state if not included.
-- optional `log_level` key containing corresponding log level string. Will use `warn` if not included.
+## Initial Service Setup
 
-# Secret stores
-requires a secret store named `api_key` with the following:
-- requires `api_key` with corresponding API key string
+### Backends
+- requires a `forward_to` backend with `override_host`. this is the address that traffic will be forwarded to.
+- requires a `command` backend with `override_host`. this is the address that match data will be sent to.
+
+### Optional Local Flags
+the proxy has some optional configurable flags that can be set on a per-service basis. If you want to set them, you can create a dictionary on your service called `leaksignal_flags` and input any of the following keys:
+- `log_level` key containing corresponding log level string. Will use `warn` if not set.
+
+## Command configuration
+
+Inside command, you can set your account API key, as well as the ID of the leakfastly services you want command to interface with. From there, command will set up your account with the necessary vk/secret stores, as well as update the specified services to use them. This will allow your leakfastly services to receive the latest policy changes and block list items.
+
+# Latency
+
+As of writing, fastly KV stores introduce a substantial amount of delay to requests/response times. We've done everything we can to mitigate this on our end, but expect some added latency until this is fixed. The best case is as little as 10ms, but can be up to 300ms if a new policy or block rule has just been pushed to the kv store.
