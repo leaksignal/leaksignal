@@ -1,4 +1,6 @@
-# Configuration
+# Fastly
+
+## Configuration
 Leakfastly requires some setup to get running properly. Most of this is automatically handled through command, but the following needs to be set up manually:
 
 ## Initial Service Setup
