@@ -1,4 +1,5 @@
 ![Traces](images/Traces.png)
+
 The Traces page displays a historical list of all traces.
 
 ## Traces Filters
