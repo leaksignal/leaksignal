@@ -16,7 +16,3 @@ The proxy has some optional configurable flags that can be set on a per-service 
 ## Command configuration
 
 Inside command, you can set your account API key, as well as the ID of the leakfastly services you want command to interface with. From there, command will set up your account with the necessary vk/secret stores, as well as update the specified services to use them. This will allow your leakfastly services to receive the latest policy changes and block list items.
-
-# Latency
-
-As of writing, fastly KV stores introduce a substantial amount of delay to requests/response times. We've done everything we can to mitigate this on our end, but expect some added latency until this is fixed. The best case is as little as 10ms, but can be up to 300ms if a new policy or block rule has just been pushed to the kv store.
