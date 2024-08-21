@@ -1,6 +1,6 @@
 ![Traces](images/Traces.png)
 
-The Traces page displays a historical list of all traces.
+Traces track the flow of individual pieces of data throughout your application. Each trace includes a list of the services that the data passed through, as well as the PII Categories that were matched. Clicking on a trace will show you a miniature service map including only the services that handled the data.
 
 ## Traces Filters
 
