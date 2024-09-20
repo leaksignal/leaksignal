@@ -12,5 +12,5 @@ Clicking any cell will take you to the [Traffic Page](Traffic.md) with the filte
 | Grouping | Organize data in rows by Inbound Service, Outbound Service, IP Address, or Token. |
 | Token | Filter by token. |
 | IP | Filter by origin IP. |
-| Policy Path | Filter by the full path of the HTTP request. |
+| API Endpoint | Filter by the full path of the HTTP request. |
 | PII Category | Filter by matched PII Category. |
