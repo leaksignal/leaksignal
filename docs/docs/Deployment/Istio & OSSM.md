@@ -11,14 +11,14 @@ LeakSignal Operator is available on [OperatorHub](https://operatorhub.io/operato
 You can also install the operator via a Helm Chart:
 ```bash
 $ helm upgrade --install leaksignal-operator oci://registry-1.docker.io/leaksignal/leaksignal-operator \
-  --version 0.11.2-helm \
+  --version 0.12.0-helm \
   --namespace leaksignal-operator \
   --create-namespace
 ```
 
 If updating from a previous version via Helm, make sure to manually update the CRDs:
 ```bash
-$ kubectl apply -f https://raw.githubusercontent.com/leaksignal/leaksignal-operator/v1.6.2/crds/leaksignal-crd.yaml https://raw.githubusercontent.com/leaksignal/leaksignal-operator/v1.6.2/crds/leaksignal-cluster-crd.yaml
+$ kubectl apply -f https://raw.githubusercontent.com/leaksignal/leaksignal-operator/v1.8.1/crds/leaksignal-crd.yaml https://raw.githubusercontent.com/leaksignal/leaksignal-operator/v1.8.1/crds/leaksignal-cluster-crd.yaml
 ```
 
 You can find the code, CRDs, and Helm Charts on [GitHub](https://github.com/leaksignal/leaksignal-operator) and more documentation [Here](/Operator/Deployment).

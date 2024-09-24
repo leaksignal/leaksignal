@@ -40,14 +40,14 @@ The easiest way to deploy the Operator without OLM is with the Helm Chart:
 
 ```
 helm upgrade --install leaksignal-operator oci://registry-1.docker.io/leaksignal/leaksignal-operator \
-  --version 1.6.2-helm \
+  --version 1.8.1-helm \
   --namespace leaksignal-operator \
   --create-namespace
 ```
 
 If updating from a previous version via Helm, make sure to manually update the CRDs:
 ```bash
-$ kubectl apply -f https://raw.githubusercontent.com/leaksignal/leaksignal-operator/v1.6.2/crds/leaksignal-crd.yaml https://raw.githubusercontent.com/leaksignal/leaksignal-operator/v1.6.2/crds/leaksignal-cluster-crd.yaml
+$ kubectl apply -f https://raw.githubusercontent.com/leaksignal/leaksignal-operator/v1.8.1/crds/leaksignal-crd.yaml https://raw.githubusercontent.com/leaksignal/leaksignal-operator/v1.8.1/crds/leaksignal-cluster-crd.yaml
 ```
 
 ### Helm Values
