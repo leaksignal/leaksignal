@@ -11,7 +11,7 @@ LeakSignal Operator is available on [OperatorHub](https://operatorhub.io/operato
 You can also install the operator via a Helm Chart:
 ```bash
 $ helm upgrade --install leaksignal-operator oci://registry-1.docker.io/leaksignal/leaksignal-operator \
-  --version 0.12.0-helm \
+  --version 0.12.1-helm \
   --namespace leaksignal-operator \
   --create-namespace
 ```
@@ -52,15 +52,15 @@ metadata:
   name: leaksignal-istio
 spec:
   # Version information is available at https://github.com/leaksignal/leaksignal/releases
-  proxyVersion: 2024_02_14_13_47_18_c5db81b_0.10.1
-  proxyHash: a3e851833223951f3460c4851d088ff1efc0a955cba7a68c7cafa0e596c474b2
+  proxyVersion: 2024_12_17_18_05_29_ad72a34_0.12.1
+  proxyHash: bc596a6af6de7e65e52c0fb6039ae44220108ba75db5f7159ed8353e6ec05a39
   # from Command, or the Deployment name in LeakAgent
   apiKey: MY_API_KEY
 ```
 
-### Single Namespace (Native)
+### Single Namespace (WASM)
 
-If you want to deploy with **Native** mode, there will be a different `proxyHash` and a `native: true` flag:
+If you want to deploy with **Native** mode, there will be a different `proxyHash` and a `native: false` flag:
 ```yaml
 apiVersion: leaksignal.com/v1
 kind: LeaksignalIstio
@@ -68,9 +68,9 @@ metadata:
   name: leaksignal-istio
 spec:
   # Version information is available at https://github.com/leaksignal/leaksignal/releases
-  proxyVersion: 2024_02_14_13_47_18_c5db81b_0.10.1
-  proxyHash: e39c76c48fe7416372bc28775024dc688daf761161880a232f76d2a891b76ff5
-  native: true
+  proxyVersion: 2024_12_17_18_05_29_ad72a34_0.12.1
+  proxyHash: 3ef483943396a8c8f4818bd119ce5993ef258604d028bc983710da3624465d54
+  native: false
   # from Command, or the Deployment name in LeakAgent
   apiKey: MY_API_KEY
 ```
@@ -86,8 +86,8 @@ metadata:
   name: leaksignal-istio
 spec:
   # Version information is available at https://github.com/leaksignal/leaksignal/releases
-  proxyVersion: 2024_02_14_13_47_18_c5db81b_0.10.1
-  proxyHash: a3e851833223951f3460c4851d088ff1efc0a955cba7a68c7cafa0e596c474b2
+  proxyVersion: 2024_12_17_18_05_29_ad72a34_0.12.1
+  proxyHash: bc596a6af6de7e65e52c0fb6039ae44220108ba75db5f7159ed8353e6ec05a39
   # from Command, or the Deployment name in LeakAgent
   apiKey: MY_API_KEY
 ```

@@ -4,10 +4,10 @@ The following fields are defined for the `spec` of the (Cluster)LeaksignalIstio 
 ```yaml
 
 # Required. Version string for LeakSignal Proxy deployment. Can see all versions at https://github.com/leaksignal/leaksignal/releases
-proxyVersion: 2024_02_14_13_47_18_c5db81b_0.10.1
+proxyVersion: 2024_12_17_18_05_29_ad72a34_0.12.1
 
 # Required. Hash of the downloaded bundle for LeakSignal Proxy. Will depend on your version and deployment mechanism (nginx, envoy, WASM).
-proxyHash: a3e851833223951f3460c4851d088ff1efc0a955cba7a68c7cafa0e596c474b2
+proxyHash: bc596a6af6de7e65e52c0fb6039ae44220108ba75db5f7159ed8353e6ec05a39
 
 # Required, API Key from the LeakSignal Command dashboard. Alternatively, the deployment name from LeakAgent.
 apiKey: MY_API_KEY
@@ -39,8 +39,8 @@ grpcMode: default
 # Optional. If `true` (default), then L4 streams are also scanned by LeakSignal Proxy.
 enableStreaming: true
 
-# Optional. If `true` (not default), istio-proxy containers are updated to a corresponding image with support for dynamic plugins, and the native LeakSignal Proxy module is installed.
-native: false
+# Optional. If `true` (default), istio-proxy containers are updated to a corresponding image with support for dynamic plugins, and the native LeakSignal Proxy module is installed.
+native: true
 
 # Optional. If `true` (default), if LeakSignal Proxy has a failure, then all traffic is routed around it.
 failOpen: true

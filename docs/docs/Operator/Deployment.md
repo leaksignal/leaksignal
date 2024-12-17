@@ -40,7 +40,7 @@ The easiest way to deploy the Operator without OLM is with the Helm Chart:
 
 ```
 helm upgrade --install leaksignal-operator oci://registry-1.docker.io/leaksignal/leaksignal-operator \
-  --version 1.8.1-helm \
+  --version 1.9.0-helm \
   --namespace leaksignal-operator \
   --create-namespace
 ```
