@@ -4,7 +4,7 @@ sidebar_position: 3
 
 LeakSignal publishes alternative container images for [NGINX Ingress Controller](https://github.com/kubernetes/ingress-nginx) at [leaksignal/ingress-nginx](https://hub.docker.com/r/leaksignal/ingress-nginx)
 
-Tags are of the form: `$INGRESS_VERSION-$LEAKSIGNAL_VERSION`, i.e. `v1.8.1-0.12.0`. Supported versions are 1.6.4 through 1.8.1.
+Tags are of the form: `$INGRESS_VERSION-$LEAKSIGNAL_VERSION`, i.e. `v1.8.1-0.12.1`. Supported versions are 1.6.4 through 1.8.1.
 
 Example helm configuration:
 ```yaml
@@ -12,7 +12,7 @@ controller:
   image:
     registry: docker.io
     image: leaksignal/ingress-nginx
-    tag: "v1.8.1-0.12.0"
+    tag: "v1.8.1-0.12.1"
     digest: null
   config:
     main-snippet:
