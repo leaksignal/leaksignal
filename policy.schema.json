@@ -212,6 +212,19 @@
                     ],
                     "unevaluatedProperties": false,
                     "additionalProperties": false
+                },
+                {
+                    "type": "object",
+                    "properties": {
+                        "request_match": {
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "request_match"
+                    ],
+                    "unevaluatedProperties": false,
+                    "additionalProperties": false
                 }
             ],
             "unevaluatedProperties": false
@@ -819,6 +832,7 @@
                 "filebeat",
                 "fluentd",
                 "tls",
+                "llm_api",
                 "none"
             ]
         },
@@ -1000,6 +1014,9 @@
                             "all_header",
                             "all"
                         ]
+                    },
+                    "content_type_override": {
+                        "$ref": "#/$defs/content_type"
                     },
                     "token_extractor": {
                         "type": "object",
