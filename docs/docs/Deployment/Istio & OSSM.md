@@ -11,7 +11,7 @@ LeakSignal Operator is available on [OperatorHub](https://operatorhub.io/operato
 You can also install the operator via a Helm Chart:
 ```bash
 $ helm upgrade --install leaksignal-operator oci://registry-1.docker.io/leaksignal/leaksignal-operator \
-  --version 0.12.2-helm \
+  --version 0.12.3-helm \
   --namespace leaksignal-operator \
   --create-namespace
 ```
@@ -52,8 +52,8 @@ metadata:
   name: leaksignal-istio
 spec:
   # Version information is available at https://github.com/leaksignal/leaksignal/releases
-  proxyVersion: 2025_01_15_21_20_54_a5482a4_0.12.2
-  proxyHash: 2fd11b9808b9b5fd0d102f81a6686821d5d8c305dd746418c5e48b01a7163d68
+  proxyVersion: 2025_01_20_23_02_32_4a08db1_0.12.3
+  proxyHash: 13e765b6bce5ea2f1178e2e5e1ddf4ac310932928d2d138ee919207b0329ccda
   # from Command, or the Deployment name in LeakAgent
   apiKey: MY_API_KEY
 ```
@@ -68,8 +68,8 @@ metadata:
   name: leaksignal-istio
 spec:
   # Version information is available at https://github.com/leaksignal/leaksignal/releases
-  proxyVersion: 2025_01_15_21_20_54_a5482a4_0.12.2
-  proxyHash: c7b0f20024e56df1dcb3c32f2c64799a049e8e661cf1ba318fcc932f43d9eb9b
+  proxyVersion: 2025_01_20_23_02_32_4a08db1_0.12.3
+  proxyHash: 05dded683a8153e4021d4bfb3a98f259ce1b55fc2799a81c5232dffca57ff377
   native: false
   # from Command, or the Deployment name in LeakAgent
   apiKey: MY_API_KEY
@@ -86,8 +86,8 @@ metadata:
   name: leaksignal-istio
 spec:
   # Version information is available at https://github.com/leaksignal/leaksignal/releases
-  proxyVersion: 2025_01_15_21_20_54_a5482a4_0.12.2
-  proxyHash: 2fd11b9808b9b5fd0d102f81a6686821d5d8c305dd746418c5e48b01a7163d68
+  proxyVersion: 2025_01_20_23_02_32_4a08db1_0.12.3
+  proxyHash: 13e765b6bce5ea2f1178e2e5e1ddf4ac310932928d2d138ee919207b0329ccda
   # from Command, or the Deployment name in LeakAgent
   apiKey: MY_API_KEY
 ```

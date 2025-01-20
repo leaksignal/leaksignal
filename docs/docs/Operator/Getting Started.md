@@ -31,8 +31,8 @@ kind: LeaksignalIstio
 metadata:
   name: leaksignal-istio
 spec:
-  proxyVersion: 2025_01_15_21_20_54_a5482a4_0.12.2
-  proxyHash: 2fd11b9808b9b5fd0d102f81a6686821d5d8c305dd746418c5e48b01a7163d68
+  proxyVersion: 2025_01_20_23_02_32_4a08db1_0.12.3
+  proxyHash: 13e765b6bce5ea2f1178e2e5e1ddf4ac310932928d2d138ee919207b0329ccda
   apiKey: MY_API_KEY
 ```
 
@@ -45,8 +45,8 @@ kind: LeaksignalIstio
 metadata:
   name: leaksignal-istio
 spec:
-  proxyVersion: 2025_01_15_21_20_54_a5482a4_0.12.2
-  proxyHash: 2fd11b9808b9b5fd0d102f81a6686821d5d8c305dd746418c5e48b01a7163d68
+  proxyVersion: 2025_01_20_23_02_32_4a08db1_0.12.3
+  proxyHash: 13e765b6bce5ea2f1178e2e5e1ddf4ac310932928d2d138ee919207b0329ccda
   apiKey: MY_API_KEY
   upstreamLocation: ingestion.leaksignal.mydomain.com
 ```
@@ -59,8 +59,8 @@ kind: LeaksignalIstio
 metadata:
   name: leaksignal-istio
 spec:
-  proxyVersion: 2025_01_15_21_20_54_a5482a4_0.12.2
-  proxyHash: 2fd11b9808b9b5fd0d102f81a6686821d5d8c305dd746418c5e48b01a7163d68
+  proxyVersion: 2025_01_20_23_02_32_4a08db1_0.12.3
+  proxyHash: 13e765b6bce5ea2f1178e2e5e1ddf4ac310932928d2d138ee919207b0329ccda
   apiKey: MY_API_KEY
   upstreamLocation: ingestion.leaksignal.mydomain.com
   caBundle: /etc/ssl/certs/ca-bundle.crt
@@ -75,8 +75,8 @@ kind: LeaksignalIstio
 metadata:
   name: leaksignal-istio
 spec:
-  proxyVersion: 2025_01_15_21_20_54_a5482a4_0.12.2
-  proxyHash: 2fd11b9808b9b5fd0d102f81a6686821d5d8c305dd746418c5e48b01a7163d68
+  proxyVersion: 2025_01_20_23_02_32_4a08db1_0.12.3
+  proxyHash: 13e765b6bce5ea2f1178e2e5e1ddf4ac310932928d2d138ee919207b0329ccda
   apiKey: my_policy_name
 
   upstreamLocation: leakagent.leakagent.svc.cluster.local
@@ -93,8 +93,8 @@ kind: LeaksignalIstio
 metadata:
   name: leaksignal-istio
 spec:
-  proxyVersion: 2025_01_15_21_20_54_a5482a4_0.12.2
-  proxyHash: 2fd11b9808b9b5fd0d102f81a6686821d5d8c305dd746418c5e48b01a7163d68
+  proxyVersion: 2025_01_20_23_02_32_4a08db1_0.12.3
+  proxyHash: 13e765b6bce5ea2f1178e2e5e1ddf4ac310932928d2d138ee919207b0329ccda
   apiKey: my_policy_name
 
   upstreamLocation: leakagent.mydomain.com
