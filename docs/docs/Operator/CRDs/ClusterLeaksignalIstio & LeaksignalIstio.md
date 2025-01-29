@@ -4,10 +4,10 @@ The following fields are defined for the `spec` of the (Cluster)LeaksignalIstio 
 ```yaml
 
 # Required. Version string for LeakSignal Proxy deployment. Can see all versions at https://github.com/leaksignal/leaksignal/releases
-proxyVersion: 2025_01_20_23_02_32_4a08db1_0.12.3
+proxyVersion: 2025_01_29_19_26_57_6243534_0.12.4
 
 # Required. Hash of the downloaded bundle for LeakSignal Proxy. Will depend on your version and deployment mechanism (nginx, envoy, WASM).
-proxyHash: 13e765b6bce5ea2f1178e2e5e1ddf4ac310932928d2d138ee919207b0329ccda
+proxyHash: a4b19c0bcfeca2f046a3fd7972246c3968789ced49c539faabb101c1f63d1d42
 
 # Required, API Key from the LeakSignal Command dashboard. Alternatively, the deployment name from LeakAgent.
 apiKey: MY_API_KEY
