@@ -8,7 +8,7 @@ LeakNGX is a native NGINX plugin to integrate LeakSignal.
 
 All module files are available via `https://leakproxy.s3.us-west-2.amazonaws.com/leakngx-$LEAKSIGNAL_VERSION-$NGINX_VERSION/libleakngx.so`
 
-Where `$LEAKSIGNAL_VERSION` is the version of LeakSignal (i.e. 0.12.3), and `$NGINX_VERSION` is a version between NGINX 1.21.6 and 1.25.2.
+Where `$LEAKSIGNAL_VERSION` is the version of LeakSignal (i.e. 0.12.4), and `$NGINX_VERSION` is a version between NGINX 1.21.6 and 1.25.2.
 Note that a special version is available for NGINX 1.21.6 supporting MUSL (for alpine linux used in ingress-nginx), with a version of `$LEAKSIGNAL-VERSION-1.21.6-musl`.
 
 ## Configuring NGINX
@@ -29,7 +29,7 @@ leakngx $API_KEY https://ingestion.app.leaksignal.com;
 
 LeakSignal publishes alternative container images for [NGINX Ingress Controller](https://github.com/kubernetes/ingress-nginx) at [leaksignal/ingress-nginx](https://hub.docker.com/r/leaksignal/ingress-nginx)
 
-Tags are of the form: `$INGRESS_VERSION-$LEAKSIGNAL_VERSION`, i.e. `v1.8.1-0.12.3`. Supported versions are 1.6.4 through 1.8.1.
+Tags are of the form: `$INGRESS_VERSION-$LEAKSIGNAL_VERSION`, i.e. `v1.8.1-0.12.4`. Supported versions are 1.6.4 through 1.8.1.
 
 Example helm configuration:
 ```yaml
@@ -37,7 +37,7 @@ controller:
   image:
     registry: docker.io
     image: leaksignal/ingress-nginx
-    tag: "v1.8.1-0.12.3"
+    tag: "v1.8.1-0.12.4"
     digest: null
   config:
     main-snippet:
